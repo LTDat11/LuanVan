@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Luận văn</string>
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_history">Lịch sử</string>
+    <string name="nav_account">Tài khoản</string>
+    <string name="email">Email</string>
+    <string name="password">Mật khẩu</string>
+    <string name="hint_email">Nhập email của bạn</string>
+    <string name="hint_password">Nhập mật khẩu của bạn</string>
+    <string name="login">Đăng nhập</string>
+    <string name="login_title">Đăng nhập tài khoản</string>
+    <string name="register">Đăng ký</string>
+    <string name="register_title">Đăng ký tài khoản</string>
+    <string name="forgot_password">Quên mật khẩu</string>
+    <string name="have_not_account">Chưa có tài khoản?</string>
+    <string name="have_account">Đã có tài khoản?</string>
+    <string name="msg_email_require">Vui lòng nhập email của bạn</string>
+    <string name="msg_password_require">Vui lòng nhập mật khẩu của bạn</string>
+    <string name="msg_email_invalid">Mật khẩu của bạn không hợp lệ</string>
+    <string name="msg_waiting_message">Vui lòng đợi...</string>
+    <string name="action_ok">Đồng ý</string>
+    <string name="reset_password">Gửi lại mật khẩu</string>
+</resources>
