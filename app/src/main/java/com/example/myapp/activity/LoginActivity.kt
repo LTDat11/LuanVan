@@ -56,7 +56,7 @@ class LoginActivity : BaseActivity() {
         layoutRegister?.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
-//        btnLogin?.setOnClickListener { onClickValidateLogin() }
+        btnLogin?.setOnClickListener { onClickValidateLogin() }
         tvForgotPassword?.setOnClickListener {
             startActivity(Intent(this, ForgotPasswordActivity::class.java))
         }
@@ -76,18 +76,18 @@ class LoginActivity : BaseActivity() {
         btnLogin?.setBackgroundResource(if (isEnableButtonLogin) R.drawable.bg_button_enable_corner_16 else R.drawable.bg_button_disable_corner_16)
     }
 
-//    private fun onClickValidateLogin() {
-//        if (!isEnableButtonLogin) return
-//        val strEmail = edtEmail?.text.toString().trim()
-//        val strPassword = edtPassword?.text.toString().trim()
-//
-//        when {
-//            strEmail.isEmpty() -> showToastMessage(getString(R.string.msg_email_require))
-//            strPassword.isEmpty() -> showToastMessage(getString(R.string.msg_password_require))
-//            !Patterns.EMAIL_ADDRESS.matcher(strEmail).matches() -> showToastMessage(getString(R.string.msg_email_invalid))
+    private fun onClickValidateLogin() {
+        if (!isEnableButtonLogin) return
+        val strEmail = edtEmail?.text.toString().trim()
+        val strPassword = edtPassword?.text.toString().trim()
+
+        when {
+            strEmail.isEmpty() -> showToastMessage(getString(R.string.msg_email_require))
+            strPassword.isEmpty() -> showToastMessage(getString(R.string.msg_password_require))
+            !Patterns.EMAIL_ADDRESS.matcher(strEmail).matches() -> showToastMessage(getString(R.string.msg_email_invalid))
 //            else -> loginUserFirebase(strEmail, strPassword)
-//        }
-//    }
+        }
+    }
 
 //    private fun loginUserFirebase(email: String, password: String) {
 //        showProgressDialog(true)

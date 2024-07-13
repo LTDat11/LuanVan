@@ -18,6 +18,9 @@
     <string name="msg_password_require">Vui lòng nhập mật khẩu của bạn</string>
     <string name="msg_email_invalid">Mật khẩu của bạn không hợp lệ</string>
     <string name="msg_waiting_message">Vui lòng đợi...</string>
+    <string name="msg_register_error">Đăng ký không thành công, vui lòng thử lại</string>
+    <string name="msg_reset_password_successfully">Lấy lại mật khẩu thành công, vui lòng kiểm tra email của bạn.</string>
+    <string name="msg_reset_password_error">Lỗi!! không thể lấy lại mật khẩu.</string>
     <string name="action_ok">Đồng ý</string>
     <string name="reset_password">Gửi lại mật khẩu</string>
 </resources>
