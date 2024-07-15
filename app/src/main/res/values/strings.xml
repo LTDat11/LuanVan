@@ -11,6 +11,8 @@
     <string name="login_title">Đăng nhập tài khoản</string>
     <string name="register">Đăng ký</string>
     <string name="register_title">Đăng ký tài khoản</string>
+    <string name="register_succesfully">Đăng ký tài khoản thành công</string>
+    <string name="register_faild">Đăng ký tài khoản thất bại</string>
     <string name="forgot_password">Quên mật khẩu</string>
     <string name="have_not_account">Chưa có tài khoản?</string>
     <string name="have_account">Đã có tài khoản?</string>

@@ -1,7 +1,6 @@
 package com.example.myapp.activity
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -13,7 +12,11 @@ import com.example.myapp.R
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.auth.User
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.example.myapp.model.User
+import java.security.Timestamp
 
 class RegisterActivity : BaseActivity() {
 
@@ -81,28 +84,53 @@ class RegisterActivity : BaseActivity() {
             strEmail.isEmpty() -> showToastMessage(getString(R.string.msg_email_require))
             strPassword.isEmpty() -> showToastMessage(getString(R.string.msg_password_require))
             !Patterns.EMAIL_ADDRESS.matcher(strEmail).matches() -> showToastMessage(getString(R.string.msg_email_invalid))
-//            else -> registerUserFirebase(strEmail, strPassword)
+            else -> registerUserFirebase(strEmail, strPassword)
         }
     }
 
-//    private fun registerUserFirebase(email: String, password: String) {
-//        showProgressDialog(true)
-//        val firebaseAuth = FirebaseAuth.getInstance()
-//        firebaseAuth.createUserWithEmailAndPassword(email, password)
-//            .addOnCompleteListener(this) { task: Task<AuthResult?> ->
-//                showProgressDialog(false)
-//                if (task.isSuccessful) {
-//                    val user = firebaseAuth.currentUser
-//                    if (user != null) {
-//                        val userObject = User(user.email, password)
-//                        DataStoreManager.user = userObject
-//                        startActivity(Intent(this@RegisterActivity, MainActivity::class.java))
-//                        finishAffinity()
-//                    }
-//                } else {
-//                    showToastMessage(getString(R.string.msg_register_error))
-//                }
-//            }
-//    }
+//   Register with firebase auth
+    private fun registerUserFirebase(email: String, password: String) {
+        showProgressDialog(true)
+        val auth = FirebaseAuth.getInstance()
+        auth.createUserWithEmailAndPassword(email,password)
+            .addOnCompleteListener { task ->
+                showProgressDialog(false)
+                if (task.isSuccessful){
+                    // Lấy UID của user vừa đăng ký
+                    val userId = auth.currentUser?.uid
+                    // Lấy thời gian hiện tại
+                    val currentTime = java.util.Date()
+                    // Tạo một bản ghi trong Firestore
+                    val db = FirebaseFirestore.getInstance()
+                    val user = User(
+                        email = email,
+                        createdAt = currentTime,
+                        updatedAt = currentTime,
+                        name = "",
+                        phone = "",
+                        address = "",
+                    )
+
+                    // Thêm thông tin user vào collection "Users" document với userId là key
+                    userId?.let {
+                        db.collection("Users").document(it)
+                            .set(user)
+                            .addOnSuccessListener {
+                                // Chuyển tới MainActivity khi thành công
+                                val intent = Intent(this, MainActivity::class.java)
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                startActivity(intent)
+                            }
+                            .addOnFailureListener { e ->
+                                showToastMessage("Failed to add user to Firestore: ${e.message}")
+                            }
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                showProgressDialog(false)
+                showToastMessage("Registration failed: ${exception.message}")
+            }
+    }
 
 }

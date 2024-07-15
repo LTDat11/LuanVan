@@ -30,6 +30,7 @@ class LoginActivity : BaseActivity() {
         initListener()
 
     }
+
     private fun initUi() {
         edtEmail = findViewById(R.id.edt_email)
         edtPassword = findViewById(R.id.edt_password)
