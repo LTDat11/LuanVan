@@ -6,12 +6,15 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Patterns
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.example.myapp.R
 import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.AuthResult
+import com.google.firebase.auth.FirebaseAuth
 
 class LoginActivity : BaseActivity() {
 
@@ -75,6 +78,7 @@ class LoginActivity : BaseActivity() {
 
         isEnableButtonLogin = isEmailValid && isPasswordValid
         btnLogin?.setBackgroundResource(if (isEnableButtonLogin) R.drawable.bg_button_enable_corner_16 else R.drawable.bg_button_disable_corner_16)
+
     }
 
     private fun onClickValidateLogin() {
@@ -86,27 +90,26 @@ class LoginActivity : BaseActivity() {
             strEmail.isEmpty() -> showToastMessage(getString(R.string.msg_email_require))
             strPassword.isEmpty() -> showToastMessage(getString(R.string.msg_password_require))
             !Patterns.EMAIL_ADDRESS.matcher(strEmail).matches() -> showToastMessage(getString(R.string.msg_email_invalid))
-//            else -> loginUserFirebase(strEmail, strPassword)
+            else -> loginUserFirebase(strEmail, strPassword)
         }
     }
 
-//    private fun loginUserFirebase(email: String, password: String) {
-//        showProgressDialog(true)
-//        val firebaseAuth = FirebaseAuth.getInstance()
-//        firebaseAuth.signInWithEmailAndPassword(email, password)
-//            .addOnCompleteListener(this) { task: Task<AuthResult?> ->
-//                showProgressDialog(false)
-//                if (task.isSuccessful) {
-//                    val user = firebaseAuth.currentUser
-//                    if (user != null) {
-//                        val userObject = User(user.email, password)
-//                        DataStoreManager.user = userObject
-//                        startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-//                        finishAffinity()
-//                    }
-//                } else {
-//                    showToastMessage(getString(R.string.msg_login_error))
-//                }
-//            }
-//    }
+    private fun loginUserFirebase(email: String, password: String) {
+        showProgressDialog(true)
+        val firebaseAuth = FirebaseAuth.getInstance()
+        firebaseAuth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this) { task: Task<AuthResult?> ->
+                showProgressDialog(false)
+                if (task.isSuccessful) {
+                    val user = firebaseAuth.currentUser
+                    if (user != null) {
+                        val intent = Intent(this, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                        startActivity(intent)
+                    }
+                } else {
+                    showToastMessage(getString(R.string.msg_login_error))
+                }
+            }
+    }
 }

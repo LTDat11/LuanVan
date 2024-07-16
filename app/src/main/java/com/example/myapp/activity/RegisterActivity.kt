@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Patterns
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -73,6 +74,7 @@ class RegisterActivity : BaseActivity() {
 
         isEnableButtonRegister = isEmailValid && isPasswordValid
         btnRegister?.setBackgroundResource(if (isEnableButtonRegister) R.drawable.bg_button_enable_corner_16 else R.drawable.bg_button_disable_corner_16)
+//        btnRegister?.visibility = if (isEnableButtonRegister) View.VISIBLE else View.INVISIBLE
     }
 
     private fun onClickValidateRegister() {

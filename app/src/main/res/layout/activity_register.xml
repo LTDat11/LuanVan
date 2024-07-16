@@ -86,6 +86,7 @@
             android:text="@string/register"
             android:textAllCaps="false"
             android:textColor="@color/white"
+
             android:textSize="14sp" />
 
     </LinearLayout>
