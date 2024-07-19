@@ -7,14 +7,19 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import com.example.myapp.R
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class SplashActivity : AppCompatActivity() {
+    private val db: FirebaseFirestore = Firebase.firestore
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
@@ -53,7 +58,24 @@ class SplashActivity : AppCompatActivity() {
     private fun checkUserLoginStatus() {
         val user = FirebaseAuth.getInstance().currentUser
         if (user != null) {
-            goToMainActivity()
+            val uid = user.uid
+            val userDocRef = db.collection("Users").document(uid)
+            userDocRef.get()
+                .addOnSuccessListener { document ->
+                    if (document != null) {
+                        val role = document.getString("role")
+                        if (role == "Customer") {
+                            goToMainActivity()
+                        } else {
+                            goToAdminActivity()
+                        }
+                    } else {
+                        Toast.makeText(this, "document có vấn đề", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "lỗi", Toast.LENGTH_SHORT).show()
+                }
         } else {
             goToLoginActivity()
         }
@@ -67,6 +89,12 @@ class SplashActivity : AppCompatActivity() {
 
     private fun goToMainActivity() {
         intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    private fun goToAdminActivity() {
+        val intent = Intent(this, AdminActivity::class.java)
         startActivity(intent)
         finish()
     }

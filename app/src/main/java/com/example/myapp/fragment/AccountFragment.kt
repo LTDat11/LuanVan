@@ -65,7 +65,8 @@ class AccountFragment : Fragment() {
     }
 
     private fun backToHomeScreen(fragment: Fragment) {
-        val mainActivity = activity as MainActivity? ?: return
+        val mainActivity = activity as MainActivity
         mainActivity.replaceFragment(fragment)
+        mainActivity.binding.bottomNavigation.selectedItemId = R.id.nav_home
     }
 }

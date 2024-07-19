@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/white"
     tools:context=".activity.LoginActivity">
 
@@ -51,6 +52,7 @@
             android:textColorHint="@color/textColorAccent"
             android:textSize="14sp"
             tools:ignore="Autofill" />
+
 
         <TextView
             android:layout_width="match_parent"
