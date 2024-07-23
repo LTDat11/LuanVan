@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.myapp.R
 import com.example.myapp.model.ServiceCategory
-import com.example.myapp.prefs.SharedPrefsHelper
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -16,7 +15,6 @@ class HomeFragment : Fragment() {
     private var mView: View? = null
     private var tabCategory: TabLayout? = null
     private val serviceCategories = mutableListOf<ServiceCategory>()
-    private lateinit var sharedPrefsHelper: SharedPrefsHelper
 
     private val bannerImages = mutableListOf<String>() // List to store image URLs
     override fun onCreateView(
@@ -26,7 +24,6 @@ class HomeFragment : Fragment() {
 //        addServiceCategories()
         // Inflate the layout for this fragment
         mView = inflater.inflate(R.layout.fragment_home, container, false)
-        sharedPrefsHelper = SharedPrefsHelper(requireContext()) // Initialize SharedPrefsHelper
         initUi()
         getListCategory()
         return mView
@@ -60,10 +57,6 @@ class HomeFragment : Fragment() {
         for (category in serviceCategories) {
             tabCategory?.newTab()?.setText(category.name)?.let { tabCategory?.addTab(it) }
         }
-
-        // Restore selected tab
-        val selectedTabPosition = sharedPrefsHelper.getSavedTabPosition()
-        tabCategory?.getTabAt(selectedTabPosition)?.select()
 
         // Optional: Set a listener for tab selection
         tabCategory?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
