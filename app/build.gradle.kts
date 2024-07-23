@@ -59,6 +59,10 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     // Circle Imageview
     implementation ("de.hdodenhof:circleimageview:3.0.0")
+    //Indicator
+    implementation ("me.relex:circleindicator:2.1.6")
+    //event bus
+    implementation ("org.greenrobot:eventbus:3.3.1")
     //Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-analytics")

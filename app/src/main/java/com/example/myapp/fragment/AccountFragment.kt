@@ -65,9 +65,7 @@ class AccountFragment : Fragment() {
     }
 
     private fun backToHomeScreen(fragment: Fragment) {
-//      use selectedItemId with the id of the fragment to navigate to the fragment using the bottom navigation view in MainActivity class
-        val mainActivity = activity as MainActivity
-//        mainActivity.replaceFragment(fragment)
-        mainActivity.binding.bottomNavigation.selectedItemId = R.id.nav_home
+        val mainActivity = activity as MainActivity? ?: return
+        mainActivity.viewPager2?.currentItem = 0
     }
 }
