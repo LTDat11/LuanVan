@@ -1,20 +1,31 @@
 package com.example.myapp.fragment
 
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
+import com.example.myapp.adapter.PhotoBannerAdapter
+import com.example.myapp.model.PhotoBanner
 import com.example.myapp.model.ServiceCategory
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import me.relex.circleindicator.CircleIndicator3
 
 class HomeFragment : Fragment() {
     private var mView: View? = null
     private var tabCategory: TabLayout? = null
+    private var viewPager: ViewPager2? = null
+    private var indicator: CircleIndicator3? = null
     private val serviceCategories = mutableListOf<ServiceCategory>()
+    private val listPhotoBanners = mutableListOf<PhotoBanner>()
+    private lateinit var mHandlerBanner: Handler
+    private lateinit var mRunnableBanner: Runnable
 
     private val bannerImages = mutableListOf<String>() // List to store image URLs
     override fun onCreateView(
@@ -26,12 +37,14 @@ class HomeFragment : Fragment() {
         mView = inflater.inflate(R.layout.fragment_home, container, false)
         initUi()
         getListCategory()
+        getListPhotoBanners()
         return mView
     }
 
     private fun initUi() {
         tabCategory = mView?.findViewById(R.id.tab_category)
-
+        viewPager = mView?.findViewById(R.id.view_pager_banner)
+        indicator = mView?.findViewById(R.id.indicator)
     }
 
     private fun getListCategory() {
@@ -77,6 +90,44 @@ class HomeFragment : Fragment() {
     }
 
 
+    private fun getListPhotoBanners() {
+        val storageReference = FirebaseStorage.getInstance().reference.child("banner/")
+        storageReference.listAll()
+            .addOnSuccessListener { listResult ->
+                listPhotoBanners.clear()
+                for (fileRef in listResult.items) {
+                    fileRef.downloadUrl.addOnSuccessListener { uri ->
+                        listPhotoBanners.add(PhotoBanner(uri.toString()))
+                        if (listPhotoBanners.size == listResult.items.size) {
+                            displayListBanner()
+                        }
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("Storage", "Error getting banner images: ", exception)
+            }
+    }
+
+    private fun displayListBanner() {
+        val adapter = PhotoBannerAdapter(listPhotoBanners)
+        viewPager?.adapter = adapter
+        indicator?.setViewPager(viewPager)
+        viewPager?.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                mHandlerBanner.removeCallbacks(mRunnableBanner)
+                mHandlerBanner.postDelayed(mRunnableBanner, 3000)
+            }
+        })
+        mHandlerBanner = Handler()
+        mRunnableBanner = Runnable {
+            var currentItem = viewPager?.currentItem ?: 0
+            currentItem = (currentItem + 1) % listPhotoBanners.size
+            viewPager?.currentItem = currentItem
+        }
+        mHandlerBanner.postDelayed(mRunnableBanner, 3000)
+    }
 
 
 //    // Add service categories to Firestore
