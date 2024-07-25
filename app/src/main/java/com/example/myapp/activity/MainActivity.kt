@@ -13,7 +13,7 @@ import com.example.myapp.fragment.AccountFragment
 import com.example.myapp.fragment.HomeFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-class MainActivity : BaseActivity() {
+class MainActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityMainBinding
     private var mBottomNavigationView: BottomNavigationView? = null

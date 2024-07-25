@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import com.example.myapp.R
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
@@ -25,7 +26,7 @@ class ForgotPasswordActivity : BaseActivity() {
         initToolbar()
         initUi()
         initListener()
-
+        updateUIState()
     }
 
     private fun initToolbar() {
@@ -45,15 +46,26 @@ class ForgotPasswordActivity : BaseActivity() {
             override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable) {
-                val email = s.toString().trim()
-                val isEmailValid = email.isNotEmpty()
-
-                edtEmail?.setBackgroundResource(if (isEmailValid) R.drawable.bg_white_corner_16_border_main else R.drawable.bg_white_corner_16_border_gray)
-                isEnableButtonResetPassword = isEmailValid
-                btnResetPassword?.setBackgroundResource(if (isEnableButtonResetPassword) R.drawable.bg_button_enable_corner_16 else R.drawable.bg_button_disable_corner_16)
+                updateUIState()
             }
         })
         btnResetPassword?.setOnClickListener { onClickValidateResetPassword() }
+    }
+
+    private fun updateUIState() {
+        val email = edtEmail?.text.toString().trim()
+        val isEmailValid = email.isNotEmpty()
+
+        edtEmail?.setBackgroundResource(if (isEmailValid) R.drawable.bg_white_corner_16_border_main else R.drawable.bg_white_corner_16_border_gray)
+        isEnableButtonResetPassword = isEmailValid
+//                btnResetPassword?.setBackgroundResource(if (isEnableButtonResetPassword) R.drawable.bg_button_enable_corner_16 else R.drawable.bg_button_disable_corner_16)
+        btnResetPassword?.apply {
+            background = ContextCompat.getDrawable(
+                context,
+                if (isEnableButtonResetPassword) R.drawable.bg_button_enable_corner_16 else R.drawable.bg_button_disable_corner_16
+            )
+            isEnabled = isEnableButtonResetPassword
+        }
     }
 
     private fun onClickValidateResetPassword() {

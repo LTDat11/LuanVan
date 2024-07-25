@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import com.example.myapp.R
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
@@ -17,7 +18,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
-class LoginActivity : BaseActivity() {
+class LoginActivity : BaseActivity()  {
 
     private var edtEmail: EditText? = null
     private var edtPassword: EditText? = null
@@ -34,7 +35,7 @@ class LoginActivity : BaseActivity() {
 
         initUi()
         initListener()
-
+        updateUIState()
     }
 
     private fun initUi() {
@@ -80,8 +81,15 @@ class LoginActivity : BaseActivity() {
         edtPassword?.setBackgroundResource(if (isPasswordValid) R.drawable.bg_white_corner_16_border_main else R.drawable.bg_white_corner_16_border_gray)
 
         isEnableButtonLogin = isEmailValid && isPasswordValid
-        btnLogin?.setBackgroundResource(if (isEnableButtonLogin) R.drawable.bg_button_enable_corner_16 else R.drawable.bg_button_disable_corner_16)
-
+//        btnLogin?.setBackgroundResource(if (isEnableButtonLogin) R.drawable.bg_button_enable_corner_16 else R.drawable.bg_button_disable_corner_16)
+        // Cập nhật nút MaterialButton
+        btnLogin?.apply {
+            background = ContextCompat.getDrawable(
+                context,
+                if (isEnableButtonLogin) R.drawable.bg_button_enable_corner_16 else R.drawable.bg_button_disable_corner_16
+            )
+            isEnabled = isEnableButtonLogin
+        }
     }
 
     private fun onClickValidateLogin() {

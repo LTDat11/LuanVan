@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import androidx.core.content.ContextCompat
 import com.example.myapp.R
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
@@ -33,7 +34,7 @@ class RegisterActivity : BaseActivity() {
 
         initUi()
         initListener()
-
+        updateUIState()
     }
 
     private fun initUi() {
@@ -73,8 +74,15 @@ class RegisterActivity : BaseActivity() {
         edtPassword?.setBackgroundResource(if (isPasswordValid) R.drawable.bg_white_corner_16_border_main else R.drawable.bg_white_corner_16_border_gray)
 
         isEnableButtonRegister = isEmailValid && isPasswordValid
-        btnRegister?.setBackgroundResource(if (isEnableButtonRegister) R.drawable.bg_button_enable_corner_16 else R.drawable.bg_button_disable_corner_16)
-//        btnRegister?.visibility = if (isEnableButtonRegister) View.VISIBLE else View.INVISIBLE
+//        btnRegister?.setBackgroundResource(if (isEnableButtonRegister) R.drawable.bg_button_enable_corner_16 else R.drawable.bg_button_disable_corner_16)
+        // Cập nhật nút MaterialButton
+        btnRegister?.apply {
+            background = ContextCompat.getDrawable(
+                context,
+                if (isEnableButtonRegister) R.drawable.bg_button_enable_corner_16 else R.drawable.bg_button_disable_corner_16
+            )
+            isEnabled = isEnableButtonRegister
+        }
     }
 
     private fun onClickValidateRegister() {
