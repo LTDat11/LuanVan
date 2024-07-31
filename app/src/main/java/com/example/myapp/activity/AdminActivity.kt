@@ -44,6 +44,10 @@ class AdminActivity : AppCompatActivity() {
                     }
                     R.id.nav_list -> {
                         viewPager2?.currentItem = 1
+                        // Delete bade when click on Orders
+                        val badge = mBottomNavigationView?.getBadge(R.id.nav_list)
+                        badge?.isVisible = false
+                        true
                     }
                     R.id.nav_more -> {
                         viewPager2?.currentItem = 2
@@ -59,8 +63,8 @@ class AdminActivity : AppCompatActivity() {
             }
         }
 
-        // Thêm BadgeDrawable cho mục đơn hàng
-        addBadgeToOrders(5) // Ví dụ với 5 đơn hàng mới
+        // Add badge to Orders
+        addBadgeToOrders(5) // example
 
     }
 

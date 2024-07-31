@@ -8,6 +8,7 @@
         android:id="@+id/banner_image"
         android:layout_width="match_parent"
         android:layout_height="150dp"
+        android:background="@drawable/bg_white_corner_16"
         android:scaleType="centerCrop" />
 
 </LinearLayout>
