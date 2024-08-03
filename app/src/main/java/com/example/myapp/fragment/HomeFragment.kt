@@ -10,9 +10,12 @@ import android.view.ViewGroup
 import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
 import com.example.myapp.adapter.PhotoBannerAdapter
+import com.example.myapp.adapter.ServicePackagePagerAdapter
 import com.example.myapp.model.PhotoBanner
 import com.example.myapp.model.ServiceCategory
+import com.example.myapp.model.ServicePackage
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import me.relex.circleindicator.CircleIndicator3
@@ -21,6 +24,7 @@ class HomeFragment : Fragment() {
     private var mView: View? = null
     private var tabCategory: TabLayout? = null
     private var viewPager: ViewPager2? = null
+    private var viewPagerCategory: ViewPager2? = null
     private var indicator: CircleIndicator3? = null
     private val serviceCategories = mutableListOf<ServiceCategory>()
     private val listPhotoBanners = mutableListOf<PhotoBanner>()
@@ -28,22 +32,25 @@ class HomeFragment : Fragment() {
     private lateinit var mRunnableBanner: Runnable
 
     private val bannerImages = mutableListOf<String>() // List to store image URLs
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-//        addServiceCategories()
+//        addServiceCategoriesAndPackages()
         // Inflate the layout for this fragment
         mView = inflater.inflate(R.layout.fragment_home, container, false)
         initUi()
         getListCategory()
         getListPhotoBanners()
+
         return mView
     }
 
     private fun initUi() {
         tabCategory = mView?.findViewById(R.id.tab_category)
         viewPager = mView?.findViewById(R.id.view_pager_banner)
+        viewPagerCategory = mView?.findViewById(R.id.view_pager_category)
         indicator = mView?.findViewById(R.id.indicator)
     }
 
@@ -53,42 +60,52 @@ class HomeFragment : Fragment() {
             .get()
             .addOnSuccessListener { documents ->
                 serviceCategories.clear()
+                val servicePackagesList = mutableListOf<List<ServicePackage>>()
                 for (document in documents) {
                     val category = document.toObject(ServiceCategory::class.java)
                     serviceCategories.add(category)
+                    getServicePackagesForCategory(document.id) { packages ->
+                        servicePackagesList.add(packages)
+                        if (servicePackagesList.size == serviceCategories.size) {
+                            displayTabsCategory(servicePackagesList)
+                        }
+                    }
                 }
-                displayTabsCategory()
             }
             .addOnFailureListener { exception ->
                 Log.w("Firestore", "Error getting documents: ", exception)
             }
     }
 
-    private fun displayTabsCategory() {
+    private fun getServicePackagesForCategory(categoryId: String, callback: (List<ServicePackage>) -> Unit) {
+        val firestore = FirebaseFirestore.getInstance()
+        firestore.collection("service_categories")
+            .document(categoryId)
+            .collection("service_packages")
+            .get()
+            .addOnSuccessListener { documents ->
+                val servicePackages = documents.map { it.toObject(ServicePackage::class.java) }
+                callback(servicePackages)
+            }
+            .addOnFailureListener { exception ->
+                Log.w("Firestore", "Error getting service packages: ", exception)
+            }
+    }
+
+    private fun displayTabsCategory(servicePackagesList: List<List<ServicePackage>>) {
         tabCategory?.removeAllTabs() // Clear any existing tabs
 
         for (category in serviceCategories) {
             tabCategory?.newTab()?.setText(category.name)?.let { tabCategory?.addTab(it) }
         }
 
-        // Optional: Set a listener for tab selection
-        tabCategory?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                // Handle tab selection
-                val position = tab?.position ?: 0
-                Log.d("Tab Selected", "Selected tab position: $position")
-            }
+        val adapter = ServicePackagePagerAdapter(requireActivity(), servicePackagesList)
+        viewPagerCategory?.adapter = adapter
 
-            override fun onTabUnselected(tab: TabLayout.Tab?) {
-                // Handle tab unselection
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-                // Handle tab reselection
-            }
-        })
+        TabLayoutMediator(tabCategory!!, viewPagerCategory!!) { tab, position ->
+            tab.text = serviceCategories[position].name
+        }.attach()
     }
-
 
     private fun getListPhotoBanners() {
         val storageReference = FirebaseStorage.getInstance().reference.child("banner/")
@@ -129,10 +146,9 @@ class HomeFragment : Fragment() {
         mHandlerBanner.postDelayed(mRunnableBanner, 3000)
     }
 
+      // Add name of service categories and their packages to Firestore
 
-//    // Add service categories to Firestore
-
-//    fun addServiceCategories() {
+//    fun addServiceCategoriesAndPackages() {
 //        val categories = listOf(
 //            ServiceCategory(
 //                name = "Điện gia dụng",
@@ -164,13 +180,62 @@ class HomeFragment : Fragment() {
 //        val firestore = FirebaseFirestore.getInstance()
 //        for (category in categories) {
 //            firestore.collection("service_categories")
-//                .add(category)
+//                .document(category.name)
+//                .set(category)
 //                .addOnSuccessListener { documentReference ->
-//                    Log.d("Firestore", "DocumentSnapshot written with ID: ${documentReference.id}")
+//                    Log.d("Firestore", "DocumentSnapshot written with ID: ${category.name}")
+//                    val servicePackages = generateServicePackages(category.name)
+//                    for (servicePackage in servicePackages) {
+//                        firestore.collection("service_categories")
+//                            .document(category.name)
+//                            .collection("service_packages")
+//                            .add(servicePackage)
+//                            .addOnSuccessListener {
+//                                Log.d("Firestore", "ServicePackage added with ID: ${it.id}")
+//                            }
+//                            .addOnFailureListener { e ->
+//                                Log.w("Firestore", "Error adding service package", e)
+//                            }
+//                    }
 //                }
 //                .addOnFailureListener { e ->
 //                    Log.w("Firestore", "Error adding document", e)
 //                }
 //        }
+//    }
+//
+//    fun generateServicePackages(categoryId: String): List<ServicePackage> {
+//        return listOf(
+//            ServicePackage(
+//                name = "Gói sửa chữa ${categoryId} 1",
+//                imageUrl = "url_to_image",
+//                price = "500,000 VND",
+//                description = "Mô tả cho gói dịch vụ 1 của $categoryId."
+//            ),
+//            ServicePackage(
+//                name = "Gói sửa chữa ${categoryId} 2",
+//                imageUrl = "url_to_image",
+//                price = "700,000 VND",
+//                description = "Mô tả cho gói dịch vụ 2 của $categoryId."
+//            ),
+//            ServicePackage(
+//                name = "Gói sửa chữa ${categoryId} 3",
+//                imageUrl = "url_to_image",
+//                price = "600,000 VND",
+//                description = "Mô tả cho gói dịch vụ 3 của $categoryId."
+//            ),
+//            ServicePackage(
+//                name = "Gói sửa chữa ${categoryId} 4",
+//                imageUrl = "url_to_image",
+//                price = "800,000 VND",
+//                description = "Mô tả cho gói dịch vụ 4 của $categoryId."
+//            ),
+//            ServicePackage(
+//                name = "Gói sửa chữa ${categoryId} 5",
+//                imageUrl = "url_to_image",
+//                price = "900,000 VND",
+//                description = "Mô tả cho gói dịch vụ 5 của $categoryId."
+//            )
+//        )
 //    }
 }
