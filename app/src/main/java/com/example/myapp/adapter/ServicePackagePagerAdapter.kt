@@ -10,7 +10,7 @@ import com.example.myapp.model.ServicePackage
 // tablayout and viewpager2 adapter
 class ServicePackagePagerAdapter(
     fragmentActivity: FragmentActivity,
-    private val servicePackagesList: List<List<ServicePackage>>
+    private var servicePackagesList: List<List<ServicePackage>>
 ) : FragmentStateAdapter(fragmentActivity) {
 
     override fun getItemCount(): Int = servicePackagesList.size

@@ -2,11 +2,14 @@ package com.example.myapp.fragment
 
 import android.os.Bundle
 import android.os.Handler
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
 import com.example.myapp.adapter.PhotoBannerAdapter
@@ -19,6 +22,8 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import me.relex.circleindicator.CircleIndicator3
+import androidx.appcompat.widget.SearchView
+
 
 class HomeFragment : Fragment() {
     private var mView: View? = null
@@ -28,6 +33,7 @@ class HomeFragment : Fragment() {
     private var indicator: CircleIndicator3? = null
     private val serviceCategories = mutableListOf<ServiceCategory>()
     private val listPhotoBanners = mutableListOf<PhotoBanner>()
+    private val servicePackagesList = mutableListOf<List<ServicePackage>>()
     private lateinit var mHandlerBanner: Handler
     private lateinit var mRunnableBanner: Runnable
 
@@ -43,7 +49,7 @@ class HomeFragment : Fragment() {
         initUi()
         getListCategory()
         getListPhotoBanners()
-
+        setupSearchView()
         return mView
     }
 
@@ -60,7 +66,8 @@ class HomeFragment : Fragment() {
             .get()
             .addOnSuccessListener { documents ->
                 serviceCategories.clear()
-                val servicePackagesList = mutableListOf<List<ServicePackage>>()
+                servicePackagesList.clear()
+//                val servicePackagesList = mutableListOf<List<ServicePackage>>()
                 for (document in documents) {
                     val category = document.toObject(ServiceCategory::class.java)
                     serviceCategories.add(category)
@@ -144,6 +151,65 @@ class HomeFragment : Fragment() {
             viewPager?.currentItem = currentItem
         }
         mHandlerBanner.postDelayed(mRunnableBanner, 3000)
+    }
+
+    private fun filterServicePackages(query: String) {
+        val filteredPackagesList = servicePackagesList.map { servicePackages ->
+            servicePackages.filter { it.name.contains(query, ignoreCase = true) }
+        }
+
+        // Cập nhật adapter của viewPagerCategory với danh sách đã lọc
+        val adapter = ServicePackagePagerAdapter(requireActivity(), filteredPackagesList)
+        viewPagerCategory?.adapter = adapter
+
+        // Thiết lập lại TabLayoutMediator để đồng bộ TabLayout và ViewPager2
+        TabLayoutMediator(tabCategory!!, viewPagerCategory!!) { tab, position ->
+            tab.text = serviceCategories[position].name
+        }.attach()
+    }
+
+    private fun setupSearchView() {
+        val searchView: SearchView = mView?.findViewById(R.id.search_view) ?: return
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                // Xử lý khi người dùng nhấn enter hoặc nút tìm kiếm trên bàn phím
+//                query?.let { filterPackages(it) }
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                // Xử lý khi người dùng thay đổi nội dung của SearchView
+                filterPackages(newText)
+                return true
+            }
+        })
+    }
+
+    private fun filterPackages(query: String) {
+        val filteredPackagesList = servicePackagesList.map { packages ->
+            packages.filter { servicePackage ->
+                servicePackage.name.contains(query, ignoreCase = true) ||
+                        servicePackage.price.contains(query, ignoreCase = true)
+            }
+        }
+
+        val filteredList = mutableListOf<List<ServicePackage>>()
+        // Lọc gói dịch vụ trong mỗi tab
+        for (packages in servicePackagesList) {
+            val filteredPackages = packages.filter {
+                it.name.contains(query, ignoreCase = true) ||
+                        it.price.contains(query, ignoreCase = true)
+            }
+            filteredList.add(filteredPackages)
+        }
+
+        // Cập nhật adapter cho ViewPager2
+        val adapter = ServicePackagePagerAdapter(requireActivity(), filteredList)
+        viewPagerCategory?.adapter = adapter
+
+        TabLayoutMediator(tabCategory!!, viewPagerCategory!!) { tab, position ->
+            tab.text = serviceCategories[position].name
+        }.attach()
     }
 
       // Add name of service categories and their packages to Firestore
@@ -238,4 +304,113 @@ class HomeFragment : Fragment() {
 //            )
 //        )
 //    }
+
+        //    fun addServiceCategoriesAndPackages updated
+
+//    fun addServiceCategoriesAndPackages() {
+//        val categories = listOf(
+//            ServiceCategory(
+//                name = "Điện gia dụng",
+//                description = "Dịch vụ sửa chữa và bảo trì các thiết bị điện gia dụng như tủ lạnh, máy giặt, lò vi sóng, vv.",
+//                price_range = "500,000 - 2,000,000 VND"
+//            ),
+//            ServiceCategory(
+//                name = "Sửa ống nước",
+//                description = "Dịch vụ sửa chữa và bảo trì hệ thống ống nước trong gia đình.",
+//                price_range = "300,000 - 1,500,000 VND"
+//            ),
+//            ServiceCategory(
+//                name = "Bảo trì điều hòa",
+//                description = "Dịch vụ bảo trì và sửa chữa hệ thống điều hòa không khí.",
+//                price_range = "400,000 - 2,500,000 VND"
+//            ),
+//            ServiceCategory(
+//                name = "Sửa chữa điện tử",
+//                description = "Dịch vụ sửa chữa các thiết bị điện tử như TV, máy tính, điện thoại di động.",
+//                price_range = "200,000 - 3,000,000 VND"
+//            ),
+//            ServiceCategory(
+//                name = "Làm sạch và bảo trì",
+//                description = "Dịch vụ làm sạch và bảo trì các thiết bị và không gian trong gia đình.",
+//                price_range = "100,000 - 1,000,000 VND"
+//            )
+//        )
+//
+//        val firestore = FirebaseFirestore.getInstance()
+//        for (category in categories) {
+//            val categoryId = firestore.collection("service_categories").document().id
+//            val categoryWithId = category.copy(id = categoryId)
+//
+//            firestore.collection("service_categories")
+//                .document(categoryId)
+//                .set(categoryWithId)
+//                .addOnSuccessListener {
+//                    Log.d("Firestore", "DocumentSnapshot written with ID: $categoryId")
+//                    val servicePackages = generateServicePackages(categoryId)
+//                    for (servicePackage in servicePackages) {
+//                        val packageId = firestore.collection("service_categories")
+//                            .document(categoryId)
+//                            .collection("service_packages")
+//                            .document().id
+//                        val servicePackageWithId = servicePackage.copy(id = packageId)
+//
+//                        firestore.collection("service_categories")
+//                            .document(categoryId)
+//                            .collection("service_packages")
+//                            .document(packageId)
+//                            .set(servicePackageWithId)
+//                            .addOnSuccessListener {
+//                                Log.d("Firestore", "ServicePackage added with ID: $packageId")
+//                            }
+//                            .addOnFailureListener { e ->
+//                                Log.w("Firestore", "Error adding service package", e)
+//                            }
+//                    }
+//                }
+//                .addOnFailureListener { e ->
+//                    Log.w("Firestore", "Error adding document", e)
+//                }
+//        }
+//    }
+//
+//    fun generateServicePackages(categoryId: String): List<ServicePackage> {
+//        return listOf(
+//            ServicePackage(
+//                categoryId = categoryId,
+//                name = "Gói sửa chữa $categoryId 1",
+//                imageUrl = "url_to_image",
+//                price = "500,000 VND",
+//                description = "Mô tả cho gói dịch vụ 1 của $categoryId."
+//            ),
+//            ServicePackage(
+//                categoryId = categoryId,
+//                name = "Gói sửa chữa $categoryId 2",
+//                imageUrl = "url_to_image",
+//                price = "700,000 VND",
+//                description = "Mô tả cho gói dịch vụ 2 của $categoryId."
+//            ),
+//            ServicePackage(
+//                categoryId = categoryId,
+//                name = "Gói sửa chữa $categoryId 3",
+//                imageUrl = "url_to_image",
+//                price = "600,000 VND",
+//                description = "Mô tả cho gói dịch vụ 3 của $categoryId."
+//            ),
+//            ServicePackage(
+//                categoryId = categoryId,
+//                name = "Gói sửa chữa $categoryId 4",
+//                imageUrl = "url_to_image",
+//                price = "800,000 VND",
+//                description = "Mô tả cho gói dịch vụ 4 của $categoryId."
+//            ),
+//            ServicePackage(
+//                categoryId = categoryId,
+//                name = "Gói sửa chữa $categoryId 5",
+//                imageUrl = "url_to_image",
+//                price = "900,000 VND",
+//                description = "Mô tả cho gói dịch vụ 5 của $categoryId."
+//            )
+//        )
+//    }
+
 }
