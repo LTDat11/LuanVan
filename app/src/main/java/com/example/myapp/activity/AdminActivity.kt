@@ -1,14 +1,18 @@
 package com.example.myapp.activity
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
 import com.example.myapp.adapter.MyViewPagerAdminAdapter
 import com.example.myapp.databinding.ActivityAdminBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 
 class AdminActivity : AppCompatActivity() {
     lateinit var binding: ActivityAdminBinding
@@ -31,7 +35,7 @@ class AdminActivity : AppCompatActivity() {
                     when (position) {
                         0 -> mBottomNavigationView?.menu?.findItem(R.id.nav_home)?.isChecked = true
                         1 -> mBottomNavigationView?.menu?.findItem(R.id.nav_list)?.isChecked = true
-                        2 -> mBottomNavigationView?.menu?.findItem(R.id.nav_more)?.isChecked = true
+//                        2 -> mBottomNavigationView?.menu?.findItem(R.id.nav_more)?.isChecked = true
                         3 -> mBottomNavigationView?.menu?.findItem(R.id.nav_gif)?.isChecked = true
                         4 -> mBottomNavigationView?.menu?.findItem(R.id.nav_account)?.isChecked = true
                     }
@@ -50,7 +54,8 @@ class AdminActivity : AppCompatActivity() {
                         true
                     }
                     R.id.nav_more -> {
-                        viewPager2?.currentItem = 2
+//                        viewPager2?.currentItem = 2
+                        showBottomSheetDialog()
                     }
                     R.id.nav_gif -> {
                         viewPager2?.currentItem = 3
@@ -67,6 +72,48 @@ class AdminActivity : AppCompatActivity() {
         addBadgeToOrders(5) // example
 
     }
+
+    private fun showBottomSheetDialog() {
+        val bottomSheetDialog = BottomSheetDialog(this, R.style.BottomSheetDialogTheme)
+        val bottomSheetView = layoutInflater.inflate(R.layout.bottom_sheet_dialog, null)
+        bottomSheetDialog.setContentView(bottomSheetView)
+
+        bottomSheetView.findViewById<TextView>(R.id.option_one).setOnClickListener {
+//            val intent = Intent(this, OptionOneActivity::class.java)
+//            startActivity(intent)
+//            bottomSheetDialog.dismiss()
+            Toast.makeText(this, "Option One", Toast.LENGTH_SHORT).show()
+        }
+
+        bottomSheetView.findViewById<TextView>(R.id.option_two).setOnClickListener {
+//            val intent = Intent(this, OptionTwoActivity::class.java)
+//            startActivity(intent)
+//            bottomSheetDialog.dismiss()
+            Toast.makeText(this, "Option Two", Toast.LENGTH_SHORT).show()
+        }
+
+        bottomSheetView.findViewById<TextView>(R.id.option_three).setOnClickListener {
+//            val intent = Intent(this, OptionThreeActivity::class.java)
+//            startActivity(intent)
+//            bottomSheetDialog.dismiss()
+            Toast.makeText(this, "Option Three", Toast.LENGTH_SHORT).show()
+        }
+
+        bottomSheetDialog.setOnDismissListener {
+            // Chuyển menu về trang home
+            mBottomNavigationView?.menu?.findItem(R.id.nav_home)?.isChecked = true
+            viewPager2?.currentItem = 0
+        }
+
+        bottomSheetDialog.setOnDismissListener {
+            // Chuyển menu về trang home
+            mBottomNavigationView?.menu?.findItem(R.id.nav_home)?.isChecked = true
+            viewPager2?.currentItem = 0
+        }
+
+        bottomSheetDialog.show()
+    }
+
 
     private fun addBadgeToOrders(orderCount: Int) {
         mBottomNavigationView?.let {

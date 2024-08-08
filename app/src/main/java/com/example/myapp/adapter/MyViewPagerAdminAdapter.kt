@@ -18,7 +18,7 @@ class MyViewPagerAdminAdapter (fragmentActivity: FragmentActivity) : FragmentSta
     override fun createFragment(position: Int): Fragment {
         return when (position) {
             1 -> OrderFragment()
-            2 -> MoreOptionsFragment()
+//            2 -> MoreOptionsFragment()
             3 -> VoucherFragment()
             4 -> AccountAdminFragment()
             else -> HomeAdminFragment()
