@@ -61,8 +61,8 @@ dependencies {
     implementation ("de.hdodenhof:circleimageview:3.0.0")
     //Indicator
     implementation ("me.relex:circleindicator:2.1.6")
-    //event bus
-    implementation ("org.greenrobot:eventbus:3.3.1")
+    // Gson
+    implementation ("com.google.code.gson:gson:2.9.0")
     //Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-analytics")

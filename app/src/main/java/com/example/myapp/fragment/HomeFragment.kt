@@ -153,21 +153,6 @@ class HomeFragment : Fragment() {
         mHandlerBanner.postDelayed(mRunnableBanner, 3000)
     }
 
-    private fun filterServicePackages(query: String) {
-        val filteredPackagesList = servicePackagesList.map { servicePackages ->
-            servicePackages.filter { it.name.contains(query, ignoreCase = true) }
-        }
-
-        // Cập nhật adapter của viewPagerCategory với danh sách đã lọc
-        val adapter = ServicePackagePagerAdapter(requireActivity(), filteredPackagesList)
-        viewPagerCategory?.adapter = adapter
-
-        // Thiết lập lại TabLayoutMediator để đồng bộ TabLayout và ViewPager2
-        TabLayoutMediator(tabCategory!!, viewPagerCategory!!) { tab, position ->
-            tab.text = serviceCategories[position].name
-        }.attach()
-    }
-
     private fun setupSearchView() {
         val searchView: SearchView = mView?.findViewById(R.id.search_view) ?: return
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -186,19 +171,20 @@ class HomeFragment : Fragment() {
     }
 
     private fun filterPackages(query: String) {
-        val filteredPackagesList = servicePackagesList.map { packages ->
-            packages.filter { servicePackage ->
-                servicePackage.name.contains(query, ignoreCase = true) ||
-                        servicePackage.price.contains(query, ignoreCase = true)
-            }
-        }
+
+//        val filteredPackagesList = servicePackagesList.map { packages ->
+//            packages.filter { servicePackage ->
+//                servicePackage.name.contains(query, ignoreCase = true) ||
+//                        servicePackage.price.contains(query, ignoreCase = true)
+//            }
+//        }
 
         val filteredList = mutableListOf<List<ServicePackage>>()
         // Lọc gói dịch vụ trong mỗi tab
         for (packages in servicePackagesList) {
             val filteredPackages = packages.filter {
-                it.name.contains(query, ignoreCase = true) ||
-                        it.price.contains(query, ignoreCase = true)
+                it.name.toLowerCase().contains(query.toLowerCase()) ||
+                        it.price.toLowerCase().contains(query.toLowerCase())
             }
             filteredList.add(filteredPackages)
         }
