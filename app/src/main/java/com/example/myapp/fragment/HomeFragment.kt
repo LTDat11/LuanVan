@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.TextView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
 import com.example.myapp.adapter.PhotoBannerAdapter
@@ -23,6 +24,11 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import me.relex.circleindicator.CircleIndicator3
 import androidx.appcompat.widget.SearchView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 
 class HomeFragment : Fragment() {
@@ -37,7 +43,14 @@ class HomeFragment : Fragment() {
     private lateinit var mHandlerBanner: Handler
     private lateinit var mRunnableBanner: Runnable
 
-    private val bannerImages = mutableListOf<String>() // List to store image URLs
+    //carts
+    private lateinit var layoutCart: View
+    private lateinit var tvCountItem: TextView
+    private lateinit var tvPackageName: TextView
+    private lateinit var tvAmount: TextView
+
+    private var cartListener: ValueEventListener? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,18 +59,69 @@ class HomeFragment : Fragment() {
 //        addServiceCategoriesAndPackages()
         // Inflate the layout for this fragment
         mView = inflater.inflate(R.layout.fragment_home, container, false)
-        initUi()
-        getListCategory()
-        getListPhotoBanners()
-        setupSearchView()
+        initUi()  // Initialize UI components
+        getListCategory()   // Get list of service categories
+        getListPhotoBanners() // Get list of photo banners
+        setupSearchView()   // Search for service packages
+        setupCartListener() // Check and display cart layout
         return mView
     }
+
+    private fun setupCartListener() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val uid = currentUser?.uid
+
+        uid?.let {
+            val database = FirebaseDatabase.getInstance().reference
+            val userCartRef = database.child("carts").child(it)
+
+            cartListener = object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        layoutCart.visibility = View.VISIBLE
+                        val itemCount = snapshot.childrenCount
+                        tvCountItem.text = "Số lượng: $itemCount"
+                        // Optionally: Fetch and update more detailed information if needed
+                    } else {
+                        layoutCart.visibility = View.GONE
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // Handle potential errors
+                }
+            }
+
+            userCartRef.addValueEventListener(cartListener!!)
+        } ?: run {
+            layoutCart.visibility = View.GONE
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Remove the cart listener to avoid memory leaks
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val uid = currentUser?.uid
+
+        uid?.let {
+            val database = FirebaseDatabase.getInstance().reference
+            val userCartRef = database.child("carts").child(it)
+            cartListener?.let { listener -> userCartRef.removeEventListener(listener) }
+        }
+    }
+
 
     private fun initUi() {
         tabCategory = mView?.findViewById(R.id.tab_category)
         viewPager = mView?.findViewById(R.id.view_pager_banner)
         viewPagerCategory = mView?.findViewById(R.id.view_pager_category)
         indicator = mView?.findViewById(R.id.indicator)
+
+        layoutCart = mView?.findViewById(R.id.layout_cart) ?: return
+        tvCountItem = mView?.findViewById(R.id.tv_count_item) ?: return
+        tvPackageName = mView?.findViewById(R.id.tv_package_name) ?: return
+        tvAmount = mView?.findViewById(R.id.tv_amount) ?: return
     }
 
     private fun getListCategory() {

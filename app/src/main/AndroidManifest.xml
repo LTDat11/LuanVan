@@ -21,6 +21,9 @@
         android:theme="@style/Theme.MyApp"
         tools:targetApi="31">
         <activity
+            android:name=".activity.PackageDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".activity.AdminActivity"
             android:exported="false" />
         <activity

@@ -9,8 +9,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapp.R
-import com.example.myapp.interfaces.OnServicePackageClickListener
 import com.example.myapp.model.ServicePackage
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.google.gson.Gson
 
 // recyclerview adapter for service packages
 class ServicePackageAdapter(private val packages: List<ServicePackage>) : RecyclerView.Adapter<ServicePackageAdapter.PackageViewHolder>() {
@@ -47,13 +49,25 @@ class ServicePackageAdapter(private val packages: List<ServicePackage>) : Recycl
             
 
             itemView.setOnClickListener {
+                savePackageToFirebase(servicePackage)
                 Toast.makeText(itemView.context, "Package ID: ${id}", Toast.LENGTH_SHORT).show()
             }
 
             optionsButton.setOnClickListener {
                 Toast.makeText(itemView.context, "Options for package ID: ${id}", Toast.LENGTH_SHORT).show()
             }
+        }
+        // Function to save the selected package to Firebase Realtime Database
+        private fun savePackageToFirebase(servicePackage: ServicePackage) {
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            val uid = currentUser?.uid
 
+            uid?.let {
+                val database = FirebaseDatabase.getInstance().reference
+                val userCartRef = database.child("carts").child(it)
+                // Save the package under the user's UID
+                userCartRef.child(servicePackage.id).setValue(servicePackage)
+            }
         }
     }
 }
