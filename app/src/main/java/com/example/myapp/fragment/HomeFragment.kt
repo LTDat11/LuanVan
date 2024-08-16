@@ -70,7 +70,7 @@ class HomeFragment : Fragment() {
     private fun setupCartListener() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         val uid = currentUser?.uid
-
+        tvAmount.text = "Giỏ hàng của bạn"
         uid?.let {
             val database = FirebaseDatabase.getInstance().reference
             val userCartRef = database.child("carts").child(it)
@@ -81,7 +81,20 @@ class HomeFragment : Fragment() {
                         layoutCart.visibility = View.VISIBLE
                         val itemCount = snapshot.childrenCount
                         tvCountItem.text = "Số lượng: $itemCount"
-                        // Optionally: Fetch and update more detailed information if needed
+
+                        // Tạo một danh sách để chứa tên của các package
+                        val packageNames = mutableListOf<String>()
+
+                        // Lặp qua các phần tử trong snapshot và lấy tên của các package
+                        for (packageSnapshot in snapshot.children) {
+                            val packageName = packageSnapshot.child("name").getValue(String::class.java)
+                            packageName?.let { packageNames.add(it) }
+                        }
+
+                        // Kết hợp các tên thành một chuỗi và hiển thị trên tvPackageName
+                        tvPackageName.text = packageNames.joinToString(", ")
+
+
                     } else {
                         layoutCart.visibility = View.GONE
                     }
@@ -97,6 +110,7 @@ class HomeFragment : Fragment() {
             layoutCart.visibility = View.GONE
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -122,29 +136,41 @@ class HomeFragment : Fragment() {
         tvCountItem = mView?.findViewById(R.id.tv_count_item) ?: return
         tvPackageName = mView?.findViewById(R.id.tv_package_name) ?: return
         tvAmount = mView?.findViewById(R.id.tv_amount) ?: return
+
+        layoutCart.setOnClickListener {
+            // Navigate to the cart screen
+
+        }
     }
 
     private fun getListCategory() {
         val firestore = FirebaseFirestore.getInstance()
         firestore.collection("service_categories")
-            .get()
-            .addOnSuccessListener { documents ->
-                serviceCategories.clear()
-                servicePackagesList.clear()
-//                val servicePackagesList = mutableListOf<List<ServicePackage>>()
-                for (document in documents) {
-                    val category = document.toObject(ServiceCategory::class.java)
-                    serviceCategories.add(category)
-                    getServicePackagesForCategory(document.id) { packages ->
-                        servicePackagesList.add(packages)
-                        if (servicePackagesList.size == serviceCategories.size) {
-                            displayTabsCategory(servicePackagesList)
+            .addSnapshotListener { snapshot, error -> //Use SnapshotListener to listen for changes in the Firestore database
+                if (error != null) {
+                    Log.w("Firestore", "Listen failed.", error)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && !snapshot.isEmpty) {
+                    serviceCategories.clear()
+                    servicePackagesList.clear()
+
+                    for (document in snapshot.documents) {
+                        val category = document.toObject(ServiceCategory::class.java)
+                        if (category != null) {
+                            serviceCategories.add(category)
+                            getServicePackagesForCategory(document.id) { packages ->
+                                servicePackagesList.add(packages)
+                                if (servicePackagesList.size == serviceCategories.size) {
+                                    displayTabsCategory(servicePackagesList)
+                                }
+                            }
                         }
                     }
+                } else {
+                    Log.d("Firestore", "No categories found")
                 }
-            }
-            .addOnFailureListener { exception ->
-                Log.w("Firestore", "Error getting documents: ", exception)
             }
     }
 
@@ -153,15 +179,22 @@ class HomeFragment : Fragment() {
         firestore.collection("service_categories")
             .document(categoryId)
             .collection("service_packages")
-            .get()
-            .addOnSuccessListener { documents ->
-                val servicePackages = documents.map { it.toObject(ServicePackage::class.java) }
-                callback(servicePackages)
-            }
-            .addOnFailureListener { exception ->
-                Log.w("Firestore", "Error getting service packages: ", exception)
+            .addSnapshotListener { snapshot, error ->  //Use SnapshotListener to listen for changes in the Firestore database
+                if (error != null) {
+                    Log.w("Firestore", "Listen failed.", error)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && !snapshot.isEmpty) {
+                    val servicePackages = snapshot.documents.map { it.toObject(ServicePackage::class.java)!! }
+                    callback(servicePackages)
+                } else {
+                    Log.d("Firestore", "No service packages found")
+                    callback(emptyList())
+                }
             }
     }
+
 
     private fun displayTabsCategory(servicePackagesList: List<List<ServicePackage>>) {
         tabCategory?.removeAllTabs() // Clear any existing tabs
