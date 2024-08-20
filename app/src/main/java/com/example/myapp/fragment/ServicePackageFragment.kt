@@ -56,8 +56,9 @@ class ServicePackageFragment : Fragment() {
         // Create a list of filter items, customize based on your filtering criteria
         return listOf(
             FilterItem("Tất cả", R.drawable.baseline_filter_alt_24),  // Default filter
-            FilterItem("Giá <= 700,000", R.drawable.baseline_attach_money_24),
-            FilterItem("Giảm giá", R.drawable.baseline_discount_24)
+            FilterItem("Giá tăng", R.drawable.baseline_price_up_24),
+            FilterItem("Giá giảm", R.drawable.baseline_price_down_24),
+            FilterItem("Khuyến mãi", R.drawable.baseline_discount_24)
             // Add more filters as needed
         )
     }
@@ -65,8 +66,9 @@ class ServicePackageFragment : Fragment() {
     private fun applyFilter(filterItem: FilterItem) {
         val filteredPackages = when (filterItem.title) {
             "Tất cả" -> allPackages
-            "Giá <= 700,000" -> allPackages.filter { it.price.replace(",", "").replace("VND", "").trim().toInt() <= 700000 }  // Example condition
-//            "Popular" -> allPackages.filter { it.isPopular }   // Example condition
+            "Giá tăng" -> allPackages.sortedBy { it.price.replace(",", "").replace("VND", "").trim().toInt() }
+            "Giá giảm" -> allPackages.sortedByDescending { it.price.replace(",", "").replace("VND", "").trim().toInt() }
+//            "Khuyến mãi" -> allPackages.filter { it.isPopular }
             else -> allPackages
         }
 
