@@ -1,5 +1,6 @@
 package com.example.myapp.adapter
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapp.R
+import com.example.myapp.activity.DetailPackageActivity
 import com.example.myapp.model.ServicePackage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
@@ -54,8 +56,14 @@ class ServicePackageAdapter(private var packages: List<ServicePackage>) : Recycl
             
 
             itemView.setOnClickListener {
-                savePackageToFirebase(servicePackage)
-                Toast.makeText(itemView.context, "Package ID: ${id}", Toast.LENGTH_SHORT).show()
+                //Test savepackage to Firebase
+//                savePackageToFirebase(servicePackage)
+//                Toast.makeText(itemView.context, "Package ID: ${id}", Toast.LENGTH_SHORT).show()
+
+                //intent to detail activity
+                val intent = Intent(itemView.context, DetailPackageActivity::class.java)
+                intent.putExtra("package", servicePackage)
+                itemView.context.startActivity(intent)
             }
 
             optionsButton.setOnClickListener {

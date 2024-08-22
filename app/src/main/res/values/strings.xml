@@ -44,6 +44,10 @@
     <string name="confirm_sign_out">Bạn có muốn đăng xuất?</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="hint_home_search">Bạn muốn tìm gì?</string>
+    <string name="label_notes">Ghi chú</string>
+    <string name="hint_optional">Không bắt buộc</string>
+    <string name="label_total">Tổng tiền</string>
+    <string name="label_add_order">Thêm vào giỏ hàng</string>
 
     <!-- Bottom sheet    -->
     <string name="option_one">Sửa dịch vụ</string>
