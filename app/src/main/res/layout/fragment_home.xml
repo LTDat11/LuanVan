@@ -20,33 +20,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             >
-
-<!--            <EditText-->
-<!--                android:id="@+id/edt_search_name"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_centerVertical="true"-->
-<!--                android:layout_toStartOf="@+id/img_search"-->
-<!--                android:background="@color/white"-->
-<!--                android:hint="@string/hint_home_search"-->
-<!--                android:imeOptions="actionSearch"-->
-<!--                android:inputType="text"-->
-<!--                android:padding="5dp"-->
-<!--                android:textColor="@color/textColorHeading"-->
-<!--                android:textColorHint="@color/textColorAccent"-->
-<!--                android:textSize="14sp" />-->
-
-<!--            <ImageView-->
-<!--                android:id="@+id/img_search"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_alignParentEnd="true"-->
-<!--                android:layout_centerVertical="true"-->
-<!--                android:padding="10dp"-->
-<!--                android:src="@drawable/baseline_search_24" />-->
-
+            <!--Search bar-->
             <com.google.android.material.card.MaterialCardView
-                id="@+id/materialCardView"
+                android:id="@+id/materialCardView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardUseCompatPadding="true"
@@ -63,7 +39,7 @@
             </com.google.android.material.card.MaterialCardView>
 
         </RelativeLayout>
-
+        <!--Banner section -->
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="150dp"
@@ -86,7 +62,7 @@
                 app:ci_drawable_unselected="@drawable/bg_indicator_unselected" />
 
         </RelativeLayout>
-
+        <!--Cart section-->
         <RelativeLayout
             android:id="@+id/layout_cart"
             android:layout_width="match_parent"
@@ -148,6 +124,7 @@
 
         </RelativeLayout>
 
+        <!-- Primary TabLayout for Service Categories -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tab_category"
             android:layout_width="match_parent"
@@ -158,17 +135,28 @@
             app:tabIndicatorColor="@color/blue"
             app:tabMode="scrollable"
             android:layout_marginTop="10dp"/>
-
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@color/bgMainColor"/>
+        <!-- RecyclerView for displaying devices -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_devices"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"/>
         <View
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:background="@color/bgMainColor"/>
 
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/view_pager_category"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_packages"
             android:layout_width="match_parent"
-            android:layout_height="600dp"
-            android:background="@color/white" />
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"/>
 
     </LinearLayout>
 

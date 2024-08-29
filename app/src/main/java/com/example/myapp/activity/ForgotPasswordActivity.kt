@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import com.example.myapp.R
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class ForgotPasswordActivity : BaseActivity() {
 
@@ -81,9 +82,38 @@ class ForgotPasswordActivity : BaseActivity() {
 
     private fun resetPassword(email: String) {
         showProgressDialog(true)
+
+        val db = FirebaseFirestore.getInstance()
+
+        // Truy vấn tìm email trong collection Users
+        db.collection("Users")
+            .whereEqualTo("email", email)
+            .get()
+            .addOnCompleteListener { task ->
+                showProgressDialog(false)
+
+                if (task.isSuccessful) {
+                    val querySnapshot = task.result
+                    if (querySnapshot != null && !querySnapshot.isEmpty) {
+                        // Email found, proceed with sending reset password email
+                        sendResetEmail(email)
+                    } else {
+                        // Email not found in the Users collection
+                        showToastMessage(getString(R.string.msg_email_not_registered))
+                    }
+                } else {
+                    // Handle the error when querying Firestore
+                    showToastMessage(getString(R.string.msg_reset_password_error))
+                }
+            }
+    }
+
+    // Function to send reset password email
+    private fun sendResetEmail(email: String) {
         val auth = FirebaseAuth.getInstance()
+
         auth.sendPasswordResetEmail(email)
-            .addOnCompleteListener { task: Task<Void?> ->
+            .addOnCompleteListener { task ->
                 showProgressDialog(false)
                 if (task.isSuccessful) {
                     showToastMessage(getString(R.string.msg_reset_password_successfully))

@@ -23,9 +23,11 @@
     <string name="have_account">Đã có tài khoản?</string>
     <string name="msg_email_require">Vui lòng nhập email của bạn</string>
     <string name="msg_password_require">Vui lòng nhập mật khẩu của bạn</string>
-    <string name="msg_email_invalid">Mật khẩu của bạn không hợp lệ</string>
+    <string name="msg_email_invalid">Email của bạn không hợp lệ</string>
     <string name="msg_waiting_message">Vui lòng đợi...</string>
     <string name="msg_register_error">Đăng ký không thành công, vui lòng thử lại</string>
+    <string name="msg_email_not_registered">Email chưa được dùng để đăng ký!</string>
+    <string name="msg_check_email_error">Kiểm tra email thất bại!</string>
     <string name="msg_reset_password_successfully">Lấy lại mật khẩu thành công, vui lòng kiểm tra email của bạn.</string>
     <string name="msg_reset_password_error">Lỗi!! không thể lấy lại mật khẩu.</string>
     <string name="action_ok">Đồng ý</string>
