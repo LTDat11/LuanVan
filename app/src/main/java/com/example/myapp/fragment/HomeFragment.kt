@@ -7,7 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.appcompat.widget.SearchView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
 import com.example.myapp.adapter.PhotoBannerAdapter
@@ -23,11 +23,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myapp.adapter.DeviceAdapter
 import com.example.myapp.adapter.ServicePackageAdapter
 import com.example.myapp.model.Device
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 
 
 class HomeFragment : Fragment() {
@@ -35,20 +30,20 @@ class HomeFragment : Fragment() {
     private var tabCategory: TabLayout? = null
     private var viewPager: ViewPager2? = null
     private var indicator: CircleIndicator3? = null
+    private var searchView: SearchView? = null
     private val listPhotoBanners = mutableListOf<PhotoBanner>()
     private lateinit var mHandlerBanner: Handler
     private lateinit var mRunnableBanner: Runnable
 
-    //carts
-    private lateinit var layoutCart: View
-    private lateinit var tvCountItem: TextView
-    private lateinit var tvPackageName: TextView
-    private lateinit var tvAmount: TextView
     private lateinit var recyclerViewDevices: RecyclerView
     private lateinit var recycler_view_packages: RecyclerView
     private val firestore = FirebaseFirestore.getInstance()
+    //searchview
+    private val devicePackagesMap = mutableMapOf<String, List<ServicePackage>>() // Lưu danh sách gói dịch vụ cho từng thiết bị
+    private var currentDeviceId: String? = null // Lưu trữ ID của thiết bị hiện tại
+    private var currentSearchText: String = "" // Biến lưu trữ nội dung tìm kiếm hiện tại
 
-    private var cartListener: ValueEventListener? = null
+
 
 
     override fun onCreateView(
@@ -61,9 +56,49 @@ class HomeFragment : Fragment() {
         initUi()  // Initialize UI components
         setupTabLayout()
         getListPhotoBanners() // Get list of photo banners
-        setupCartListener() // Check and display cart layout
+        setupSearchView() // Setup search view
         return mView
     }
+
+    private fun setupSearchView() {
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                // Xử lý khi người dùng nhấn enter hoặc nút tìm kiếm trên bàn phím
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                // Xử lý khi người dùng thay đổi nội dung của SearchView
+                currentSearchText = newText // Lưu giá trị tìm kiếm hiện tại
+                filter(currentSearchText)
+                return true
+            }
+        })
+    }
+
+    private fun filter(text: String) {
+        // Lấy danh sách gốc của thiết bị hiện tại từ devicePackagesMap
+        val originalPackages = devicePackagesMap[currentDeviceId] ?: listOf()
+
+        val filteredList: List<ServicePackage> = if (text.isEmpty()) {
+            // Nếu query rỗng, hiển thị lại toàn bộ danh sách gốc
+            originalPackages
+        } else {
+            // Lọc các gói dịch vụ dựa trên tên hoặc các thuộc tính khác
+            originalPackages.filter {
+                it.name.contains(text, ignoreCase = true)
+            }
+        }
+
+        // Cập nhật lại dữ liệu cho RecyclerView
+        recycler_view_packages.adapter?.let { adapter ->
+            if (adapter is ServicePackageAdapter) {
+                adapter.packages = filteredList
+                adapter.notifyDataSetChanged()
+            }
+        }
+    }
+
 
     private fun setupTabLayout() {
         firestore.collection("service_categories").addSnapshotListener { snapshot, e ->
@@ -79,10 +114,14 @@ class HomeFragment : Fragment() {
                     val tab = tabCategory?.newTab()?.setText(category?.name)
                     if (tab != null) {
                         tabCategory?.addTab(tab)
-                        val selectedCategory = tab.text.toString()
-                        loadDevicesForCategory(selectedCategory)
                     }
                 }
+                // Đặt tab đầu tiên làm mặc định
+                tabCategory?.getTabAt(0)?.select()
+
+                // Gọi loadDevicesForCategory cho tab đầu tiên để hiển thị dữ liệu đúng
+                val firstTabCategory = tabCategory?.getTabAt(0)?.text.toString()
+                loadDevicesForCategory(firstTabCategory)
 
                 // Set listener for tab selection
                 tabCategory?.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
@@ -97,6 +136,9 @@ class HomeFragment : Fragment() {
                 })
             }
         }
+        //Đặt tab đầu tiên làm mặc định
+        val firstTabCategory = tabCategory?.getTabAt(0)?.text.toString()
+        loadDevicesForCategory(firstTabCategory)
     }
 
     private fun loadDevicesForCategory(selectedCategory: String) {
@@ -161,7 +203,15 @@ class HomeFragment : Fragment() {
 
                 servicePackageDocs?.let {
                     val servicePackages = it.map { doc -> doc.toObject(ServicePackage::class.java) }
+                    // Lưu danh sách gốc vào devicePackagesMap
+                    devicePackagesMap[idDevice] = servicePackages
+                    currentDeviceId = idDevice // Cập nhật ID thiết bị hiện tại
+                    // Cập nhật RecyclerView với danh sách mới
                     setupServicePackageRecyclerView(servicePackages)
+                    // Áp dụng lại bộ lọc nếu có nội dung tìm kiếm hiện tại
+                    if (currentSearchText.isNotEmpty()) {
+                        filter(currentSearchText)
+                    }
                 }
             }
     }
@@ -172,81 +222,15 @@ class HomeFragment : Fragment() {
         recycler_view_packages.adapter = adapter
     }
 
-    private fun setupCartListener() {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        val uid = currentUser?.uid
-        tvAmount.text = "Giỏ hàng của bạn"
-        uid?.let {
-            val database = FirebaseDatabase.getInstance().reference
-            val userCartRef = database.child("carts").child(it)
-
-            cartListener = object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()) {
-                        layoutCart.visibility = View.VISIBLE
-                        val itemCount = snapshot.childrenCount
-                        tvCountItem.text = "Số lượng: $itemCount"
-
-                        // Tạo một danh sách để chứa tên của các package
-                        val packageNames = mutableListOf<String>()
-
-                        // Lặp qua các phần tử trong snapshot và lấy tên của các package
-                        for (packageSnapshot in snapshot.children) {
-                            val packageName = packageSnapshot.child("name").getValue(String::class.java)
-                            packageName?.let { packageNames.add(it) }
-                        }
-
-                        // Kết hợp các tên thành một chuỗi và hiển thị trên tvPackageName
-                        tvPackageName.text = packageNames.joinToString(", ")
-
-
-                    } else {
-                        layoutCart.visibility = View.GONE
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    // Handle potential errors
-                }
-            }
-
-            userCartRef.addValueEventListener(cartListener!!)
-        } ?: run {
-            layoutCart.visibility = View.GONE
-        }
-    }
-
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        // Remove the cart listener to avoid memory leaks
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        val uid = currentUser?.uid
-
-        uid?.let {
-            val database = FirebaseDatabase.getInstance().reference
-            val userCartRef = database.child("carts").child(it)
-            cartListener?.let { listener -> userCartRef.removeEventListener(listener) }
-        }
-    }
-
 
     private fun initUi() {
         tabCategory = mView?.findViewById(R.id.tab_category)
         viewPager = mView?.findViewById(R.id.view_pager_banner)
+        searchView = mView?.findViewById(R.id.search_view)
         recyclerViewDevices = mView?.findViewById(R.id.recycler_view_devices)!!
         recycler_view_packages = mView?.findViewById(R.id.recycler_view_packages)!!
         indicator = mView?.findViewById(R.id.indicator)
 
-        layoutCart = mView?.findViewById(R.id.layout_cart) ?: return
-        tvCountItem = mView?.findViewById(R.id.tv_count_item) ?: return
-        tvPackageName = mView?.findViewById(R.id.tv_package_name) ?: return
-        tvAmount = mView?.findViewById(R.id.tv_amount) ?: return
-
-        layoutCart.setOnClickListener {
-            // Navigate to the cart screen
-
-        }
     }
 
     private fun getListPhotoBanners() {
@@ -367,9 +351,11 @@ class HomeFragment : Fragment() {
                             .set(deviceWithCategory)
                             .addOnSuccessListener {
                                 Log.d("Firestore", "Device added with ID: $deviceId")
-
+                                // lấy tên category và device
+                                val categoryName = category.name
+                                val deviceName = device.name
                                 // Thêm các service packages cho mỗi device
-                                val servicePackages = generateServicePackages(categoryId, device.name)
+                                val servicePackages = generateServicePackages(categoryId, deviceId, categoryName, deviceName)
                                 for (servicePackage in servicePackages) {
                                     val packageId = firestore.collection("service_categories")
                                         .document(categoryId)
@@ -406,39 +392,43 @@ class HomeFragment : Fragment() {
         }
     }
 
-    fun generateServicePackages(categoryId: String, deviceId: String): List<ServicePackage> {
+    fun generateServicePackages(
+        categoryId: String,
+        deviceId: String,
+        categoryName: String,
+        deviceName: String, ): List<ServicePackage> {
         return listOf(
             ServicePackage(
                 categoryId = categoryId,
                 deviceId = deviceId,
-                name = "Gói dịch vụ cho $deviceId 1",
+                name = "Gói dịch vụ $categoryName cho $deviceName 1",
                 imageUrl = "url_to_image",
                 price = "500,000 VND",
-                description = "Mô tả cho gói dịch vụ 1 của $deviceId."
+                description = "Mô tả cho gói dịch vụ 1 của $deviceName."
             ),
             ServicePackage(
                 categoryId = categoryId,
                 deviceId = deviceId,
-                name = "Gói dịch vụ cho $deviceId 2",
+                name = "Gói dịch vụ $categoryName cho $deviceName 2",
                 imageUrl = "url_to_image",
                 price = "700,000 VND",
-                description = "Mô tả cho gói dịch vụ 2 của $deviceId."
+                description = "Mô tả cho gói dịch vụ 2 của $deviceName."
             ),
             ServicePackage(
                 categoryId = categoryId,
                 deviceId = deviceId,
-                name = "Gói dịch vụ cho $deviceId 3",
+                name = "Gói dịch vụ $categoryName cho $deviceName 3",
                 imageUrl = "url_to_image",
                 price = "600,000 VND",
-                description = "Mô tả cho gói dịch vụ 3 của $deviceId."
+                description = "Mô tả cho gói dịch vụ 3 của $deviceName."
             ),
             ServicePackage(
                 categoryId = categoryId,
                 deviceId = deviceId,
-                name = "Gói dịch vụ cho $deviceId 4",
+                name = "Gói dịch vụ $categoryName cho $deviceName 4",
                 imageUrl = "url_to_image",
                 price = "800,000 VND",
-                description = "Mô tả cho gói dịch vụ 3 của $deviceId."
+                description = "Mô tả cho gói dịch vụ 3 của $deviceName."
             )
         )
     }

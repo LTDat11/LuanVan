@@ -17,7 +17,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.Gson
 
 // recyclerview adapter for service packages
-class ServicePackageAdapter(private var packages: List<ServicePackage>) : RecyclerView.Adapter<ServicePackageAdapter.PackageViewHolder>() {
+class ServicePackageAdapter(var packages: List<ServicePackage>) : RecyclerView.Adapter<ServicePackageAdapter.PackageViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PackageViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -31,11 +31,6 @@ class ServicePackageAdapter(private var packages: List<ServicePackage>) : Recycl
     }
 
     override fun getItemCount(): Int = packages.size
-
-    fun updateData(newPackages: List<ServicePackage>) {
-        packages = newPackages
-        notifyDataSetChanged()
-    }
 
     inner class PackageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val imageView: ImageView = itemView.findViewById(R.id.package_image)

@@ -63,66 +63,6 @@
 
         </RelativeLayout>
         <!--Cart section-->
-        <RelativeLayout
-            android:id="@+id/layout_cart"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="10dp"
-
-            android:background="@drawable/bg_button_enable_corner_16"
-            android:padding="10dp"
-            android:visibility="gone">
-            <ImageView
-                android:id="@+id/img_cart"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/baseline_shopping_basket_24"
-                tools:ignore="ContentDescription"/>
-
-            <LinearLayout
-                android:id="@+id/layout_cart_item"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:layout_centerVertical="true"
-                android:layout_toStartOf="@+id/tv_amount"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/tv_count_item"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/app_name"
-                    android:textColor="@color/white"
-                    android:textSize="14sp" />
-                <TextView
-                    android:id="@+id/tv_package_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:text="@string/cart"
-                    android:textColor="@color/white"
-                    android:textSize="12sp" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/tv_amount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="10dp"
-                android:layout_toStartOf="@+id/img_cart"
-                android:text="@string/app_name"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-        </RelativeLayout>
 
         <!-- Primary TabLayout for Service Categories -->
         <com.google.android.material.tabs.TabLayout
