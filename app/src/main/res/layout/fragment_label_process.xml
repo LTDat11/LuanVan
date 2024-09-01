@@ -5,10 +5,13 @@
     android:layout_height="match_parent"
     tools:context=".fragment.LabelProcessFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <!-- Đang xử lý -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rcv_label_process"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
-
+        android:focusable="false"
+        android:nestedScrollingEnabled="false"
+        tools:listitem="@layout/item_order"
+        />
 </FrameLayout>

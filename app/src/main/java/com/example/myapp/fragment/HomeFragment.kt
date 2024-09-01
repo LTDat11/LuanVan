@@ -53,10 +53,10 @@ class HomeFragment : Fragment() {
 //        addServiceCategoriesDevicesAndPackages()
         // Inflate the layout for this fragment
         mView = inflater.inflate(R.layout.fragment_home, container, false)
-        initUi()  // Initialize UI components
+        initUi()
         setupTabLayout()
-        getListPhotoBanners() // Get list of photo banners
-        setupSearchView() // Setup search view
+        getListPhotoBanners()
+        setupSearchView()
         return mView
     }
 

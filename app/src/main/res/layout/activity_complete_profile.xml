@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".activity.RegisterActivity">
+    tools:context=".activity.CompleteProfileActivity">
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,109 +20,88 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/register_title"
+            android:text="@string/complete_profile_title"
             android:textColor="@color/blue"
             android:textSize="24sp"
             android:layout_marginBottom="20dp"
             android:textStyle="bold" />
 
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:layout_width="wrap_content"
-            android:layout_height="150dp"
-            android:src="@drawable/logo"
-            tools:ignore="ContentDescription" />
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:text="@string/email"
+            android:text="@string/name"
             android:textStyle="bold"
             android:textColor="@color/textColorHeading"
             android:textSize="12sp" />
 
         <EditText
-            android:id="@+id/edt_email"
+            android:id="@+id/edt_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:background="@drawable/bg_white_corner_16_border_gray"
-            android:hint="@string/hint_email"
+            android:hint="@string/hint_name"
             android:imeOptions="actionNext"
-            android:inputType="textEmailAddress"
+            android:inputType="textPersonName"
             android:padding="14dp"
             android:textColor="@color/textColorHeading"
             android:textColorHint="@color/textColorAccent"
-            android:textSize="14sp"
-            tools:ignore="Autofill" />
+            android:textSize="14sp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="@string/password"
+            android:text="@string/phone"
             android:textStyle="bold"
             android:textColor="@color/textColorHeading"
             android:textSize="12sp" />
 
         <EditText
-            android:id="@+id/edt_password"
+            android:id="@+id/edt_phone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:background="@drawable/bg_white_corner_16_border_gray"
-            android:hint="@string/hint_password"
+            android:hint="@string/hint_phone"
             android:imeOptions="actionDone"
-            android:inputType="textPassword"
+            android:inputType="phone"
             android:padding="14dp"
             android:textColor="@color/textColorHeading"
             android:textColorHint="@color/textColorAccent"
-            android:textSize="14sp"
-            tools:ignore="Autofill" />
+            android:textSize="14sp"/>
 
-        <!-- Thêm phần lựa chọn đối tượng đăng ký -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="@string/select_role"
+            android:layout_marginTop="12dp"
+            android:text="@string/address"
             android:textStyle="bold"
             android:textColor="@color/textColorHeading"
             android:textSize="12sp" />
 
-        <RadioGroup
-            android:id="@+id/radio_group_role"
+        <EditText
+            android:id="@+id/edt_address"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp">
-
-            <RadioButton
-                android:id="@+id/radio_customer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/customer"
-                android:textColor="@color/textColorHeading"
-                android:checked="true"
-                android:textSize="14sp" />
-
-            <RadioButton
-                android:id="@+id/radio_technician"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/technician"
-                android:textColor="@color/textColorHeading"
-                android:textSize="14sp"
-                android:layout_marginStart="20dp" />
-        </RadioGroup>
+            android:layout_marginTop="5dp"
+            android:background="@drawable/bg_white_corner_16_border_gray"
+            android:hint="@string/hint_address"
+            android:imeOptions="actionDone"
+            android:inputType="textPostalAddress"
+            android:padding="14dp"
+            android:textColor="@color/textColorHeading"
+            android:textColorHint="@color/textColorAccent"
+            android:textSize="14sp"/>
 
         <Button
-            android:id="@+id/btn_register"
+            android:id="@+id/btn_complete"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
             android:background="@drawable/bg_button_disable_corner_16"
-            android:text="@string/register"
+            android:text="@string/complete"
             android:textAllCaps="false"
             android:textColor="@color/white"
 
@@ -129,30 +109,5 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/layout_login"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="18dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/have_account"
-            android:textColor="@color/textColorHeading"
-            android:textSize="14sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:text="@string/login"
-            android:textColor="@color/blue"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-    </LinearLayout>
 
 </RelativeLayout>

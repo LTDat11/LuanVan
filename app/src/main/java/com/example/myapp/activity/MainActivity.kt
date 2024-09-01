@@ -1,9 +1,10 @@
 package com.example.myapp.activity
 
 import android.annotation.SuppressLint
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
@@ -12,16 +13,25 @@ import com.example.myapp.databinding.ActivityMainBinding
 import com.example.myapp.fragment.AccountFragment
 import com.example.myapp.fragment.HomeFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.android.gms.tasks.Task
 
 class MainActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityMainBinding
     private var mBottomNavigationView: BottomNavigationView? = null
     var viewPager2: ViewPager2? = null
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Kiểm tra thông tin người dùng và chuyển hướng nếu cần
+        checkUserProfileAndNavigate()
 
         binding.apply {
             mBottomNavigationView = bottomNavigation
@@ -48,6 +58,7 @@ class MainActivity : AppCompatActivity() {
                         viewPager2?.currentItem = 1
                     }
                     R.id.nav_account -> {
+                        // Đặt item hiện tại là Account
                         viewPager2?.currentItem = 2
                     }
                 }
@@ -71,5 +82,35 @@ class MainActivity : AppCompatActivity() {
             dialog.dismiss()
         }
         builder.show()
+    }
+
+    private fun checkUserProfileAndNavigate() {
+        val user = auth.currentUser ?: return
+        val userId = user.uid
+
+        // Check user profile status from Firestore
+        val docRef = db.collection("Users").document(userId)
+        docRef.get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val name = document.getString("name")
+                    val phone = document.getString("phone")
+                    val address = document.getString("address")
+
+                    if (name.isNullOrEmpty() || phone.isNullOrEmpty() || address.isNullOrEmpty()) {
+                        navigateToCompleteProfile()
+                    }
+                } else {
+                    navigateToCompleteProfile()
+                }
+            }
+            .addOnFailureListener {
+                // Handle failure (e.g., show a message to the user)
+            }
+    }
+
+    private fun navigateToCompleteProfile() {
+        val intent = Intent(this, CompleteProfileActivity::class.java)
+        startActivity(intent)
     }
 }

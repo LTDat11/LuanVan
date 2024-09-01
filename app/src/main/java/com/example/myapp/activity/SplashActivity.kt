@@ -63,10 +63,14 @@ class SplashActivity : AppCompatActivity() {
             userDocRef.get()
                 .addOnSuccessListener { document ->
                     if (document != null) {
+                        //Kiểm tra role của user để chuyển hướng
                         val role = document.getString("role")
                         if (role == "Customer") {
                             goToMainActivity()
-                        } else {
+                        }else if (role == "Technician") {
+                            goToTechnicianActivity()
+                        }
+                        else {
                             goToAdminActivity()
                         }
                     } else {
@@ -79,6 +83,10 @@ class SplashActivity : AppCompatActivity() {
         } else {
             goToLoginActivity()
         }
+    }
+
+    private fun goToTechnicianActivity() {
+        TODO("Not yet implemented")
     }
 
     private fun goToLoginActivity() {

@@ -27,34 +27,9 @@ class DetailPackageActivity : AppCompatActivity() {
     private fun initListener() {
         binding.apply {
 
-
-            tvSub.setOnClickListener {
-                val count = tvCount?.text.toString().toInt()
-
-                if (count <= 1){
-                    return@setOnClickListener
-                }
-                val newcount = tvCount.text.toString().toInt() - 1
-                tvCount.text = newcount.toString()
-                calculatorTotalPrice()
-            }
-
-            tvAdd.setOnClickListener {
-                val newcount = tvCount.text.toString().toInt() + 1
-                tvCount.text = newcount.toString()
-                calculatorTotalPrice()
-            }
         }
     }
 
-    private fun calculatorTotalPrice() {
-        binding.apply {
-            val price = tvPrice.text.toString().replace(",", "").replace("VND", "").trim().toInt()
-            val total = price * tvCount.text.toString().toInt()
-            val formattedTotal = NumberFormat.getNumberInstance(Locale("vi", "VN")).format(total) + " VND"
-            tvTotal.text = formattedTotal
-        }
-    }
 
     private fun initData() {
         binding.apply {

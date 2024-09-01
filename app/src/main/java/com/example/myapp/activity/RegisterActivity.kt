@@ -5,20 +5,15 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Patterns
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.RadioGroup
 import androidx.core.content.ContextCompat
 import com.example.myapp.R
-import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.myapp.model.User
-import java.security.Timestamp
 
 class RegisterActivity : BaseActivity() {
 
@@ -26,6 +21,7 @@ class RegisterActivity : BaseActivity() {
     private var edtPassword: EditText? = null
     private var btnRegister: Button? = null
     private var layoutLogin: LinearLayout? = null
+    private var radioGroupRole: RadioGroup? = null
     private var isEnableButtonRegister = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,6 +38,7 @@ class RegisterActivity : BaseActivity() {
         edtPassword = findViewById(R.id.edt_password)
         btnRegister = findViewById(R.id.btn_register)
         layoutLogin = findViewById(R.id.layout_login)
+        radioGroupRole = findViewById(R.id.radio_group_role)
     }
 
     private fun initListener() {
@@ -110,15 +107,19 @@ class RegisterActivity : BaseActivity() {
                     val userId = auth.currentUser?.uid
                     // Lấy thời gian hiện tại
                     val currentTime = java.util.Date()
+                    // lấy role của user
+                    val selectedRole = when (radioGroupRole?.checkedRadioButtonId) {
+                        R.id.radio_customer -> "Customer"
+                        R.id.radio_technician -> "Technician"
+                        else -> "Admin"
+                    }
                     // Tạo một bản ghi trong Firestore
                     val db = FirebaseFirestore.getInstance()
                     val user = User(
                         email = email,
                         createdAt = currentTime,
                         updatedAt = currentTime,
-                        name = "",
-                        phone = "",
-                        address = "",
+                        role = selectedRole
                     )
 
                     // Thêm thông tin user vào collection "Users" document với userId là key
@@ -126,10 +127,20 @@ class RegisterActivity : BaseActivity() {
                         db.collection("Users").document(it)
                             .set(user)
                             .addOnSuccessListener {
-                                // Chuyển tới MainActivity khi thành công
-                                val intent = Intent(this, MainActivity::class.java)
-                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-                                startActivity(intent)
+                                // Kiểm tra role tương ứng để chuyển hướng
+                                if (selectedRole == "Customer") {
+                                    val intent = Intent(this, MainActivity::class.java)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                    startActivity(intent)
+                                } else if (selectedRole == "Technician") {
+//                                    val intent = Intent(this, TechnicianActivity::class.java)
+//                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+//                                    startActivity(intent)
+                                } else {
+                                    val intent = Intent(this, AdminActivity::class.java)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                    startActivity(intent)
+                                }
                             }
                             .addOnFailureListener { e ->
                                 showToastMessage("Failed to add user to Firestore: ${e.message}")

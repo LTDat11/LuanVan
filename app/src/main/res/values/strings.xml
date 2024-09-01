@@ -46,10 +46,25 @@
     <string name="confirm_sign_out">Bạn có muốn đăng xuất?</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="hint_home_search">Bạn muốn tìm gì?</string>
-    <string name="label_notes">Ghi chú</string>
-    <string name="hint_optional">Không bắt buộc</string>
+    <string name="label_notes">Mô tả tình trạng và nhãn hiệu</string>
+    <string name="label_notes2">Dặn dò</string>
+    <string name="brand_customize">Tùy chọn nhãn hiệu</string>
+    <string name="hint_optional">Bắt buộc</string>
+    <string name="hint_optional2"> Không bắt buộc</string>
     <string name="label_total">Tổng tiền</string>
-    <string name="label_add_order">Thêm vào giỏ hàng</string>
+    <string name="label_order">Đặt đơn hàng</string>
+    <string name="label_success">Thành công</string>
+    <string name="select_role">Lựa chọn đối tượng</string>
+    <string name="customer">Khách hàng</string>
+    <string name="technician">Kỹ thuật viên</string>
+    <string name="complete_profile_title">Điền thông tin cá nhân</string>
+    <string name="name">Họ và tên</string>
+    <string name="hint_name">Nhập họ và tên của bạn</string>
+    <string name="phone">Số điện thoại</string>
+    <string name="hint_phone">Nhập số điện thoại của bạn</string>
+    <string name="address">Địa chỉ</string>
+    <string name="hint_address">Nhập địa chỉ của bạn</string>
+    <string name="complete">Hoàn tất</string>
 
     <!-- Bottom sheet    -->
     <string name="option_one">Sửa dịch vụ</string>
