@@ -23,15 +23,16 @@
             android:padding="16dp">
 
             <TextView
+                android:id="@+id/tv_user_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="@color/colorPrimaryDark"
+                android:textColor="@color/blue"
                 android:text="@string/label_user_name"/>
 
             <TextView
-                android:id="@+id/tv_username"
+                android:id="@+id/tv_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"

@@ -65,6 +65,7 @@
     <string name="address">Địa chỉ</string>
     <string name="hint_address">Nhập địa chỉ của bạn</string>
     <string name="complete">Hoàn tất</string>
+    <string name="default_name">user name</string>
 
     <!-- Bottom sheet    -->
     <string name="option_one">Sửa dịch vụ</string>

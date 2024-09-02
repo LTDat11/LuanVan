@@ -404,7 +404,7 @@ class HomeFragment : Fragment() {
                 name = "Gói dịch vụ $categoryName cho $deviceName 1",
                 imageUrl = "url_to_image",
                 price = "500,000 VND",
-                description = "Mô tả cho gói dịch vụ 1 của $deviceName."
+                description = "Mô tả cho gói dịch vụ $categoryName 1 của $deviceName."
             ),
             ServicePackage(
                 categoryId = categoryId,
@@ -412,7 +412,7 @@ class HomeFragment : Fragment() {
                 name = "Gói dịch vụ $categoryName cho $deviceName 2",
                 imageUrl = "url_to_image",
                 price = "700,000 VND",
-                description = "Mô tả cho gói dịch vụ 2 của $deviceName."
+                description = "Mô tả cho gói dịch vụ $categoryName 2 của $deviceName."
             ),
             ServicePackage(
                 categoryId = categoryId,
@@ -420,7 +420,7 @@ class HomeFragment : Fragment() {
                 name = "Gói dịch vụ $categoryName cho $deviceName 3",
                 imageUrl = "url_to_image",
                 price = "600,000 VND",
-                description = "Mô tả cho gói dịch vụ 3 của $deviceName."
+                description = "Mô tả cho gói dịch vụ $categoryName 3 của $deviceName."
             ),
             ServicePackage(
                 categoryId = categoryId,
@@ -428,7 +428,7 @@ class HomeFragment : Fragment() {
                 name = "Gói dịch vụ $categoryName cho $deviceName 4",
                 imageUrl = "url_to_image",
                 price = "800,000 VND",
-                description = "Mô tả cho gói dịch vụ 3 của $deviceName."
+                description = "Mô tả cho gói dịch vụ $categoryName 4 của $deviceName."
             )
         )
     }

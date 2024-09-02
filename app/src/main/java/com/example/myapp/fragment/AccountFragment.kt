@@ -12,9 +12,12 @@ import com.example.myapp.R
 import com.example.myapp.activity.LoginActivity
 import com.example.myapp.activity.MainActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class AccountFragment : Fragment() {
     private var mView: View? = null
+    private val firebaseAuth = FirebaseAuth.getInstance()
+    private val firestore = FirebaseFirestore.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,9 +56,40 @@ class AccountFragment : Fragment() {
     }
 
     private fun initUi() {
-        val tvUsername = mView?.findViewById<TextView>(R.id.tv_username)
-        tvUsername?.text = FirebaseAuth.getInstance().currentUser?.email
+        val tvEmail = mView?.findViewById<TextView>(R.id.tv_email)
+        val tvName = mView?.findViewById<TextView>(R.id.tv_user_name)
+
+        // Gọi hàm lấy thông tin người dùng từ Firestore
+        getUserInfo { name, email ->
+            tvName?.text = name ?: getString(R.string.default_name)
+            tvEmail?.text = email ?: firebaseAuth.currentUser?.email
+        }
+
     }
+
+    // Hàm lấy thông tin người dùng từ Firestore
+    private fun getUserInfo(callback: (name: String?, email: String?) -> Unit) {
+        val currentUser = firebaseAuth.currentUser
+        if (currentUser != null) {
+            val uid = currentUser.uid
+            firestore.collection("Users").document(uid).get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        val name = document.getString("name")
+                        val email = document.getString("email")
+                        callback(name, email)  // Trả kết quả về thông qua callback
+                    } else {
+                        callback(null, currentUser.email)  // Trả email nếu không tìm thấy document
+                    }
+                }
+                .addOnFailureListener {
+                    callback(null, currentUser.email)  // Trả email nếu có lỗi
+                }
+        } else {
+            callback(null, null)  // Nếu không có người dùng đăng nhập, trả về null
+        }
+    }
+
 // set up the toolbar text, back button click listener and set text to Account
     private fun initToolbar() {
         val imgToolbarBack = mView?.findViewById<ImageView>(R.id.img_toolbar_back)

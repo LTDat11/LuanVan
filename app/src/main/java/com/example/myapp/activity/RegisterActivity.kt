@@ -127,19 +127,27 @@ class RegisterActivity : BaseActivity() {
                         db.collection("Users").document(it)
                             .set(user)
                             .addOnSuccessListener {
+                                // Thêm UID vào collection tương ứng
+                                addUserToRoleSpecificCollection(userId, selectedRole)
+
                                 // Kiểm tra role tương ứng để chuyển hướng
-                                if (selectedRole == "Customer") {
-                                    val intent = Intent(this, MainActivity::class.java)
-                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-                                    startActivity(intent)
-                                } else if (selectedRole == "Technician") {
-//                                    val intent = Intent(this, TechnicianActivity::class.java)
-//                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-//                                    startActivity(intent)
-                                } else {
-                                    val intent = Intent(this, AdminActivity::class.java)
-                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-                                    startActivity(intent)
+                                when (selectedRole) {
+                                    "Customer" -> {
+                                        val intent = Intent(this, MainActivity::class.java)
+                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                        startActivity(intent)
+                                    }
+                                    "Technician" -> {
+                                        // Uncomment this if you have a TechnicianActivity
+                                        // val intent = Intent(this, TechnicianActivity::class.java)
+                                        // intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                        // startActivity(intent)
+                                    }
+                                    else -> {
+                                        val intent = Intent(this, AdminActivity::class.java)
+                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                        startActivity(intent)
+                                    }
                                 }
                             }
                             .addOnFailureListener { e ->
@@ -152,6 +160,33 @@ class RegisterActivity : BaseActivity() {
                 showProgressDialog(false)
                 showToastMessage("Registration failed: ${exception.message}")
             }
+    }
+
+    // Thêm UID vào collection tương ứng
+    private fun addUserToRoleSpecificCollection(userId: String, role: String) {
+        val db = FirebaseFirestore.getInstance()
+        when (role) {
+            "Customer" -> {
+                db.collection("Customers").document(userId)
+                    .set(mapOf("userId" to userId))
+                    .addOnSuccessListener {
+                        // UID đã được thêm vào collection "Customers"
+                    }
+                    .addOnFailureListener { e ->
+                        showToastMessage("Failed to add to Customers collection: ${e.message}")
+                    }
+            }
+            "Technician" -> {
+                db.collection("Technicians").document(userId)
+                    .set(mapOf("userId" to userId))
+                    .addOnSuccessListener {
+                        // UID đã được thêm vào collection "Technicians"
+                    }
+                    .addOnFailureListener { e ->
+                        showToastMessage("Failed to add to Technicians collection: ${e.message}")
+                    }
+            }
+        }
     }
 
 }
