@@ -49,7 +49,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/delete_avatar"
-                android:backgroundTint="@color/colorAccent"
+                android:backgroundTint="@color/red"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:layout_marginLeft="5dp"
