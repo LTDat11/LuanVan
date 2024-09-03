@@ -43,7 +43,7 @@
             android:background="@drawable/bg_white_corner_16_border_gray"
             android:hint="@string/hint_name"
             android:imeOptions="actionNext"
-            android:inputType="textPersonName"
+            android:inputType="textCapWords"
             android:padding="14dp"
             android:textColor="@color/textColorHeading"
             android:textColorHint="@color/textColorAccent"

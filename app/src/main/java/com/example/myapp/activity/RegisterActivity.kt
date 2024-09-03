@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
@@ -14,6 +15,7 @@ import com.example.myapp.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.myapp.model.User
+import com.google.firebase.storage.FirebaseStorage
 
 class RegisterActivity : BaseActivity() {
 
@@ -113,47 +115,59 @@ class RegisterActivity : BaseActivity() {
                         R.id.radio_technician -> "Technician"
                         else -> "Admin"
                     }
-                    // Tạo một bản ghi trong Firestore
-                    val db = FirebaseFirestore.getInstance()
-                    val user = User(
-                        email = email,
-                        createdAt = currentTime,
-                        updatedAt = currentTime,
-                        role = selectedRole
-                    )
+                    // Lấy url của avatardf.jpg trong thư mục avatar storage
+                    val storage = FirebaseStorage.getInstance()
+                    val avatarRef = storage.reference.child("avatar/avatardf.jpg")
+                    avatarRef.downloadUrl.addOnSuccessListener { uri ->
+                        val avatarUrl = uri.toString()
 
-                    // Thêm thông tin user vào collection "Users" document với userId là key
-                    userId?.let {
-                        db.collection("Users").document(it)
-                            .set(user)
-                            .addOnSuccessListener {
-                                // Thêm UID vào collection tương ứng
-                                addUserToRoleSpecificCollection(userId, selectedRole)
+                        // Tạo một bản ghi trong Firestore
+                        val db = FirebaseFirestore.getInstance()
+                        val user = User(
+                            email = email,
+                            createdAt = currentTime,
+                            updatedAt = currentTime,
+                            role = selectedRole,
+                            imageURL = avatarUrl
+                        )
 
-                                // Kiểm tra role tương ứng để chuyển hướng
-                                when (selectedRole) {
-                                    "Customer" -> {
-                                        val intent = Intent(this, MainActivity::class.java)
-                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-                                        startActivity(intent)
-                                    }
-                                    "Technician" -> {
-                                        // Uncomment this if you have a TechnicianActivity
-                                        // val intent = Intent(this, TechnicianActivity::class.java)
-                                        // intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-                                        // startActivity(intent)
-                                    }
-                                    else -> {
-                                        val intent = Intent(this, AdminActivity::class.java)
-                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-                                        startActivity(intent)
+                        // Thêm thông tin user vào collection "Users" document với userId là key
+                        userId?.let {
+                            db.collection("Users").document(it)
+                                .set(user)
+                                .addOnSuccessListener {
+                                    // Thêm UID vào collection tương ứng
+                                    addUserToRoleSpecificCollection(userId, selectedRole)
+
+                                    // Kiểm tra role tương ứng để chuyển hướng
+                                    when (selectedRole) {
+                                        "Customer" -> {
+                                            val intent = Intent(this, MainActivity::class.java)
+                                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                            startActivity(intent)
+                                        }
+                                        "Technician" -> {
+                                            // Uncomment this if you have a TechnicianActivity
+                                            // val intent = Intent(this, TechnicianActivity::class.java)
+                                            // intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                            // startActivity(intent)
+                                        }
+                                        else -> {
+                                            val intent = Intent(this, AdminActivity::class.java)
+                                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                            startActivity(intent)
+                                        }
                                     }
                                 }
-                            }
-                            .addOnFailureListener { e ->
-                                showToastMessage("Failed to add user to Firestore: ${e.message}")
-                            }
+                                .addOnFailureListener { e ->
+                                    showToastMessage("Failed to add user to Firestore: ${e.message}")
+                                }
+                        }
+
+                    }.addOnFailureListener { exception ->
+                        Log.e("FirebaseStorage", "Error getting avatar URL", exception)
                     }
+
                 }
             }
             .addOnFailureListener { exception ->

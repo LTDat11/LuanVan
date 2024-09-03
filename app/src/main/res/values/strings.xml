@@ -66,6 +66,12 @@
     <string name="hint_address">Nhập địa chỉ của bạn</string>
     <string name="complete">Hoàn tất</string>
     <string name="default_name">user name</string>
+    <string name="edit_avatar">Đổi ảnh</string>
+    <string name="delete_avatar">Xóa ảnh</string>
+    <string name="save">Lưu</string>
+    <string name="user_info_title">Thông tin người dùng</string>
+    <string name="default_phone">không có</string>
+    <string name="default_address">không có</string>
 
     <!-- Bottom sheet    -->
     <string name="option_one">Sửa dịch vụ</string>

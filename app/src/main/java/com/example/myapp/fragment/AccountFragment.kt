@@ -8,9 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
 import com.example.myapp.R
 import com.example.myapp.activity.LoginActivity
 import com.example.myapp.activity.MainActivity
+import com.example.myapp.activity.UserInfoActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -31,8 +33,16 @@ class AccountFragment : Fragment() {
         return mView
     }
     private fun initListener() {
+        // Đăng xuất
         val layoutSignOut = mView?.findViewById<View>(R.id.layout_sign_out)
         layoutSignOut?.setOnClickListener { confirmSignOut() }
+
+        //Sửa thông tin cá nhân
+        val layoutEditProfile = mView?.findViewById<View>(R.id.layout_user_info)
+        layoutEditProfile?.setOnClickListener {
+            val intent = Intent(activity, UserInfoActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun confirmSignOut() {
@@ -58,35 +68,48 @@ class AccountFragment : Fragment() {
     private fun initUi() {
         val tvEmail = mView?.findViewById<TextView>(R.id.tv_email)
         val tvName = mView?.findViewById<TextView>(R.id.tv_user_name)
+        val civ_avatar = mView?.findViewById<ImageView>(R.id.civ_avatar)
 
         // Gọi hàm lấy thông tin người dùng từ Firestore
-        getUserInfo { name, email ->
+        getUserInfo { name, email, imageURL ->
             tvName?.text = name ?: getString(R.string.default_name)
             tvEmail?.text = email ?: firebaseAuth.currentUser?.email
+            // Load ảnh đại diện
+            if (imageURL != null) {
+                if (civ_avatar != null) {
+                    Glide.with(this)
+                        .load(imageURL)
+                        .circleCrop()
+                        .into(civ_avatar)
+                }
+            }
         }
 
     }
 
-    // Hàm lấy thông tin người dùng từ Firestore
-    private fun getUserInfo(callback: (name: String?, email: String?) -> Unit) {
+    // Hàm lấy thông tin người dùng từ Firestore theo thời gian thực
+    private fun getUserInfo(callback: (name: String?, email: String?, imageURL: String?) -> Unit) {
         val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
             val uid = currentUser.uid
-            firestore.collection("Users").document(uid).get()
-                .addOnSuccessListener { document ->
-                    if (document.exists()) {
-                        val name = document.getString("name")
-                        val email = document.getString("email")
-                        callback(name, email)  // Trả kết quả về thông qua callback
+            firestore.collection("Users").document(uid)
+                .addSnapshotListener { documentSnapshot, error ->
+                    if (error != null) {
+                        callback(null, currentUser.email, null)  // Trả email nếu có lỗi
+                        return@addSnapshotListener
+                    }
+
+                    if (documentSnapshot != null && documentSnapshot.exists()) {
+                        val name = documentSnapshot.getString("name")
+                        val email = documentSnapshot.getString("email")
+                        val imageURL = documentSnapshot.getString("imageURL")
+                        callback(name, email, imageURL)  // Trả kết quả về thông qua callback
                     } else {
-                        callback(null, currentUser.email)  // Trả email nếu không tìm thấy document
+                        callback(null, currentUser.email, null)  // Trả email nếu không tìm thấy document
                     }
                 }
-                .addOnFailureListener {
-                    callback(null, currentUser.email)  // Trả email nếu có lỗi
-                }
         } else {
-            callback(null, null)  // Nếu không có người dùng đăng nhập, trả về null
+            callback(null, null, null)  // Nếu không có người dùng đăng nhập, trả về null
         }
     }
 
