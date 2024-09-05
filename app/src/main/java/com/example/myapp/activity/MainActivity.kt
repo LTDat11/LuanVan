@@ -58,7 +58,6 @@ class MainActivity : AppCompatActivity() {
                         viewPager2?.currentItem = 1
                     }
                     R.id.nav_account -> {
-                        // Đặt item hiện tại là Account
                         viewPager2?.currentItem = 2
                     }
                 }

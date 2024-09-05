@@ -38,6 +38,10 @@ class UserInfoActivity : AppCompatActivity() {
     private var isImageSelected = false
     private var data: Intent? = null
     private var selectedImageUri: Uri? = null
+    private var originalName: String? = null
+    private var originalPhone: String? = null
+    private var originalAddress: String? = null
+    private var isEnableButtonSave = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,6 +76,76 @@ class UserInfoActivity : AppCompatActivity() {
             }
         }
 
+        binding.apply {
+            edtName?.addTextChangedListener(object : TextWatcher{
+                override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+                override fun afterTextChanged(s: Editable) {
+                    updateUIState()
+                }
+            })
+
+            edtPhone?.addTextChangedListener(object : TextWatcher{
+                override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+                override fun afterTextChanged(s: Editable) {
+                    updateUIState()
+                }
+            })
+
+            edtAddress?.addTextChangedListener(object : TextWatcher{
+                override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+                override fun afterTextChanged(s: Editable) {
+                    updateUIState()
+                }
+            })
+
+        }
+
+        // Lưu thông tin người dùng sau khi sửa
+        btnSave.setOnClickListener {
+            CoroutineScope(Dispatchers.IO).launch {
+                withContext(Dispatchers.Main) {
+                    if (!isEnableButtonSave){
+                        return@withContext
+                    }else{
+                        saveInfo()
+                    }
+                }
+            }
+
+        }
+
+
+    }
+
+    private fun saveInfo() {
+        binding.apply {
+            val name = edtName.text.toString().trim()
+            val phone = edtPhone.text.toString().trim()
+            val address = edtAddress.text.toString().trim()
+
+            val currentUser = firebaseAuth.currentUser
+            currentUser?.let { user ->
+                val userDocument = firestore.collection("Users").document(user.uid)
+                userDocument.update("name", name)
+                userDocument.update("phone", phone)
+                userDocument.update("address", address)
+                    .addOnSuccessListener {
+                        // Cập nhật thông tin thành công
+                        Toast.makeText(this@UserInfoActivity, "Cập nhật thông tin thành công!", Toast.LENGTH_SHORT).show()
+                        // Cập nhật trạng thái nút Button
+                        initUi()
+                        updateUIState()
+                    }
+                    .addOnFailureListener {
+                        // Cập nhật thông tin thất bại
+                        initUi()
+                        Toast.makeText(this@UserInfoActivity, "Cập nhật thông tin thất bại!", Toast.LENGTH_SHORT).show()
+                    }
+            }
+        }
     }
 
     private fun openGallery() {
@@ -82,13 +156,17 @@ class UserInfoActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PICK_IMAGE_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
-            this.data = data // Lưu trữ data vào biến data
-            selectedImageUri = data.data
-            selectedImageUri?.let {
-                binding.civAvatar.setImageURI(it)
-                isImageSelected = true //đã chọn ảnh
-                updateImage()
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main) {
+                if (requestCode == PICK_IMAGE_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
+                    this@UserInfoActivity.data = data // Lưu trữ data vào biến data
+                    selectedImageUri = data.data
+                    selectedImageUri?.let {
+                        binding.civAvatar.setImageURI(it)
+                        isImageSelected = true //đã chọn ảnh
+                        updateImage()
+                    }
+                }
             }
         }
     }
@@ -234,19 +312,22 @@ class UserInfoActivity : AppCompatActivity() {
 
                 userDocument.get().addOnSuccessListener { documentSnapshot ->
                     if (documentSnapshot.exists()) {
-                        val name = documentSnapshot.getString("name")
-                        val phone = documentSnapshot.getString("phone")
-                        val address = documentSnapshot.getString("address")
+                        originalName = documentSnapshot.getString("name")
+                        originalPhone = documentSnapshot.getString("phone")
+                        originalAddress = documentSnapshot.getString("address")
                         val imageURL = documentSnapshot.getString("imageURL")
 
                         // Hiển thị thông tin người dùng lên giao diện
-                        edtName.setText(name)
-                        edtPhone.setText(phone)
-                        edtAddress.setText(address)
+                        edtName.setText(originalName)
+                        edtPhone.setText(originalPhone)
+                        edtAddress.setText(originalAddress)
                         Glide.with(this@UserInfoActivity)
                             .load(imageURL)
                             .circleCrop()
                             .into(civAvatar)
+
+                        // Sau khi khởi tạo giao diện, cập nhật trạng thái ban đầu của nút Button
+                        updateUIState()
                     }
                 }
             }
@@ -254,5 +335,30 @@ class UserInfoActivity : AppCompatActivity() {
 
     }
 
+    private fun updateUIState() {
+        binding.apply {
+            CoroutineScope(Dispatchers.IO).launch {
+                withContext(Dispatchers.Main){
+                    val name = edtName.text.toString().trim()
+                    val phone = edtPhone.text.toString().trim()
+                    val address = edtAddress.text.toString().trim()
+
+                    val isNameChanged = name != originalName
+                    val isPhoneChanged = phone != originalPhone
+                    val isAddressChanged = address != originalAddress
+
+                    isEnableButtonSave = isNameChanged || isPhoneChanged || isAddressChanged
+
+                    btnSave.apply {
+                        background = ContextCompat.getDrawable(
+                            context,
+                            if (isEnableButtonSave) R.drawable.bg_button_enable_corner_16 else R.drawable.bg_button_disable_corner_16
+                        )
+                        isEnabled = isEnableButtonSave
+                    }
+                }
+            }
+        }
+    }
 
 }

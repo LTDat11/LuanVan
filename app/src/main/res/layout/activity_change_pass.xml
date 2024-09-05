@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".activity.ChangePassActivity">
+
+    <include layout="@layout/layout_toolbar"/>
+
+    <!-- Form Layout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <ImageView
+            android:layout_width="250dp"
+            android:layout_height="100dp"
+            android:src="@drawable/logo"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_old_password"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/textColorHeading"
+            android:textSize="12sp"/>
+
+        <EditText
+            android:id="@+id/edt_old_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:padding="14dp"
+            android:background="@drawable/bg_white_corner_16_border_gray"
+            android:hint="@string/hint_password_old"
+            android:imeOptions="actionNext"
+            android:inputType="textPassword"
+            android:textColorHint="@color/textColorAccent"
+            android:textColor="@color/textColorHeading"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_new_password"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/textColorHeading"
+            android:textSize="12sp"/>
+
+        <EditText
+            android:id="@+id/edt_new_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:padding="14dp"
+            android:background="@drawable/bg_white_corner_16_border_gray"
+            android:hint="@string/hint_password_new"
+            android:imeOptions="actionNext"
+            android:inputType="textPassword"
+            android:textColorHint="@color/textColorAccent"
+            android:textColor="@color/textColorHeading"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/label_confirm_new_password"
+            android:layout_marginTop="14dp"
+            android:textColor="@color/textColorHeading"
+            android:textSize="12sp"/>
+
+        <EditText
+            android:id="@+id/edt_confirm_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:padding="14sp"
+            android:background="@drawable/bg_white_corner_16_border_gray"
+            android:hint="@string/hint_password_confirm"
+            android:imeOptions="actionDone"
+            android:inputType="textPassword"
+            android:textColorHint="@color/textColorAccent"
+            android:textColor="@color/textColorHeading"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btn_change_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:textAllCaps="false"
+            android:background="@drawable/bg_button_enable_corner_16"
+            android:text="@string/change_password"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+</RelativeLayout>

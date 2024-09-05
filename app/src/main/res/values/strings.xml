@@ -32,6 +32,16 @@
     <string name="msg_reset_password_error">Lỗi!! không thể lấy lại mật khẩu.</string>
     <string name="action_ok">Đồng ý</string>
     <string name="reset_password">Gửi lại mật khẩu</string>
+    <string name="msg_old_password_require">Vui lòng nhập mật khẩu cũ</string>
+    <string name="msg_new_password_require">Vui lòng nhập mật khẩu mới</string>
+    <string name="msg_confirm_password_require">Vui lòng xác nhận mật khẩu mới</string>
+    <string name="msg_confirm_password_invalid">Vui lòng xác nhận mật khẩu mới</string>
+    <string name="msg_new_password_invalid">Mật khẩu mới phải khác mật khẩu cũ</string>
+    <string name="msg_password_changed_success">Đổi mật khẩu thành công</string>
+    <string name="msg_password_change_failed">Đổi mật khẩu thất bại</string>
+    <string name="msg_old_password_invalid">Xác thực mật khẩu cũ thất bại, mật khẩu cũ không đúng!!</string>
+
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="label_user_name">Email</string>
     <string name="label_process">Đang xử lý</string>
@@ -46,13 +56,14 @@
     <string name="confirm_sign_out">Bạn có muốn đăng xuất?</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="hint_home_search">Bạn muốn tìm gì?</string>
-    <string name="label_notes">Mô tả tình trạng và nhãn hiệu</string>
+    <string name="label_notes">Mô tả tình trạng</string>
     <string name="label_notes2">Dặn dò</string>
+    <string name="label_select_device_brand">Chọn thương hiệu của thiết bị</string>
     <string name="brand_customize">Tùy chọn nhãn hiệu</string>
     <string name="hint_optional">Bắt buộc</string>
     <string name="hint_optional2"> Không bắt buộc</string>
-    <string name="label_total">Tổng tiền</string>
-    <string name="label_order">Đặt đơn hàng</string>
+    <string name="label_total">Thành tiền (Chưa bao gồm chi phí thiết bị thay thế hoặc sửa chữa)</string>
+    <string name="label_order">Đặt hàng</string>
     <string name="label_success">Thành công</string>
     <string name="select_role">Lựa chọn đối tượng</string>
     <string name="customer">Khách hàng</string>
@@ -72,10 +83,33 @@
     <string name="user_info_title">Thông tin người dùng</string>
     <string name="default_phone">không có</string>
     <string name="default_address">không có</string>
+    <string name="label_old_password">Mật khẩu cũ</string>
+    <string name="hint_password_old">Vui lòng nhập mật khẩu cũ...</string>
+    <string name="label_new_password">Mật khẩu mới</string>
+    <string name="hint_password_new">Vui lòng nhập mật khẩu mới...</string>
+    <string name="label_confirm_new_password">Xác nhận mật khẩu mới</string>
+    <string name="hint_password_confirm">Vui lòng xác nhận mật khẩu mới...</string>
+    <string name="label_created_at">Tạo lúc:</string>
+    <string name="label_updated_at">Cập nhật lúc:</string>
+
 
     <!-- Bottom sheet    -->
     <string name="option_one">Sửa dịch vụ</string>
     <string name="option_two">Sửa gói dịch vụ</string>
     <string name="option_three">Sửa Banner</string>
+
+
+    <!-- String array    -->
+    <string-array name="brands">
+        <item>Chọn thương hiệu</item>
+        <item>Samsung</item>
+        <item>LG</item>
+        <item>Panasonic</item>
+        <item>Sony</item>
+        <item>Toshiba</item>
+        <item>Sharp</item>
+        <item>Khác</item>
+    </string-array>
+
 
 </resources>

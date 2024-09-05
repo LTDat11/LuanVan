@@ -43,17 +43,15 @@ class ServicePackageAdapter(var packages: List<ServicePackage>) : RecyclerView.A
         private val priceTextView: TextView = itemView.findViewById(R.id.package_price)
         private val optionsButton: ImageButton = itemView.findViewById(R.id.package_options)
 
-
         fun bind(servicePackage: ServicePackage) {
             nameTextView.text = servicePackage.name
             descriptionTextView.text = servicePackage.description
             priceTextView.text = servicePackage.price
             val id = servicePackage.id
-
             val deviceId = servicePackage.deviceId
             val categoryId = servicePackage.categoryId
             val firestore = FirebaseFirestore.getInstance()
-            // Truy vấn Firestore để lấy tên device
+
             firestore.collection("service_categories")
                 .document(categoryId)
                 .collection("devices")
@@ -63,8 +61,15 @@ class ServicePackageAdapter(var packages: List<ServicePackage>) : RecyclerView.A
                     if (document.exists()) {
                         val deviceName = document.getString("name")
                         if (deviceName != null) {
-                            // Dùng tên device để lấy ảnh từ Firebase Storage
-                            loadImageFromFirebase(deviceName, imageView)
+                            loadImageFromFirebase(deviceName, imageView) { imageUrl ->
+                                // Khi đã lấy được imageUrl, ta truyền nó qua intent
+                                itemView.setOnClickListener {
+                                    val intent = Intent(itemView.context, DetailPackageActivity::class.java)
+                                    intent.putExtra("package", servicePackage)
+                                    intent.putExtra("imageUrl", imageUrl)  // Kèm theo URL ảnh
+                                    itemView.context.startActivity(intent)
+                                }
+                            }
                         }
                     } else {
                         Log.e("ServicePackageAdapter", "Device document does not exist")
@@ -74,33 +79,23 @@ class ServicePackageAdapter(var packages: List<ServicePackage>) : RecyclerView.A
                     Log.e("ServicePackageAdapter", "Error getting device name", exception)
                 }
 
-            // click listener for item view
-            itemView.setOnClickListener {
-                //intent to detail activity
-                val intent = Intent(itemView.context, DetailPackageActivity::class.java)
-                intent.putExtra("package", servicePackage)
-                itemView.context.startActivity(intent)
-            }
-
             optionsButton.setOnClickListener {
-                Toast.makeText(itemView.context, "Options for package ID: ${id}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(itemView.context, "Options for package ID: $id", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // Hàm để tải ảnh từ Firebase Storage dựa trên tên device
-        private fun loadImageFromFirebase(deviceName: String, imageView: ImageView) {
+        private fun loadImageFromFirebase(deviceName: String, imageView: ImageView, onImageUrlReady: (String) -> Unit) {
             val storageRef = FirebaseStorage.getInstance().reference.child("device/$deviceName/")
 
-            // Truy cập tới file ảnh trong thư mục deviceName
             storageRef.listAll()
                 .addOnSuccessListener { listResult ->
                     if (listResult.items.isNotEmpty()) {
-                        //chỉ có một ảnh trong thư mục
                         val imageRef = listResult.items[0]
                         imageRef.downloadUrl.addOnSuccessListener { uri ->
                             Glide.with(imageView.context)
                                 .load(uri)
                                 .into(imageView)
+                            onImageUrlReady(uri.toString())  // Trả về URL ảnh
                         }.addOnFailureListener { exception ->
                             Log.e("ServicePackageAdapter", "Error loading image URL", exception)
                         }
@@ -112,7 +107,6 @@ class ServicePackageAdapter(var packages: List<ServicePackage>) : RecyclerView.A
                     Log.e("ServicePackageAdapter", "Error listing files in storage", exception)
                 }
         }
-
     }
 
 }

@@ -109,10 +109,10 @@
                 android:id="@+id/radio_technician"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
                 android:text="@string/technician"
                 android:textColor="@color/textColorHeading"
-                android:textSize="14sp"
-                android:layout_marginStart="20dp" />
+                android:textSize="14sp" />
         </RadioGroup>
 
         <Button

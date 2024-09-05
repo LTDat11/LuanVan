@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.example.myapp.R
+import com.example.myapp.activity.ChangePassActivity
 import com.example.myapp.activity.LoginActivity
 import com.example.myapp.activity.MainActivity
 import com.example.myapp.activity.UserInfoActivity
@@ -41,6 +42,13 @@ class AccountFragment : Fragment() {
         val layoutEditProfile = mView?.findViewById<View>(R.id.layout_user_info)
         layoutEditProfile?.setOnClickListener {
             val intent = Intent(activity, UserInfoActivity::class.java)
+            startActivity(intent)
+        }
+
+        //Đổi mật khẩu
+        val layoutChangePass = mView?.findViewById<View>(R.id.layout_change_password)
+        layoutChangePass?.setOnClickListener {
+            val intent = Intent(activity, ChangePassActivity::class.java)
             startActivity(intent)
         }
     }
