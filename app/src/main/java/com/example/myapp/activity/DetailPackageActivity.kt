@@ -101,6 +101,7 @@ class DetailPackageActivity : AppCompatActivity() {
         }
     }
 
+
     private fun initData() {
         binding.apply {
             tvName.text = servicePackage.name

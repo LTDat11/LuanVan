@@ -91,6 +91,20 @@
     <string name="hint_password_confirm">Vui lòng xác nhận mật khẩu mới...</string>
     <string name="label_created_at">Tạo lúc:</string>
     <string name="label_updated_at">Cập nhật lúc:</string>
+    <string name="label_waiting_order">Đang chờ nhận đơn</string>
+    <string name="label_takes_order">Đã nhận đơn và phân công kỹ thuật viên</string>
+    <string name="label_order_complete">Đơn hàng của bạn đã hoàn tất</string>
+    <string name="label_receipt_order">Hóa đơn</string>
+    <string name="label_bill">Vui lòng kiểm tra thông tin trước khi thanh toán!!</string>
+    <string name="label_description">Mô tả tình trạng: </string>
+    <string name="label_note">Ghi chú: </string>
+    <string name="label_take_order">Thanh toán</string>
+    <string name="label_tracking_order">Theo dõi đơn hàng</string>
+    <string name="label_total_price">Tổng tiền: </string>
+    <string name="label_customer_name">Khách hàng: </string>
+    <string name="label_technician_name">Kỹ thuật viên: </string>
+    <string name="label_package_price">Giá gói: </string>
+    <string name="label_repaired_items">Danh sách các thiết bị đã thay thế/sửa chữa</string>
 
 
     <!-- Bottom sheet    -->

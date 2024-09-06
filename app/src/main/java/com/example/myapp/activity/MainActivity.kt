@@ -63,6 +63,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 true
             }
+
         }
     }
 
@@ -100,7 +101,7 @@ class MainActivity : AppCompatActivity() {
                         navigateToCompleteProfile()
                     }
                 } else {
-                    navigateToCompleteProfile()
+
                 }
             }
             .addOnFailureListener {

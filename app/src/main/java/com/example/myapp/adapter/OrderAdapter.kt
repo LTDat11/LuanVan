@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.myapp.R
+import com.example.myapp.activity.TrackingOrderActivity
 import com.example.myapp.model.Order
 
 class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<OrderAdapter.OrderViewHolder>() {
@@ -28,18 +29,24 @@ class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<Order
         Glide.with(holder.itemView.context).load(order.imgURLServicePackage).into(holder.img_package) // Hiển thị ảnh nếu cần
 
         // Hiển thị thêm thông tin nếu cần
-        if (order.status == "pending") {
-            holder.tvStatus.visibility = View.GONE
-        } else {
-            holder.tvStatus.visibility = View.VISIBLE
+        when (order.status){
+            "pending" -> {
+                holder.tvStatus.text = "Chờ nhận đơn"
+            }
+            "processing" -> {
+                holder.tvStatus.text = "Đang xử lý"
+            }
+            "completed" -> {
+                holder.tvStatus.text = "Chờ thanh toán"
+            }
         }
 
         holder.layoutAction.setOnClickListener {
             // Xử lý khi click vào button action
-//            val context = holder.itemView.context
-//            val intent = Intent(context, OrderTrackingActivity::class.java)
-//            intent.putExtra("order_id", order.id)
-//            context.startActivity(intent)
+            val context = holder.itemView.context
+            val intent = Intent(context, TrackingOrderActivity::class.java)
+            intent.putExtra("order_id", order.id)
+            context.startActivity(intent)
         }
     }
 
