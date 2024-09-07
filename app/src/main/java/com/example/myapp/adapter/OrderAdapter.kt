@@ -10,8 +10,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.myapp.R
+import com.example.myapp.activity.ReceiptOrderActivity
 import com.example.myapp.activity.TrackingOrderActivity
 import com.example.myapp.model.Order
+import com.google.firebase.firestore.FirebaseFirestore
 
 class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<OrderAdapter.OrderViewHolder>() {
 
@@ -25,30 +27,60 @@ class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<Order
         holder.tvOrderId.text = order.id
         holder.tvPackageName.text = order.namePackage
         holder.tvTotal.text = order.price.toString()
-        holder.tvAction.text = "Theo dõi đơn hàng"
+//        holder.tvAction.text = "Theo dõi đơn hàng"
         Glide.with(holder.itemView.context).load(order.imgURLServicePackage).into(holder.img_package) // Hiển thị ảnh nếu cần
 
         // Hiển thị thêm thông tin nếu cần
         when (order.status){
             "pending" -> {
                 holder.tvStatus.text = "Chờ nhận đơn"
+                holder.tvAction.text = "Theo dõi đơn hàng"
             }
             "processing" -> {
                 holder.tvStatus.text = "Đang xử lý"
+                holder.tvAction.text = "Theo dõi đơn hàng"
             }
             "completed" -> {
                 holder.tvStatus.text = "Chờ thanh toán"
+                holder.tvAction.text = "Theo dõi đơn hàng"
             }
+            "finish" -> {
+                holder.tvStatus.text = "Đã thanh toán"
+                // Đổi tên tvAction
+                holder.tvAction.text = "Xem hóa đơn"
+                // Lấy dữ liệu từ collection bills
+                val db = FirebaseFirestore.getInstance()
+                db.collection("orders")
+                    .document(order.id!!)
+                    .collection("bills")
+                    .get()
+                    .addOnSuccessListener {
+                        val total = it.documents[0].get("total")
+                        holder.tvTotal.text = total.toString()
+                    }
+            }
+            else -> holder.tvStatus.text = "Không xác định"
         }
 
         holder.layoutAction.setOnClickListener {
-            // Xử lý khi click vào button action
-            val context = holder.itemView.context
-            val intent = Intent(context, TrackingOrderActivity::class.java)
-            intent.putExtra("order_id", order.id)
-            context.startActivity(intent)
+            // kiểm tra tên của layoutAction
+            if (order.status == "finish") {
+                // Xử lý khi click vào button action
+                val context = holder.itemView.context
+                val intent = Intent(context, ReceiptOrderActivity::class.java)
+                intent.putExtra("order_id", order.id)
+                context.startActivity(intent)
+            }else {
+                // Xử lý khi click vào button action
+                val context = holder.itemView.context
+                val intent = Intent(context, TrackingOrderActivity::class.java)
+                intent.putExtra("order_id", order.id)
+                context.startActivity(intent)
+            }
         }
     }
+
+
 
     override fun getItemCount() = orders.size
 

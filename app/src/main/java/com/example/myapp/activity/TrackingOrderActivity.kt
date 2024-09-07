@@ -4,14 +4,18 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.myapp.R
+import com.example.myapp.adapter.PaymentMethodAdapter
 import com.example.myapp.adapter.RepairAdapter
 import com.example.myapp.databinding.ActivityTrackingOrderBinding
+import com.example.myapp.model.Bill
 import com.example.myapp.model.Order
+import com.example.myapp.model.PaymentMethod
 import com.example.myapp.model.Repair
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
@@ -23,6 +27,7 @@ import kotlinx.coroutines.withContext
 
 import com.google.firebase.firestore.ListenerRegistration
 import java.text.NumberFormat
+import java.util.Date
 import java.util.Locale
 
 class TrackingOrderActivity : AppCompatActivity() {
@@ -38,6 +43,48 @@ class TrackingOrderActivity : AppCompatActivity() {
         getDataIntent()
         initToolbar()
         initUi()
+        initListener()
+    }
+
+    private fun initListener() {
+        binding.tvTakeOrder.setOnClickListener {
+            createBillAndUpdateOrder()
+        }
+    }
+
+    private fun createBillAndUpdateOrder() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = FirebaseFirestore.getInstance()
+            val auth = FirebaseAuth.getInstance()
+            val uid = auth.currentUser?.uid ?: ""
+
+            // Tạo đối tượng Bill
+            val bill = Bill(
+                id = db.collection("orders").document(orderId).collection("bills").document().id,
+                id_customer = uid,
+                id_technician = null, // Cần cung cấp nếu có
+                id_order = orderId,
+                id_paymentMethod = "1", // Hoặc lấy từ dữ liệu được chọn
+                total = binding.tvTotalPrice.text.toString(),
+                createdAt = Date()
+            )
+
+            // Lưu Bill vào subcollection bills
+            val billRef = db.collection("orders").document(orderId).collection("bills").document(bill.id!!)
+            billRef.set(bill).addOnSuccessListener {
+                // Cập nhật trạng thái đơn hàng thành 'payed'
+                val orderRef = db.collection("orders").document(orderId)
+                orderRef.update("status", "finish").addOnSuccessListener {
+                    Log.d("TrackingOrderActivity", "Order status updated to 'payed'")
+                    //ẩn button thanh toán
+                    binding.layoutBottom.visibility = LinearLayout.GONE
+                }.addOnFailureListener { e ->
+                    Log.e("TrackingOrderActivity", "Error updating order status", e)
+                }
+            }.addOnFailureListener { e ->
+                Log.e("TrackingOrderActivity", "Error creating bill", e)
+            }
+        }
     }
 
     private fun initUi() {
@@ -113,6 +160,22 @@ class TrackingOrderActivity : AppCompatActivity() {
                     tvTakeOrder.setBackgroundResource(R.drawable.bg_button_enable_corner_16)
                     layoutBill.visibility = TextView.VISIBLE
                     loadInfoBill()
+                    loadPaymentMethods()
+                }
+            }
+        }
+    }
+
+    private fun loadPaymentMethods() {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main) {
+                val db = FirebaseFirestore.getInstance()
+                val docRef = db.collection("paymentMethods")
+                docRef.get().addOnSuccessListener { documents ->
+                    val paymentMethods = documents.toObjects(PaymentMethod::class.java)
+                    val adapter = PaymentMethodAdapter(paymentMethods)
+                    binding.rcvPaymentMethod.layoutManager = LinearLayoutManager(this@TrackingOrderActivity)
+                    binding.rcvPaymentMethod.adapter = adapter
                 }
             }
         }
@@ -152,6 +215,8 @@ class TrackingOrderActivity : AppCompatActivity() {
                         }
                     }
                 }
+
+                // lấy thông tin các document trong colection paymentMethods hiển thị lên recyclerview
 
             }
         }

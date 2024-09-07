@@ -104,7 +104,17 @@
     <string name="label_customer_name">Khách hàng: </string>
     <string name="label_technician_name">Kỹ thuật viên: </string>
     <string name="label_package_price">Giá gói: </string>
+    <string name="label_name_package">Tên gói </string>
+    <string name="label_name_technician">Tên kỹ thuật viên </string>
     <string name="label_repaired_items">Danh sách các thiết bị đã thay thế/sửa chữa</string>
+    <string name="label_payment_summary">Thanh toán</string>
+    <string name="label_thank_you">Cảm ơn bạn!</string>
+    <string name="label_your_transaction_success">Giao dịch của bạn đã thành công</string>
+    <string name="label_id_transaction">Mã đơn hàng</string>
+    <string name="label_date_and_time">Thời gian</string>
+    <string name="label_payment_method">Phương thức thanh toán:</string>
+    <string name="infor_title">Thông tin khách hàng</string>
+    <string name="Dont_have_any_order_yet">Không có đơn hàng</string>
 
 
     <!-- Bottom sheet    -->

@@ -15,5 +15,5 @@ data class Order(
     var selectedBrand: String? = null,
     var imgURLServicePackage: String? = null,
     var namePackage: String? = null,
-    var price: String? = null
+    var price: String? = null,
 ) : Serializable
