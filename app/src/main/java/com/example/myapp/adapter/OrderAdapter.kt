@@ -30,7 +30,6 @@ class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<Order
 //        holder.tvAction.text = "Theo dõi đơn hàng"
         Glide.with(holder.itemView.context).load(order.imgURLServicePackage).into(holder.img_package) // Hiển thị ảnh nếu cần
 
-        // Hiển thị thêm thông tin nếu cần
         when (order.status){
             "pending" -> {
                 holder.tvStatus.text = "Chờ nhận đơn"

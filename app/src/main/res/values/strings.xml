@@ -2,6 +2,7 @@
     <string name="app_name">Luận văn</string>
     <string name="nav_home">Trang chủ</string>
     <string name="nav_history">Lịch sử</string>
+    <string name="nav_job">Công việc</string>
     <string name="nav_account">Tài khoản</string>
     <string name="nav_list">Đơn hàng</string>
     <string name="nav_gif">Khuyến mãi</string>
@@ -53,6 +54,8 @@
     <string name="confirm_exit_app">Bạn có muốn thoát ứng dụng?</string>
     <string name="yes">Đồng ý</string>
     <string name="no">Hủy</string>
+    <string name="edit">Sửa</string>
+    <string name="delete">Xóa</string>
     <string name="confirm_sign_out">Bạn có muốn đăng xuất?</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="hint_home_search">Bạn muốn tìm gì?</string>
@@ -100,6 +103,7 @@
     <string name="label_note">Ghi chú: </string>
     <string name="label_take_order">Thanh toán</string>
     <string name="label_tracking_order">Theo dõi đơn hàng</string>
+    <string name="label_tracking_tech_order">Thông tin đơn hàng</string>
     <string name="label_total_price">Tổng tiền: </string>
     <string name="label_customer_name">Khách hàng: </string>
     <string name="label_technician_name">Kỹ thuật viên: </string>

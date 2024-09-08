@@ -9,13 +9,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
-import com.example.myapp.activity.MainActivity
 import com.example.myapp.adapter.OderStatusPagerAdapter
 import com.example.myapp.model.OrderStatus
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 
-class HistoryFragment : Fragment() {
+class JobFragment : Fragment() {
     private var mView: View? = null
     private lateinit var viewPagerOrder: ViewPager2
     private lateinit var tabOrder: TabLayout
@@ -23,21 +22,22 @@ class HistoryFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        mView = inflater.inflate(R.layout.fragment_history, container, false)
-        viewPagerOrder = mView!!.findViewById(R.id.view_pager_order)
-        tabOrder = mView!!.findViewById(R.id.tab_order)
+        mView = inflater.inflate(R.layout.fragment_job, container, false)
+        viewPagerOrder = mView!!.findViewById(R.id.view_pager_job)
+        tabOrder = mView!!.findViewById(R.id.tab_job)
         initToolbar()
 
         setupViewPager()
-        // Inflate the layout for this fragment
+
         return mView
     }
 
     private fun setupViewPager() {
         val statusList = listOf(
-            OrderStatus("Đang xử lý", LabelProcessFragment()),
-            OrderStatus("Hoàn thành", LabelDoneFragment())
+            OrderStatus("Được phân công", LabelProcessTechFragment()),
+            OrderStatus("Hoàn thành", LabelDoneTechFragment())
         )
+
         val adapter = OderStatusPagerAdapter(requireActivity(), statusList)
         viewPagerOrder.adapter = adapter
         TabLayoutMediator(tabOrder, viewPagerOrder) { tab, position ->
@@ -62,15 +62,7 @@ class HistoryFragment : Fragment() {
     }
 
     private fun initToolbar() {
-//        val imgToolbarBack = mView?.findViewById<ImageView>(R.id.img_toolbar_back)
         val tvToolbarTitle = mView?.findViewById<TextView>(R.id.tv_toolbar_title)
-//        imgToolbarBack?.setOnClickListener { backToHomeScreen(HomeFragment()) }
-        tvToolbarTitle?.text = getString(R.string.nav_history)
+        tvToolbarTitle?.text = getString(R.string.nav_job)
     }
-
-    private fun backToHomeScreen(homeFragment: HomeFragment) {
-        val mainActivity = activity as MainActivity? ?: return
-        mainActivity.viewPager2?.currentItem = 0
-    }
-
 }

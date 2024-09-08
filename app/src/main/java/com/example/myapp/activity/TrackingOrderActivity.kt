@@ -161,6 +161,7 @@ class TrackingOrderActivity : AppCompatActivity() {
                     layoutBill.visibility = TextView.VISIBLE
                     loadInfoBill()
                     loadPaymentMethods()
+                    tvTakeOrder.visibility = TextView.VISIBLE
                 }
             }
         }

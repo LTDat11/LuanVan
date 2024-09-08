@@ -86,7 +86,9 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun goToTechnicianActivity() {
-        TODO("Not yet implemented")
+        val intent = Intent(this, TechnicianActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 
     private fun goToLoginActivity() {

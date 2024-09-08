@@ -8,8 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myapp.R
 import com.example.myapp.model.Repair
 
-class RepairAdapter(private val repairs: List<Repair>) :
-    RecyclerView.Adapter<RepairAdapter.RepairViewHolder>() {
+class RepairAdapter(private val repairs: List<Repair>) : RecyclerView.Adapter<RepairAdapter.RepairViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RepairViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_repaired_device, parent, false)

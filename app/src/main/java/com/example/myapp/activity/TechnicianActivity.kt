@@ -2,32 +2,27 @@ package com.example.myapp.activity
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
-import com.example.myapp.adapter.MyViewPagerAdapter
-import com.example.myapp.databinding.ActivityMainBinding
-import com.example.myapp.fragment.AccountFragment
-import com.example.myapp.fragment.HomeFragment
+import com.example.myapp.adapter.MyViewPagerTechnicainAdapter
+import com.example.myapp.databinding.ActivityTechnicianBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.android.gms.tasks.Task
 
-class MainActivity : AppCompatActivity() {
 
-    lateinit var binding: ActivityMainBinding
+class TechnicianActivity : AppCompatActivity() {
+    lateinit var binding: ActivityTechnicianBinding
     private var mBottomNavigationView: BottomNavigationView? = null
     var viewPager2: ViewPager2? = null
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityTechnicianBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // Kiểm tra thông tin người dùng và chuyển hướng tới trang điền thông tin còn thiếu
@@ -37,35 +32,35 @@ class MainActivity : AppCompatActivity() {
             mBottomNavigationView = bottomNavigation
             viewPager2 = viewpager2
             viewPager2?.isUserInputEnabled = false
-            val myViewPagerAdapter = MyViewPagerAdapter(this@MainActivity)
-            viewPager2?.adapter = myViewPagerAdapter
-            viewPager2?.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+
+            val myViewPagerTechnincainAdapter = MyViewPagerTechnicainAdapter(this@TechnicianActivity)
+            viewPager2?.adapter = myViewPagerTechnincainAdapter
+
+            viewpager2?.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageSelected(position: Int) {
                     super.onPageSelected(position)
                     when (position) {
-                        0 -> mBottomNavigationView?.menu?.findItem(R.id.nav_home)?.isChecked = true
-                        1 -> mBottomNavigationView?.menu?.findItem(R.id.nav_history)?.isChecked = true
-                        2 -> mBottomNavigationView?.menu?.findItem(R.id.nav_account)?.isChecked = true
+                        0 -> mBottomNavigationView?.menu?.findItem(R.id.nav_job)?.isChecked = true
+                        1 -> mBottomNavigationView?.menu?.findItem(R.id.nav_account)?.isChecked = true
                     }
                 }
             })
-            mBottomNavigationView?.setOnNavigationItemSelectedListener { item ->
+            mBottomNavigationView?.setOnNavigationItemSelectedListener{item ->
                 when (item.itemId) {
-                    R.id.nav_home -> {
+                    R.id.nav_job -> {
                         viewPager2?.currentItem = 0
                     }
-                    R.id.nav_history -> {
-                        viewPager2?.currentItem = 1
-                    }
                     R.id.nav_account -> {
-                        viewPager2?.currentItem = 2
+                        viewPager2?.currentItem = 1
                     }
                 }
                 true
             }
-
         }
+
     }
+
+
 
     @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {

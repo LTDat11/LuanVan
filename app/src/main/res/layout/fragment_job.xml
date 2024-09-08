@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".fragment.HistoryFragment"
+    tools:context=".fragment.JobFragment"
     android:background="@color/white">
 
     <LinearLayout
@@ -17,7 +17,7 @@
         <include layout="@layout/layout_toolbar_2"/>
 
         <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tab_order"
+            android:id="@+id/tab_job"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:tabSelectedTextColor="@color/blue"
@@ -34,7 +34,7 @@
             android:background="@color/bgMainColor"/>
 
         <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/view_pager_order"
+            android:id="@+id/view_pager_job"
             android:background="@color/white"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

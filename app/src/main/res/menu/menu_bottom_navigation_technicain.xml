@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_job"
+        android:icon="@drawable/baseline_work_history_24"
+        android:title="@string/nav_job" />
+
+    <item
+        android:id="@+id/nav_account"
+        android:icon="@drawable/baseline_manage_accounts_24"
+        android:title="@string/nav_account" />
+
+</menu>

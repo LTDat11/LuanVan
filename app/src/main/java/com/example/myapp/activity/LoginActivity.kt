@@ -125,9 +125,9 @@ class LoginActivity : BaseActivity()  {
                                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
                                             startActivity(intent)
                                     } else if (role == "Technician") {
-//                                            val intent = Intent(this, TechnicianActivity::class.java)
-//                                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-//                                            startActivity(intent)
+                                            val intent = Intent(this, TechnicianActivity::class.java)
+                                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                            startActivity(intent)
                                     }
                                     else {
                                         val intent = Intent(this, AdminActivity::class.java)

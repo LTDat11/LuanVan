@@ -123,9 +123,9 @@ class AccountFragment : Fragment() {
 
 // set up the toolbar text, back button click listener and set text to Account
     private fun initToolbar() {
-        val imgToolbarBack = mView?.findViewById<ImageView>(R.id.img_toolbar_back)
+//        val imgToolbarBack = mView?.findViewById<ImageView>(R.id.img_toolbar_back)
         val tvToolbarTitle = mView?.findViewById<TextView>(R.id.tv_toolbar_title)
-        imgToolbarBack?.setOnClickListener { backToHomeScreen(HomeFragment()) }
+//        imgToolbarBack?.setOnClickListener { backToHomeScreen(HomeFragment()) }
         tvToolbarTitle?.text = getString(R.string.nav_account)
     }
 
