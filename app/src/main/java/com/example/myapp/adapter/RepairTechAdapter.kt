@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myapp.R
 import com.example.myapp.model.Repair
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.NumberFormat
+import java.util.Locale
 
 class RepairTechAdapter(private val repairList: List<Repair>) : RecyclerView.Adapter<RepairTechAdapter.RepairViewHolder>() {
 
@@ -31,6 +33,9 @@ class RepairTechAdapter(private val repairList: List<Repair>) : RecyclerView.Ada
         val repair = repairList[position]
         holder.tvRepairName.text = repair.name
         holder.tvRepairPrice.text = repair.price
+        val id_order = repair.id_order
+        // Kiểm tra status của order để ẩn hiện button
+        checkStatusOrder(holder, id_order!!)
         // Xử lý sự kiện click cho btnEdit, btnDelete nếu cần
         holder.btnEdit.setOnClickListener {
             //show dialog edit
@@ -39,6 +44,24 @@ class RepairTechAdapter(private val repairList: List<Repair>) : RecyclerView.Ada
         holder.btnDelete.setOnClickListener {
             deleteRepair(holder.itemView, repair, position)
         }
+    }
+
+    private fun checkStatusOrder(holder: RepairTechAdapter.RepairViewHolder, idOrder: String) {
+        val db = FirebaseFirestore.getInstance()
+        val orderRef = db.collection("orders").document(idOrder)
+        orderRef.get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    val status = document.getString("status")
+                    if (status == "processing") {
+                        holder.btnEdit.visibility = View.VISIBLE
+                        holder.btnDelete.visibility = View.VISIBLE
+                    } else {
+                        holder.btnEdit.visibility = View.GONE
+                        holder.btnDelete.visibility = View.GONE
+                    }
+                }
+            }
     }
 
     private fun deleteRepair(itemView: View, repair: Repair, position: Int) {
@@ -69,7 +92,7 @@ class RepairTechAdapter(private val repairList: List<Repair>) : RecyclerView.Ada
 
         // Điền dữ liệu hiện tại vào EditText
         etDeviceName.setText(repair.name)
-        etDevicePrice.setText(repair.price)
+        etDevicePrice.setText(repair.price!!.replace(",", "").replace("VND", ""))
 
         val dialog = AlertDialog.Builder(context)
             .setTitle("Chỉnh sửa thiết bị")
@@ -78,26 +101,31 @@ class RepairTechAdapter(private val repairList: List<Repair>) : RecyclerView.Ada
                 val updatedName = etDeviceName.text.toString()
                 val updatedPrice = etDevicePrice.text.toString()
 
-                if (updatedName.isNotEmpty() && updatedPrice.isNotEmpty()) {
-                    // Cập nhật dữ liệu trong Firestore
-                    val db = FirebaseFirestore.getInstance()
-                    val repairRef = db.collection("orders")
-                        .document(repair.id_order!!)
-                        .collection("repairs")
-                        .document(repair.id!!)
+                // Kiểm tra nếu dữ liệu mới khác với dữ liệu cũ
+                if (updatedName != repair.name || updatedPrice != repair.price!!.replace(",", "").replace("VND", "")) {
+                    if (updatedName.isNotEmpty() && updatedPrice.isNotEmpty()) {
+                        // Cập nhật dữ liệu trong Firestore
+                        val db = FirebaseFirestore.getInstance()
+                        val repairRef = db.collection("orders")
+                            .document(repair.id_order!!)
+                            .collection("repairs")
+                            .document(repair.id!!)
 
-                    // Cập nhật thông tin thiết bị
-                    repairRef.update("name", updatedName, "price", updatedPrice)
-                        .addOnSuccessListener {
-                            // Cập nhật danh sách sau khi chỉnh sửa thành công
-                            notifyItemChanged(position)
-                            Toast.makeText(context, "Chỉnh sửa thiết bị thành công", Toast.LENGTH_SHORT).show()
-                        }
-                        .addOnFailureListener { e ->
-                            Toast.makeText(context, "Lỗi khi chỉnh sửa thiết bị: ${e.message}", Toast.LENGTH_SHORT).show()
-                        }
+                        // Cập nhật thông tin thiết bị
+                        repairRef.update("name", updatedName, "price", formatPrice(updatedPrice))
+                            .addOnSuccessListener {
+                                // Cập nhật danh sách sau khi chỉnh sửa thành công
+                                notifyItemChanged(position)
+                                Toast.makeText(context, "Chỉnh sửa thiết bị thành công", Toast.LENGTH_SHORT).show()
+                            }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(context, "Lỗi khi chỉnh sửa thiết bị: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                    } else {
+                        Toast.makeText(context, "Vui lòng nhập đủ thông tin", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
-                    Toast.makeText(context, "Vui lòng nhập đủ thông tin", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Không có thay đổi nào được thực hiện", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Hủy", null)
@@ -105,6 +133,18 @@ class RepairTechAdapter(private val repairList: List<Repair>) : RecyclerView.Ada
 
         dialog.show()
     }
+
+    // Hàm định dạng giá tiền
+    private fun formatPrice(price: String): String {
+        val price = price.toLongOrNull() ?: return price
+        // Sử dụng NumberFormat để định dạng theo locale Việt Nam
+        val numberFormat = NumberFormat.getNumberInstance(Locale.US)
+        val formattedPrice = numberFormat.format(price)
+
+        // Trả về chuỗi đã định dạng kèm với đơn vị tiền tệ VND
+        return "$formattedPrice VND"
+    }
+
 
     override fun getItemCount(): Int {
         return repairList.size

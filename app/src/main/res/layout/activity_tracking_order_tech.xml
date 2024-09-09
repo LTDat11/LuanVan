@@ -238,7 +238,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:background="@drawable/bg_button_disable_corner_16"
+            android:background="@drawable/bg_button_enable_corner_16"
             android:gravity="center"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"

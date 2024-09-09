@@ -15,6 +15,7 @@ import com.example.myapp.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.myapp.model.User
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 
 class RegisterActivity : BaseActivity() {
@@ -147,10 +148,9 @@ class RegisterActivity : BaseActivity() {
                                             startActivity(intent)
                                         }
                                         "Technician" -> {
-                                            // Uncomment this if you have a TechnicianActivity
-                                            // val intent = Intent(this, TechnicianActivity::class.java)
-                                            // intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-                                            // startActivity(intent)
+                                             val intent = Intent(this, TechnicianActivity::class.java)
+                                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                             startActivity(intent)
                                         }
                                         else -> {
                                             val intent = Intent(this, AdminActivity::class.java)
@@ -179,28 +179,45 @@ class RegisterActivity : BaseActivity() {
     // Thêm UID vào collection tương ứng
     private fun addUserToRoleSpecificCollection(userId: String, role: String) {
         val db = FirebaseFirestore.getInstance()
-        when (role) {
-            "Customer" -> {
-                db.collection("Customers").document(userId)
-                    .set(mapOf("userId" to userId))
-                    .addOnSuccessListener {
-                        // UID đã được thêm vào collection "Customers"
+
+        // Lấy FCM Token
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val fcmToken = task.result
+
+                // Chuẩn bị dữ liệu để lưu vào Firestore
+                val userData = mapOf(
+                    "userId" to userId,
+                    "fcmToken" to fcmToken
+                )
+
+                when (role) {
+                    "Customer" -> {
+                        db.collection("Customers").document(userId)
+                            .set(userData)
+                            .addOnSuccessListener {
+                                // UID và FCM Token đã được thêm vào collection "Customers"
+                            }
+                            .addOnFailureListener { e ->
+                                showToastMessage("Failed to add to Customers collection: ${e.message}")
+                            }
                     }
-                    .addOnFailureListener { e ->
-                        showToastMessage("Failed to add to Customers collection: ${e.message}")
+                    "Technician" -> {
+                        db.collection("Technicians").document(userId)
+                            .set(userData)
+                            .addOnSuccessListener {
+                                // UID và FCM Token đã được thêm vào collection "Technicians"
+                            }
+                            .addOnFailureListener { e ->
+                                showToastMessage("Failed to add to Technicians collection: ${e.message}")
+                            }
                     }
-            }
-            "Technician" -> {
-                db.collection("Technicians").document(userId)
-                    .set(mapOf("userId" to userId))
-                    .addOnSuccessListener {
-                        // UID đã được thêm vào collection "Technicians"
-                    }
-                    .addOnFailureListener { e ->
-                        showToastMessage("Failed to add to Technicians collection: ${e.message}")
-                    }
+                }
+            } else {
+                showToastMessage("Failed to retrieve FCM Token: ${task.exception?.message}")
             }
         }
     }
+
 
 }

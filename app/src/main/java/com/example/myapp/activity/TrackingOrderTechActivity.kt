@@ -12,17 +12,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.myapp.R
-import com.example.myapp.adapter.PaymentMethodAdapter
 import com.example.myapp.adapter.RepairTechAdapter
 import com.example.myapp.databinding.ActivityTrackingOrderTechBinding
 import com.example.myapp.model.Order
-import com.example.myapp.model.PaymentMethod
 import com.example.myapp.model.Repair
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
-import kotlinx.coroutines.*
-import kotlinx.coroutines.tasks.await
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -30,6 +24,9 @@ class TrackingOrderTechActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityTrackingOrderTechBinding
     private var orderId: String = ""
+    private var imgURL : String = ""
+    private var idCustomer: String = ""
+    private var tokenCustomer: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +34,7 @@ class TrackingOrderTechActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         orderId = intent.getStringExtra("order_id").toString()
+        imgURL = intent.getStringExtra("imgURL").toString()
 
         initToolbar()
         fetchOrderData()
@@ -99,6 +97,9 @@ class TrackingOrderTechActivity : AppCompatActivity() {
             tvUpdatedAtValue.text = order.updatedAt.toString()
             tvDescriptionValue.text = order.description
             tvNoteValue.text = order.notes2
+            Glide.with(this@TrackingOrderTechActivity).load(imgURL).into(imgPackage)
+
+            idCustomer = order.id_customer.toString()
         }
     }
 
@@ -112,10 +113,35 @@ class TrackingOrderTechActivity : AppCompatActivity() {
                 tvDone.visibility = if (isChecked) View.VISIBLE else View.GONE
             }
 
+            tvDone.setOnClickListener {
+                updateStatus()
+            }
+
             fabAddDeviceRepairs.setOnClickListener {
                 showDialogAdd()
             }
         }
+    }
+
+    private fun updateStatus() {
+        val currentTime = java.util.Date()
+        val db = FirebaseFirestore.getInstance()
+        val orderRef = db.collection("orders").document(orderId)
+
+
+        // Cập nhật trạng thái đơn hàng
+        orderRef.update("status", "completed", "updatedAt", currentTime)
+            .addOnSuccessListener {
+                // Gửi thông báo cho khách hàng
+                Toast.makeText(this@TrackingOrderTechActivity, "Đã hoàn thành đơn hàng", Toast.LENGTH_SHORT).show()
+                binding.layoutBottom.visibility = View.GONE
+                binding.fabAddDeviceRepairs.visibility = View.GONE
+                finish()
+            }
+            .addOnFailureListener { e ->
+                Log.e("TrackingOrderTech", "Lỗi khi cập nhật trạng thái đơn hàng", e)
+                Toast.makeText(this@TrackingOrderTechActivity, "Có lỗi xảy ra, vui lòng thử lại sau", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun showDialogAdd() {

@@ -46,6 +46,7 @@ class JobAdapter(private val jobs: List<Order>) : RecyclerView.Adapter<JobAdapte
             val context = holder.itemView.context
             val intent = Intent(context, TrackingOrderTechActivity::class.java)
             intent.putExtra("order_id", job.id)
+            intent.putExtra("imgURL", job.imgURLServicePackage)
             context.startActivity(intent)
         }
     }

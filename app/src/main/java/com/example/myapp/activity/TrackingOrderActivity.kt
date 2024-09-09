@@ -62,7 +62,6 @@ class TrackingOrderActivity : AppCompatActivity() {
             val bill = Bill(
                 id = db.collection("orders").document(orderId).collection("bills").document().id,
                 id_customer = uid,
-                id_technician = null, // Cần cung cấp nếu có
                 id_order = orderId,
                 id_paymentMethod = "1", // Hoặc lấy từ dữ liệu được chọn
                 total = binding.tvTotalPrice.text.toString(),
@@ -78,6 +77,7 @@ class TrackingOrderActivity : AppCompatActivity() {
                     Log.d("TrackingOrderActivity", "Order status updated to 'payed'")
                     //ẩn button thanh toán
                     binding.layoutBottom.visibility = LinearLayout.GONE
+                    finish()
                 }.addOnFailureListener { e ->
                     Log.e("TrackingOrderActivity", "Error updating order status", e)
                 }
@@ -216,8 +216,6 @@ class TrackingOrderActivity : AppCompatActivity() {
                         }
                     }
                 }
-
-                // lấy thông tin các document trong colection paymentMethods hiển thị lên recyclerview
 
             }
         }
