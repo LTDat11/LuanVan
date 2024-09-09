@@ -1,5 +1,8 @@
 package com.example.myapp.fragment
 
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -7,12 +10,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
 import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
+import com.example.myapp.activity.SplashActivity
 import com.example.myapp.adapter.OderStatusPagerAdapter
 import com.example.myapp.model.OrderStatus
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class JobFragment : Fragment() {
     private var mView: View? = null
@@ -28,9 +37,53 @@ class JobFragment : Fragment() {
         initToolbar()
 
         setupViewPager()
+        listenChange()
 
         return mView
     }
+
+    private fun listenChange() {
+        val db = FirebaseFirestore.getInstance()
+        val auth = FirebaseAuth.getInstance()
+
+        // Lắng nghe thay đổi của đơn hàng được phân công
+        db.collection("orders")
+            .whereEqualTo("id_technician", auth.currentUser?.uid)
+            .whereEqualTo("status", "processing")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    // Xử lý lỗi nếu cần
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    val count = snapshot.size()
+                    updateBadge(0, count)
+
+                    updateBadgeForBottomNav(count)
+
+
+                }
+            }
+    }
+
+
+    private fun updateBadgeForBottomNav(count: Int) {
+        // Update badge for bottom navigation
+        val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        val badge = bottomNav.getOrCreateBadge(R.id.nav_job)
+        badge.isVisible = count > 0
+        badge.number = count
+    }
+
+    private fun updateBadge(tabPosition: Int, count: Int) {
+        val tab = tabOrder.getTabAt(tabPosition)
+        tab?.orCreateBadge?.apply {
+            isVisible = count > 0
+            number = count
+        }
+    }
+
 
     private fun setupViewPager() {
         val statusList = listOf(

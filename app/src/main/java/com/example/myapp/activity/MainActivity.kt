@@ -1,10 +1,16 @@
 package com.example.myapp.activity
 
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
@@ -25,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -32,6 +39,7 @@ class MainActivity : AppCompatActivity() {
 
         // Kiểm tra thông tin người dùng và chuyển hướng tới trang điền thông tin còn thiếu
         checkUserProfileAndNavigate()
+        listenChange()
 
         binding.apply {
             mBottomNavigationView = bottomNavigation
@@ -71,6 +79,82 @@ class MainActivity : AppCompatActivity() {
     override fun onBackPressed() {
         showConfirmExitApp()
     }
+
+    private fun listenChange() {
+        val db = FirebaseFirestore.getInstance()
+        val auth = FirebaseAuth.getInstance()
+
+        // Danh sách trạng thái cần lọc
+        val statuses = listOf("pending", "processing", "completed")
+
+        // Lắng nghe thay đổi của đơn hàng theo các trạng thái
+        db.collection("orders")
+            .whereEqualTo("id_customer", auth.currentUser?.uid)
+            .whereIn("status", statuses) // Dùng whereIn để lọc các trạng thái
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    // Xử lý lỗi nếu cần
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    // Đếm số lượng đơn hàng theo trạng thái
+                    var totalCount = 0
+                    var hasCompletedOrder = false
+
+                    for (doc in snapshot.documents) {
+                        val status = doc.getString("status") ?: continue
+                        if (statuses.contains(status)) {
+                            totalCount++
+                        }
+                        if (status == "completed") {
+                            hasCompletedOrder = true
+                        }
+                    }
+
+                    updateBadgeForBottomNav(totalCount)
+
+                    // Kiểm tra nếu có đơn hàng hoàn thành và gửi thông báo
+                    if (hasCompletedOrder) {
+                        sendNotification()
+                    }
+
+                }
+            }
+    }
+
+    private fun updateBadgeForBottomNav(totalCount: Int) {
+        val bottomNavView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNavView?.getOrCreateBadge(R.id.nav_history)?.apply {
+            isVisible = totalCount > 0
+            number = totalCount
+        }
+    }
+
+    private fun sendNotification() {
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        // Tạo một Intent để mở ứng dụng khi thông báo được nhấn
+        val intent = Intent(this, SplashActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+        // Tạo một PendingIntent từ Intent
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+
+        // Tạo thông báo
+        val notificationBuilder = NotificationCompat.Builder(this, "default_channel_id")
+            .setSmallIcon(R.drawable.ic_step_enable) // Đảm bảo rằng ic_notification là một drawable hợp lệ
+            .setContentTitle("Đơn hàng hoàn thành")
+            .setContentText("Bạn có một đơn hàng đã hoàn thành. Vui lòng kiểm tra để thanh toán")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent) // Gán PendingIntent cho thông báo
+
+        // Hiển thị thông báo
+        notificationManager.notify(1, notificationBuilder.build())
+    }
+
+
 
     private fun showConfirmExitApp() {
         val builder = AlertDialog.Builder(this)

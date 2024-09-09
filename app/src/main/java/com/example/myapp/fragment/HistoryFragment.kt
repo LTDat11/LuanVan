@@ -12,8 +12,11 @@ import com.example.myapp.R
 import com.example.myapp.activity.MainActivity
 import com.example.myapp.adapter.OderStatusPagerAdapter
 import com.example.myapp.model.OrderStatus
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class HistoryFragment : Fragment() {
     private var mView: View? = null
@@ -29,8 +32,63 @@ class HistoryFragment : Fragment() {
         initToolbar()
 
         setupViewPager()
-        // Inflate the layout for this fragment
+        listenChange()
+
+
         return mView
+    }
+
+    private fun listenChange() {
+        val db = FirebaseFirestore.getInstance()
+        val auth = FirebaseAuth.getInstance()
+
+        // Danh sách trạng thái cần lọc
+        val statuses = listOf("pending", "processing", "completed")
+
+        // Lắng nghe thay đổi của đơn hàng theo các trạng thái
+        db.collection("orders")
+            .whereEqualTo("id_customer", auth.currentUser?.uid)
+            .whereIn("status", statuses) // Dùng whereIn để lọc các trạng thái
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    // Xử lý lỗi nếu cần
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    // Đếm số lượng đơn hàng theo trạng thái
+                    var totalCount = 0
+
+                    for (doc in snapshot.documents) {
+                        val status = doc.getString("status") ?: continue
+                        if (statuses.contains(status)) {
+                            totalCount++
+                        }
+
+                    }
+                    
+                    updateBadge(0, totalCount)
+                    //updateBadgeForBottomNav(totalCount)
+
+                }
+            }
+    }
+
+    private fun updateBadgeForBottomNav(totalCount: Int) {
+        val bottomNavView = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        bottomNavView?.getOrCreateBadge(R.id.nav_history)?.apply {
+            isVisible = totalCount > 0
+            number = totalCount
+        }
+    }
+
+
+    private fun updateBadge(tabPosition: Int, totalCount: Int) {
+        val tab = tabOrder.getTabAt(tabPosition)
+        tab?.orCreateBadge?.apply {
+            isVisible = totalCount > 0
+            number = totalCount
+        }
     }
 
     private fun setupViewPager() {
