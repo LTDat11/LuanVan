@@ -65,7 +65,7 @@ class AdminActivity : AppCompatActivity() {
         }
 
         // Add badge to Orders
-        addBadgeToOrders(5) // example
+        //addBadgeToOrders(5) // example
 
     }
 
