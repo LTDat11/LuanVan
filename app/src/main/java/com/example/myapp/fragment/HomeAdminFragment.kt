@@ -61,14 +61,30 @@ class HomeAdminFragment : Fragment() {
         initUi()
         setupTabLayout()
         getListPhotoBanners()
+        setupSearchView()
         innitListener()
         return mView
     }
 
+    private fun setupSearchView() {
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                // Xử lý khi người dùng nhấn enter hoặc nút tìm kiếm trên bàn phím
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                // Xử lý khi người dùng thay đổi nội dung của SearchView
+                currentSearchText = newText // Lưu giá trị tìm kiếm hiện tại
+                filter(currentSearchText)
+                return true
+            }
+        })
+    }
+
     private fun innitListener() {
         fab?.setOnClickListener {
-//            showAddServicePackageDialog()
-            Toast.makeText(requireContext(), "${selectedTabId} và ${selectedDeviceId}", Toast.LENGTH_SHORT).show()
+            showAddServicePackageDialog()
         }
     }
 
@@ -122,6 +138,7 @@ class HomeAdminFragment : Fragment() {
                     .addOnSuccessListener {
                         Log.d("HomeAdminFragment", "DocumentSnapshot added with ID: ${documentReference.id}")
                         Toast.makeText(requireContext(), "Thêm gói dịch vụ thành công", Toast.LENGTH_SHORT).show()
+                        loadServicePackagesForDevice(selectedTabId, selectedDeviceId)
                     }
                     .addOnFailureListener { e ->
                         Log.e("HomeAdminFragment", "Error updating document", e)
@@ -327,7 +344,7 @@ class HomeAdminFragment : Fragment() {
 
         // Cập nhật lại dữ liệu cho RecyclerView
         recycler_view_packages.adapter?.let { adapter ->
-            if (adapter is ServicePackageAdapter) {
+            if (adapter is ServicePackageAdminAdapter) {
                 adapter.packages = filteredList
                 adapter.notifyDataSetChanged()
             }

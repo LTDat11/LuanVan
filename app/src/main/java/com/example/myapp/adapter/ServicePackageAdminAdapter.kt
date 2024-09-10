@@ -104,6 +104,12 @@ class ServicePackageAdminAdapter(var packages: List<ServicePackage>) :  Recycler
                 packageRef.delete()
                     .addOnSuccessListener {
                         Toast.makeText(context, "Xóa gói dịch vụ thành công", Toast.LENGTH_SHORT).show()
+
+                        // Cập nhật danh sách sau khi xóa
+                        val updatedPackages = packages.toMutableList()
+                        updatedPackages.remove(servicePackage)  // Loại bỏ gói đã xóa khỏi danh sách
+                        packages = updatedPackages  // Cập nhật danh sách gói dịch vụ
+                        notifyDataSetChanged()  // Thông báo cho RecyclerView cập nhật lại
                     }
                     .addOnFailureListener { e ->
                         Toast.makeText(context, "Lỗi khi xóa gói dịch vụ: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -145,6 +151,12 @@ class ServicePackageAdminAdapter(var packages: List<ServicePackage>) :  Recycler
                         packageRef.update("name", updatedName, "description", updatedDescription, "price", formatPrice(updatedPrice))
                             .addOnSuccessListener {
                                 Toast.makeText(context, "Sửa gói dịch vụ thành công", Toast.LENGTH_SHORT).show()
+                                // Cập nhật lại danh sách và thông báo thay đổi
+
+                                val position = packages.indexOf(servicePackage)
+                                if (position != -1) {
+                                    notifyItemChanged(position)
+                                }
                             }
                             .addOnFailureListener { e ->
                                 Toast.makeText(context, "Lỗi khi sửa gói dịch vụ: ${e.message}", Toast.LENGTH_SHORT).show()

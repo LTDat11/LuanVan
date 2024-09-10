@@ -36,6 +36,7 @@ class AdminActivity : AppCompatActivity() {
                         0 -> mBottomNavigationView?.menu?.findItem(R.id.nav_home)?.isChecked = true
                         1 -> mBottomNavigationView?.menu?.findItem(R.id.nav_list)?.isChecked = true
 //                        2 -> mBottomNavigationView?.menu?.findItem(R.id.nav_more)?.isChecked = true
+                        2 -> mBottomNavigationView?.menu?.findItem(R.id.nav_category)?.isChecked = true
                         3 -> mBottomNavigationView?.menu?.findItem(R.id.nav_account)?.isChecked = true
                     }
                 }
@@ -55,6 +56,9 @@ class AdminActivity : AppCompatActivity() {
                     R.id.nav_more -> {
 //                        viewPager2?.currentItem = 2
                         showBottomSheetDialog()
+                    }
+                    R.id.nav_category -> {
+                        viewPager2?.currentItem = 2
                     }
                     R.id.nav_account -> {
                         viewPager2?.currentItem = 3

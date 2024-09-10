@@ -15,6 +15,11 @@
         android:icon="@drawable/baseline_more_horiz_24"
         android:title="@string/nav_more" />
 
+    <item
+        android:id="@+id/nav_category"
+        android:icon="@drawable/baseline_tab_24"
+        android:title="@string/nav_category" />
+
 
     <item
         android:id="@+id/nav_account"
