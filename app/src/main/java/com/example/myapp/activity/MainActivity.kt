@@ -144,7 +144,7 @@ class MainActivity : AppCompatActivity() {
         // Tạo thông báo
         val notificationBuilder = NotificationCompat.Builder(this, "default_channel_id")
             .setSmallIcon(R.drawable.ic_step_enable) // Đảm bảo rằng ic_notification là một drawable hợp lệ
-            .setContentTitle("Đơn hàng hoàn thành")
+            .setContentTitle("Đơn hàng chờ thanh toán")
             .setContentText("Bạn có một đơn hàng đã hoàn thành. Vui lòng kiểm tra để thanh toán")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)

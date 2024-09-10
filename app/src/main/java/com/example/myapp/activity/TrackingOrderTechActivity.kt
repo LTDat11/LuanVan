@@ -42,6 +42,21 @@ class TrackingOrderTechActivity : AppCompatActivity() {
         initListeners()
     }
 
+    private fun checkStatusOrder() {
+        val db = FirebaseFirestore.getInstance()
+        val orderRef = db.collection("orders").document(orderId)
+        orderRef.get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    val status = document.getString("status")
+                    if (status == "completed" || status == "finish") {
+                        binding.layoutBottom.visibility = View.GONE
+                        binding.fabAddDeviceRepairs.visibility = View.GONE
+                    }
+                }
+            }
+    }
+
     private fun fetchRepairs() {
         val db = FirebaseFirestore.getInstance()
         val repairsRef = db.collection("orders").document(orderId).collection("repairs").whereEqualTo("id_order", orderId)
@@ -167,7 +182,7 @@ class TrackingOrderTechActivity : AppCompatActivity() {
                             id = null,  // Firestore sẽ tự động tạo ID
                             id_order = orderId,
                             name = deviceName,
-                            price = devicePrice
+                            price = formatPrice(devicePrice)
                         )
                     ).addOnSuccessListener { documentReference ->
                         // Cập nhật ID sau khi thêm thành công
@@ -220,6 +235,7 @@ class TrackingOrderTechActivity : AppCompatActivity() {
         val tvToolbarTitle = findViewById<TextView>(R.id.tv_toolbar_title)
         imgToolbarBack.setOnClickListener { finish() }
         tvToolbarTitle.text = getString(R.string.label_tracking_order)
+        checkStatusOrder()
     }
 
     override fun onBackPressed() {

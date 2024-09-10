@@ -5,10 +5,14 @@
     android:layout_height="match_parent"
     tools:context=".fragment.LabelDoneTechFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <!-- Đã xử lý -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rcv_label_done_tech"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Fragment done tech" />
+        android:focusable="false"
+        android:nestedScrollingEnabled="false"
+        tools:listitem="@layout/item_order"
+        />
 
 </FrameLayout>

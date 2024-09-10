@@ -104,7 +104,7 @@ class TechnicianActivity : AppCompatActivity() {
 
         // Tạo thông báo
         val notificationBuilder = NotificationCompat.Builder(this, "default_channel_id")
-            .setSmallIcon(R.drawable.ic_step_enable) // Đảm bảo rằng ic_notification là một drawable hợp lệ
+            .setSmallIcon(R.drawable.baseline_fiber_new_24)
             .setContentTitle("Đơn hàng phụ trách")
             .setContentText("Bạn có ${count} đơn hàng được giao để xử lý. Vui lòng kiểm tra")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

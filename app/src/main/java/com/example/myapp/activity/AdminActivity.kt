@@ -36,8 +36,7 @@ class AdminActivity : AppCompatActivity() {
                         0 -> mBottomNavigationView?.menu?.findItem(R.id.nav_home)?.isChecked = true
                         1 -> mBottomNavigationView?.menu?.findItem(R.id.nav_list)?.isChecked = true
 //                        2 -> mBottomNavigationView?.menu?.findItem(R.id.nav_more)?.isChecked = true
-                        3 -> mBottomNavigationView?.menu?.findItem(R.id.nav_gif)?.isChecked = true
-                        4 -> mBottomNavigationView?.menu?.findItem(R.id.nav_account)?.isChecked = true
+                        3 -> mBottomNavigationView?.menu?.findItem(R.id.nav_account)?.isChecked = true
                     }
                 }
             })
@@ -57,11 +56,8 @@ class AdminActivity : AppCompatActivity() {
 //                        viewPager2?.currentItem = 2
                         showBottomSheetDialog()
                     }
-                    R.id.nav_gif -> {
-                        viewPager2?.currentItem = 3
-                    }
                     R.id.nav_account -> {
-                        viewPager2?.currentItem = 4
+                        viewPager2?.currentItem = 3
                     }
                 }
                 true
