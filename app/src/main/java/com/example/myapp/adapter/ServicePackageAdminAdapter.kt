@@ -1,19 +1,25 @@
 package com.example.myapp.adapter
 
+import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.myapp.R
 import com.example.myapp.model.ServicePackage
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import java.text.NumberFormat
+import java.util.Locale
 
 class ServicePackageAdminAdapter(var packages: List<ServicePackage>) :  RecyclerView.Adapter<ServicePackageAdminAdapter.PackageAdminViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PackageAdminViewHolder {
@@ -69,19 +75,101 @@ class ServicePackageAdminAdapter(var packages: List<ServicePackage>) :  Recycler
 
             // event click
             editButton.setOnClickListener {
-                //Toast id of package
-                Toast.makeText(itemView.context, "Edit button clicked for package with id: $id", Toast.LENGTH_SHORT).show()
+                //edt package
+                showDialogEditPackage(servicePackage, itemView.context)
             }
 
             deleteButton.setOnClickListener {
-                //Toast id of package
-                Toast.makeText(itemView.context, "Delete button clicked for package with id: $id", Toast.LENGTH_SHORT).show()
+                showDialogConfirmDelete(servicePackage, itemView.context)
             }
 
 
         }
 
 
+    }
+
+    private fun showDialogConfirmDelete(servicePackage: ServicePackage, context: Context) {
+        val dialog = AlertDialog.Builder(context)
+            .setTitle("Xác nhận xóa")
+            .setMessage("Bạn có chắc chắn muốn xóa gói dịch vụ ${servicePackage.name} không?")
+            .setPositiveButton("Xóa") { _, _ ->
+                val firestore = FirebaseFirestore.getInstance()
+                val packageRef = firestore.collection("service_categories")
+                    .document(servicePackage.categoryId)
+                    .collection("devices")
+                    .document(servicePackage.deviceId)
+                    .collection("service_packages")
+                    .document(servicePackage.id)
+                packageRef.delete()
+                    .addOnSuccessListener {
+                        Toast.makeText(context, "Xóa gói dịch vụ thành công", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(context, "Lỗi khi xóa gói dịch vụ: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            .setNegativeButton("Hủy", null)
+            .create()
+        dialog.show()
+    }
+
+    private fun showDialogEditPackage(servicePackage: ServicePackage, context: Context) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_service_package, null)
+
+        val etPackageName = dialogView.findViewById<EditText>(R.id.et_package_name)
+        val etPackageDescription = dialogView.findViewById<EditText>(R.id.et_package_description)
+        val etPackagePrice = dialogView.findViewById<EditText>(R.id.et_package_price)
+
+        etPackageName.setText(servicePackage.name)
+        etPackageDescription.setText(servicePackage.description)
+        etPackagePrice.setText(servicePackage.price.replace(",", "").replace("VND", ""))
+
+        val dialog = AlertDialog.Builder(context)
+            .setView(dialogView)
+            .setTitle("Sửa Gói Dịch Vụ")
+            .setPositiveButton("Sửa") { _, _ ->
+                val updatedName = etPackageName.text.toString()
+                val updatedDescription = etPackageDescription.text.toString()
+                val updatedPrice = etPackagePrice.text.toString()
+
+                if (updatedName!=servicePackage.name || updatedDescription!=servicePackage.description || updatedPrice!=servicePackage.price.replace(",", "").replace("VND", "")) {
+                    if (updatedName.isNotEmpty() && updatedDescription.isNotEmpty() && updatedPrice.isNotEmpty()) {
+                        val firestore = FirebaseFirestore.getInstance()
+                        val packageRef = firestore.collection("service_categories")
+                            .document(servicePackage.categoryId)
+                            .collection("devices")
+                            .document(servicePackage.deviceId)
+                            .collection("service_packages")
+                            .document(servicePackage.id)
+                        packageRef.update("name", updatedName, "description", updatedDescription, "price", formatPrice(updatedPrice))
+                            .addOnSuccessListener {
+                                Toast.makeText(context, "Sửa gói dịch vụ thành công", Toast.LENGTH_SHORT).show()
+                            }
+                            .addOnFailureListener { e ->
+                                Toast.makeText(context, "Lỗi khi sửa gói dịch vụ: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }else {
+                        Toast.makeText(context, "Vui lòng nhập đủ thông tin", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(context, "Không có thay đổi nào được thực hiện", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Hủy", null)
+            .create()
+        dialog.show()
+    }
+
+    // Hàm định dạng giá tiền
+    private fun formatPrice(price: String): String {
+        val price = price.toLongOrNull() ?: return price
+        // Sử dụng NumberFormat để định dạng theo locale Việt Nam
+        val numberFormat = NumberFormat.getNumberInstance(Locale.US)
+        val formattedPrice = numberFormat.format(price)
+
+        // Trả về chuỗi đã định dạng kèm với đơn vị tiền tệ VND
+        return "$formattedPrice VND"
     }
 
     private fun loadImageFromFirebase(deviceName: String, imageView: ImageView) {

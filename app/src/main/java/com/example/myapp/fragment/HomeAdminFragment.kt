@@ -67,7 +67,8 @@ class HomeAdminFragment : Fragment() {
 
     private fun innitListener() {
         fab?.setOnClickListener {
-            showAddServicePackageDialog()
+//            showAddServicePackageDialog()
+            Toast.makeText(requireContext(), "${selectedTabId} và ${selectedDeviceId}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -102,11 +103,11 @@ class HomeAdminFragment : Fragment() {
             .document(selectedDeviceId)
             .collection("service_packages").add(
                 ServicePackage(
-                name = name,
-                description = description,
-                price = formatPrice(price),
-                categoryId = selectedTabId,
-                deviceId = selectedDeviceId,
+                    name = name,
+                    description = description,
+                    price = formatPrice(price),
+                    categoryId = selectedTabId,
+                    deviceId = selectedDeviceId,
                 )
             ).addOnSuccessListener { documentReference ->
                 val repairWithId = ServicePackage(
@@ -218,7 +219,7 @@ class HomeAdminFragment : Fragment() {
                         tab?.let {
                             val selectedCategory = tab.text.toString()
                             // Cập nhật selectedTabId với ID của tab được chọn
-                            selectedTabId = it.text.toString()
+                            selectedTabId = snapshot.documents[it.position].id
                             loadDevicesForCategory(selectedCategory)
                         }
                     }
