@@ -101,7 +101,18 @@
                 android:id="@+id/recycler_view_packages"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"/>
+                android:layout_margin="10dp"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/tv_empty_package"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Vui lòng chọn thiết bị để xem gói dịch vụ"
+                android:textSize="16sp"
+                android:textColor="@color/colorAccent"
+                android:gravity="center"
+                android:layout_marginTop="10dp" />
 
 
         </LinearLayout>

@@ -4,5 +4,5 @@ data class Device(
     val id_device: String = "",
     val name: String = "",
     val categoryId: String = "",
-    val price: String = ""
+    val price: String? = ""
 )

@@ -6,6 +6,7 @@
     <string name="nav_account">Tài khoản</string>
     <string name="nav_list">Đơn hàng</string>
     <string name="nav_category">Danh mục</string>
+    <string name="nav_category_admin">Quản lý Danh mục</string>
     <string name="nav_more">Tùy chọn</string>
     <string name="cart">Giỏ hàng</string>
     <string name="email">Email</string>
@@ -103,6 +104,7 @@
     <string name="label_note">Ghi chú: </string>
     <string name="label_take_order">Thanh toán</string>
     <string name="label_tracking_order">Theo dõi đơn hàng</string>
+    <string name="label_list_device">Danh sách thiết bị của</string>
     <string name="label_tracking_tech_order">Thông tin đơn hàng</string>
     <string name="label_total_price">Tổng tiền: </string>
     <string name="label_customer_name">Khách hàng: </string>

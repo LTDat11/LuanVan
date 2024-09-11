@@ -9,6 +9,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapp.R
+import com.example.myapp.activity.DeviceListAdminActivity
 import com.example.myapp.model.ServiceCategory
 
 class CategoryAdminAdapter(
@@ -63,9 +64,10 @@ class CategoryAdminAdapter(
             tvCategoryDescription.text = category.description
 
             itemView.setOnClickListener {
-//                val intent = Intent(itemView.context, DeviceAdminActivity::class.java)
-//                intent.putExtra("category_id", category.id)
-//                itemView.context.startActivity(intent)
+                val intent = Intent(itemView.context, DeviceListAdminActivity::class.java)
+                intent.putExtra("categoryId", category.id)
+                intent.putExtra("categoryName", category.name)
+                itemView.context.startActivity(intent)
             }
 
             btnEdit.setOnClickListener {

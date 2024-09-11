@@ -1,5 +1,6 @@
 package com.example.myapp.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -13,6 +14,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapp.R
+import com.example.myapp.activity.DeviceListAdminActivity
 import com.example.myapp.adapter.CategoryAdminAdapter
 import com.example.myapp.model.ServiceCategory
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -106,12 +108,32 @@ class CategoryAdminFragment : Fragment() {
                 // Xử lý khi thêm thành công
                 Toast.makeText(context, "Danh mục dịch vụ đã được thêm thành công", Toast.LENGTH_SHORT).show()
                 loadCategoriesFromFirestore()
+
+                // Kiểm tra xem subcollection 'devices' có document nào không
+                newCategoryRef.collection("devices").get()
+                    .addOnSuccessListener { querySnapshot ->
+                        if (querySnapshot.isEmpty) {
+                            // Nếu subcollection 'devices' rỗng, chuyển đến DeviceListAdminActivity
+                            val intent = Intent(context, DeviceListAdminActivity::class.java)
+                            intent.putExtra("categoryId", categoryId)
+                            intent.putExtra("categoryName", name)
+                            startActivity(intent)
+                        } else {
+                            // Xử lý nếu subcollection 'devices' không rỗng
+                            Toast.makeText(context, "Danh mục đã có thiết bị", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        // Xử lý khi có lỗi trong quá trình truy vấn subcollection
+                        Toast.makeText(context, "Lỗi khi kiểm tra thiết bị: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
             }
             .addOnFailureListener { e ->
                 // Xử lý khi có lỗi
                 Toast.makeText(context, "Lỗi khi thêm danh mục dịch vụ: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
+
 
     private fun initRecyclerView() {
         recyclerViewCategory  = mView?.findViewById(R.id.recycler_view_category)!!
@@ -168,6 +190,8 @@ class CategoryAdminFragment : Fragment() {
             // Sau khi xóa hết các thiết bị, xóa service category
             categoryRef.delete().addOnSuccessListener {
                 Toast.makeText(context, "Đã xóa danh mục dịch vụ thành công", Toast.LENGTH_SHORT).show()
+                //set text of search view to empty
+                searchView?.setQuery("", false)
                 loadCategoriesFromFirestore()
             }.addOnFailureListener { e ->
                 Log.e("Firestore", "Lỗi khi xóa danh mục dịch vụ: ${e.message}")
@@ -241,7 +265,7 @@ class CategoryAdminFragment : Fragment() {
 
     private fun initToolbar() {
         val tvToolbarTitle = mView?.findViewById<TextView>(R.id.tv_toolbar_title)
-        tvToolbarTitle?.text = getString(R.string.nav_category)
+        tvToolbarTitle?.text = getString(R.string.nav_category_admin)
     }
 
 }

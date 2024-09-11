@@ -11,7 +11,7 @@ import com.example.myapp.fragment.OrderFragment
 class MyViewPagerAdminAdapter (fragmentActivity: FragmentActivity) : FragmentStateAdapter(fragmentActivity) {
 
     override fun getItemCount(): Int {
-        return 5
+        return 4
     }
 
     override fun createFragment(position: Int): Fragment {
