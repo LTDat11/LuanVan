@@ -159,7 +159,7 @@ class HomeAdminFragment : Fragment() {
                 loadServicePackagesForDevice(deviceId)
             }
         })
-        recyclerViewDevices.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        recyclerViewDevices.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         recyclerViewDevices.adapter = deviceAdapter
     }
 
