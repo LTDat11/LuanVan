@@ -96,7 +96,18 @@
             android:id="@+id/recycler_view_packages"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"/>
+            android:layout_margin="10dp" />
+
+        <TextView
+            android:id="@+id/tv_empty_package"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Không có dịch vụ nào!!"
+            android:textSize="16sp"
+            android:textColor="@color/colorAccent"
+            android:gravity="center"
+            android:visibility="gone"
+            android:layout_marginTop="10dp" />
 
     </LinearLayout>
 

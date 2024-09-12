@@ -62,8 +62,7 @@ class DeviceListAdminAdapter(
 
         fun bind(device: Device) {
             tvDeviceName.text = device.name
-
-//            loadImage(device.name, circleImageView)
+            loadImage(device.id_device, circleImageView)
 
             btnEditDevice.setOnClickListener {
                 onEditClick(device)
@@ -74,29 +73,36 @@ class DeviceListAdminAdapter(
             }
         }
     }
-
-    private fun loadImage(name: String, circleImageView: ImageView) {
-        // Load image from Firebase Storage with name of device
-        val storageRef = FirebaseStorage.getInstance().reference.child("device/$name/")
-        storageRef.listAll()
-            .addOnSuccessListener { listResult ->
-                if (listResult.items.isNotEmpty()) {
-                    val imageRef = listResult.items[0]
-                    imageRef.downloadUrl.addOnSuccessListener { uri ->
-                        Glide.with(circleImageView.context)
-                            .load(uri)
-                            .into(circleImageView)
-                    }.addOnFailureListener { exception ->
-                        Log.e("ServicePackageAdapter", "Error loading image URL", exception)
+    private fun loadImage(idDevice: String, circleImageView: ImageView) {
+        val storage = FirebaseStorage.getInstance()
+        val ref = storage.reference.child("device/${idDevice}/")
+        ref.listAll()
+            .addOnSuccessListener{listResult ->
+                listResult.items.forEach { item ->
+                    item.downloadUrl.addOnSuccessListener {
+                        if (listResult.items.isNotEmpty()) {
+                            val imageRef = listResult.items[0]
+                            imageRef.downloadUrl
+                                .addOnSuccessListener { uri ->
+                                    Glide.with(circleImageView.context)
+                                        .load(uri)
+                                        .skipMemoryCache(false)
+                                        .into(circleImageView)
+                                    notifyDataSetChanged()
+                                }.addOnFailureListener { exception ->
+                                    // Handle any errors
+                                    Log.e("ServicePackageAdapter", "Error loading image URL", exception)
+                                }
+                        }
                     }
-                } else {
-                    Log.e("ServicePackageAdapter", "No images found in storage for $name")
                 }
-            }
-            .addOnFailureListener { exception ->
-                Log.e("ServicePackageAdapter", "Error listing files in storage", exception)
-            }
-    }
 
+            }
+            .addOnFailureListener {
+                // Uh-oh, an error occurred!
+                Log.e("ServicePackageAdapter", "Error loading image", it)
+            }
+
+    }
 
 }

@@ -66,7 +66,7 @@ class CategoryAdminFragment : Fragment() {
     }
 
     private fun showDialogAddCategory() {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_category, null)
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_category, null)
 
         val etCategoryName = dialogView.findViewById<TextView>(R.id.et_category_name)
         val etCategoryDescription = dialogView.findViewById<TextView>(R.id.et_category_description)
@@ -147,15 +147,19 @@ class CategoryAdminFragment : Fragment() {
     }
 
     private fun showDialogDeleteCategory(category: ServiceCategory) {
-        val alertDialog = AlertDialog.Builder(requireContext())
-            .setTitle("Xóa Danh Mục Dịch Vụ")
-            .setMessage("Bạn có chắc chắn muốn xóa danh mục dịch vụ này không? Tất cả các thiết bị và gói dịch vụ liên quan sẽ bị xóa vĩnh viễn.")
-            .setPositiveButton("Xóa") { _, _ ->
-                deleteServiceCategoryWithDevicesAndPackages(category.id)
-            }
-            .setNegativeButton("Hủy", null)
-            .create()
-        alertDialog.show()
+        val alertDialog = this.context?.let {
+            AlertDialog.Builder(it)
+                .setTitle("Xóa Danh Mục Dịch Vụ")
+                .setMessage("Bạn có chắc chắn muốn xóa danh mục dịch vụ này không? Tất cả các thiết bị và gói dịch vụ liên quan sẽ bị xóa vĩnh viễn.")
+                .setPositiveButton("Xóa") { _, _ ->
+                    deleteServiceCategoryWithDevicesAndPackages(category.id)
+                }
+                .setNegativeButton("Hủy", null)
+                .create()
+        }
+        if (alertDialog != null) {
+            alertDialog.show()
+        }
     }
 
     private fun deleteServiceCategoryWithDevicesAndPackages(id: String) {
@@ -203,7 +207,7 @@ class CategoryAdminFragment : Fragment() {
     }
 
     private fun showDialogEditCategory(category: ServiceCategory) {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_add_category, null)
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_category, null)
 
         val etCategoryName = dialogView.findViewById<TextView>(R.id.et_category_name)
         val etCategoryDescription = dialogView.findViewById<TextView>(R.id.et_category_description)
@@ -211,37 +215,41 @@ class CategoryAdminFragment : Fragment() {
         etCategoryName.text = category.name
         etCategoryDescription.text = category.description
 
-        val dialog = AlertDialog.Builder(requireContext())
-            .setView(dialogView)
-            .setTitle("Sửa danh mục dịch vụ")
-            .setPositiveButton("Sửa") { _, _ ->
-                val newName = etCategoryName.text.toString()
-                val newDescription = etCategoryDescription.text.toString()
+        val dialog = context?.let {
+            AlertDialog.Builder(it)
+                .setView(dialogView)
+                .setTitle("Sửa danh mục dịch vụ")
+                .setPositiveButton("Sửa") { _, _ ->
+                    val newName = etCategoryName.text.toString()
+                    val newDescription = etCategoryDescription.text.toString()
 
-                if (newName != category.name || newDescription != category.description) {
-                    if (newName.isNotEmpty() && newDescription.isNotEmpty()) {
-                        val categoryRef = firestore.collection("service_categories").document(category.id)
-                        categoryRef.update("name", newName, "description", newDescription)
-                            .addOnSuccessListener {
-                                // Xử lý khi sửa thành công
-                                loadCategoriesFromFirestore()
-                            }
-                            .addOnFailureListener { e ->
-                                // Xử lý khi có lỗi
-                                Toast.makeText(context, "Lỗi khi sửa danh mục dịch vụ: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                    } else {
+                    if (newName != category.name || newDescription != category.description) {
+                        if (newName.isNotEmpty() && newDescription.isNotEmpty()) {
+                            val categoryRef = firestore.collection("service_categories").document(category.id)
+                            categoryRef.update("name", newName, "description", newDescription)
+                                .addOnSuccessListener {
+                                    // Xử lý khi sửa thành công
+                                    loadCategoriesFromFirestore()
+                                }
+                                .addOnFailureListener { e ->
+                                    // Xử lý khi có lỗi
+                                    Toast.makeText(context, "Lỗi khi sửa danh mục dịch vụ: ${e.message}", Toast.LENGTH_SHORT).show()
+                                }
+                        } else {
+                            // Hiển thị thông báo lỗi
+                            Toast.makeText(context, "Vui lòng nhập đủ thông tin", Toast.LENGTH_SHORT).show()
+                        }
+                    }else {
                         // Hiển thị thông báo lỗi
-                        Toast.makeText(context, "Vui lòng nhập đủ thông tin", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Không có thay đổi nào được thực hiện", Toast.LENGTH_SHORT).show()
                     }
-                }else {
-                    // Hiển thị thông báo lỗi
-                    Toast.makeText(context, "Không có thay đổi nào được thực hiện", Toast.LENGTH_SHORT).show()
                 }
-            }
-            .setNegativeButton("Hủy") { _, _ -> }
-            .create()
-        dialog.show()
+                .setNegativeButton("Hủy") { _, _ -> }
+                .create()
+        }
+        if (dialog != null) {
+            dialog.show()
+        }
 
     }
 
@@ -266,6 +274,11 @@ class CategoryAdminFragment : Fragment() {
     private fun initToolbar() {
         val tvToolbarTitle = mView?.findViewById<TextView>(R.id.tv_toolbar_title)
         tvToolbarTitle?.text = getString(R.string.nav_category_admin)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadCategoriesFromFirestore()
     }
 
 }

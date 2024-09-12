@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
@@ -38,6 +39,7 @@ class HomeFragment : Fragment() {
     private lateinit var recyclerViewDevices: RecyclerView
     private lateinit var recycler_view_packages: RecyclerView
     private val firestore = FirebaseFirestore.getInstance()
+    private lateinit var tvEmptyPackage: TextView
     //searchview
     private val devicePackagesMap = mutableMapOf<String, List<ServicePackage>>() // Lưu danh sách gói dịch vụ cho từng thiết bị
     private var currentDeviceId: String? = null // Lưu trữ ID của thiết bị hiện tại
@@ -95,6 +97,11 @@ class HomeFragment : Fragment() {
             if (adapter is ServicePackageAdapter) {
                 adapter.packages = filteredList
                 adapter.notifyDataSetChanged()
+                if (filteredList.isEmpty()) {
+                    tvEmptyPackage.visibility = View.VISIBLE
+                } else {
+                    tvEmptyPackage.visibility = View.GONE
+                }
             }
         }
     }
@@ -230,6 +237,7 @@ class HomeFragment : Fragment() {
         recyclerViewDevices = mView?.findViewById(R.id.recycler_view_devices)!!
         recycler_view_packages = mView?.findViewById(R.id.recycler_view_packages)!!
         indicator = mView?.findViewById(R.id.indicator)
+        tvEmptyPackage = mView?.findViewById(R.id.tv_empty_package)!!
 
     }
 

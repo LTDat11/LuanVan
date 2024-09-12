@@ -51,6 +51,7 @@ class HomeAdminFragment : Fragment() {
     private var selectedTabId: String? = null // ID của tab hiện tại
     private var selectedDeviceId: String? = null // ID của thiết bị hiện tại
 
+    private var currentSearchText: String = "" // Biến lưu trữ nội dung tìm kiếm hiện tại
 
     private val categoryMap = mutableMapOf<String, String>()
 
@@ -64,8 +65,61 @@ class HomeAdminFragment : Fragment() {
         getListPhotoBanners()
 
         innitListener()
+        setupSearchView()
         return mView
     }
+
+    private fun setupSearchView() {
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                // Xử lý khi người dùng nhấn enter hoặc nút tìm kiếm trên bàn phím
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                // Xử lý khi người dùng thay đổi nội dung của SearchView
+                currentSearchText = newText // Lưu giá trị tìm kiếm hiện tại
+                filter(currentSearchText)
+                return true
+            }
+        })
+    }
+
+    private fun filter(text: String) {
+        // Kiểm tra nếu chưa chọn thiết bị
+        if (selectedDeviceId.isNullOrEmpty()) {
+            Toast.makeText(requireContext(), "Vui lòng chọn thiết bị trước khi tìm kiếm", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Nếu đã chọn thiết bị thì tiến hành tìm kiếm
+        val firestore = FirebaseFirestore.getInstance()
+        firestore.collection("service_categories")
+            .document(selectedTabId ?: "")
+            .collection("devices")
+            .document(selectedDeviceId ?: "")
+            .collection("service_packages")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val packages = mutableListOf<ServicePackage>()
+                for (document in snapshot.documents) {
+                    val servicePackage = document.toObject(ServicePackage::class.java)
+                    servicePackage?.let {
+                        packages.add(it)
+                    }
+                }
+                val filteredPackages = packages.filter {
+                    it.name.contains(text, ignoreCase = true) ||
+                            it.description.contains(text, ignoreCase = true) ||
+                            it.price.contains(text, ignoreCase = true)
+                }
+                updateServicePackageRecyclerView(filteredPackages)
+            }
+            .addOnFailureListener { exception ->
+                Log.e("HomeAdminFragment", "Error getting service packages.", exception)
+            }
+    }
+
 
     private fun loadCategories() {
         val firestore = FirebaseFirestore.getInstance()
@@ -111,6 +165,7 @@ class HomeAdminFragment : Fragment() {
 
                         recyclerViewPackages.visibility = View.GONE
                         tvEmptyPackage.visibility = View.VISIBLE
+                        tvEmptyPackage.text = "Vui lòng chọn thiết bị để xem gói dịch vụ"
                         loadDevicesForCategory(id)
                     }
                 }
@@ -157,6 +212,7 @@ class HomeAdminFragment : Fragment() {
                 //Toast.makeText(requireContext(), "Selected Device ID: $selectedDeviceId and tab id $selectedTabId", Toast.LENGTH_SHORT).show()
                 // Fetch packages for the selected device and update UI
                 loadServicePackagesForDevice(deviceId)
+                filter(currentSearchText)
             }
         })
         recyclerViewDevices.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
@@ -196,6 +252,7 @@ class HomeAdminFragment : Fragment() {
             recyclerViewPackages.adapter = packageAdapter
         } else {
             recyclerViewPackages.visibility = View.GONE
+            tvEmptyPackage.text = "Không có gói dịch vụ nào"
             tvEmptyPackage.visibility = View.VISIBLE
         }
     }
