@@ -76,33 +76,29 @@ class DeviceListAdminAdapter(
     private fun loadImage(idDevice: String, circleImageView: ImageView) {
         val storage = FirebaseStorage.getInstance()
         val ref = storage.reference.child("device/${idDevice}/")
-        ref.listAll()
-            .addOnSuccessListener{listResult ->
-                listResult.items.forEach { item ->
-                    item.downloadUrl.addOnSuccessListener {
-                        if (listResult.items.isNotEmpty()) {
-                            val imageRef = listResult.items[0]
-                            imageRef.downloadUrl
-                                .addOnSuccessListener { uri ->
-                                    Glide.with(circleImageView.context)
-                                        .load(uri)
-                                        .skipMemoryCache(false)
-                                        .into(circleImageView)
-                                    notifyDataSetChanged()
-                                }.addOnFailureListener { exception ->
-                                    // Handle any errors
-                                    Log.e("ServicePackageAdapter", "Error loading image URL", exception)
-                                }
-                        }
-                    }
-                }
 
+        ref.listAll()
+            .addOnSuccessListener { listResult ->
+                if (listResult.items.isNotEmpty()) {
+                    val imageRef = listResult.items[0]
+                    imageRef.downloadUrl
+                        .addOnSuccessListener { uri ->
+                            Glide.with(circleImageView.context)
+                                .load(uri)
+                                .into(circleImageView)
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.e("DeviceListAdminAdapter", "Error loading image URL", exception)
+                        }
+                } else {
+                    // No image found, handle as needed
+                    circleImageView.setImageResource(R.drawable.ic_launcher_foreground) // Set a placeholder image
+                }
             }
             .addOnFailureListener {
-                // Uh-oh, an error occurred!
-                Log.e("ServicePackageAdapter", "Error loading image", it)
+                Log.e("DeviceListAdminAdapter", "Error loading image", it)
+                circleImageView.setImageResource(R.drawable.ic_launcher_foreground) // Set a placeholder on failure
             }
-
     }
 
 }

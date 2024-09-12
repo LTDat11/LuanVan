@@ -1,24 +1,28 @@
 package com.example.myapp.adapter
 
+import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapp.R
 import com.example.myapp.activity.DeviceListAdminActivity
 import com.example.myapp.model.ServiceCategory
+import com.google.firebase.firestore.FirebaseFirestore
 
 class CategoryAdminAdapter(
-    private var categories: List<ServiceCategory>,
-    private val onEditClick: (ServiceCategory) -> Unit,
-    private val onDeleteClick: (ServiceCategory) -> Unit
+    private var categoryMap: Map<String, String>,
+    private val onEditClick: (String, String) -> Unit,
+    private val onDeleteClick: (String) -> Unit
 ) : RecyclerView.Adapter<CategoryAdminAdapter.CategoryViewHolder>() {
 
-    private var fullCategoryList: List<ServiceCategory> = categories
+    class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val tvCategoryName: TextView = itemView.findViewById(R.id.tv_category_name)
+        val tvCategoryDescription = itemView.findViewById<TextView>(R.id.tv_category_description)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -27,56 +31,59 @@ class CategoryAdminAdapter(
     }
 
     override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
-        val category = categories[position]
-        holder.bind(category)
-    }
+        val categoryId = categoryMap.keys.elementAt(position)
+        val categoryName = categoryMap[categoryId]
+        val btnEditCategory = holder.itemView.findViewById<ImageButton>(R.id.btn_edit_category)
+        val btnDeleteCategory = holder.itemView.findViewById<ImageButton>(R.id.btn_delete_category)
 
-    override fun getItemCount(): Int = categories.size
+        holder.tvCategoryName.text = categoryName
+        getInfoCategory(categoryId, holder.tvCategoryDescription )
 
+        holder.itemView.setOnClickListener {
+            // intent to DeviceListAdminActivity
+            val intent = Intent(holder.itemView.context, DeviceListAdminActivity::class.java)
+            intent.putExtra("categoryId", categoryId)
+            intent.putExtra("categoryName", categoryName)
+            holder.itemView.context.startActivity(intent)
 
-    fun updateCategories(newCategories: List<ServiceCategory>) {
-        this.categories = newCategories
-        this.fullCategoryList = newCategories
-        notifyDataSetChanged()
-    }
-
-    fun filterCategories(query: String) {
-        val filteredCategories = if (query.isEmpty()) {
-            fullCategoryList
-        } else {
-            fullCategoryList.filter {
-                it.name.contains(query, ignoreCase = true) ||
-                        it.description?.contains(query, ignoreCase = true) == true
-            }
         }
-        categories = filteredCategories
-        notifyDataSetChanged()
+
+        btnEditCategory.setOnClickListener {
+            // Handle edit button click
+            onEditClick(categoryId, categoryName!!)
+        }
+
+        btnDeleteCategory.setOnClickListener {
+            // Handle delete button click
+            onDeleteClick(categoryId)
+        }
     }
 
-    inner class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val tvCategoryName: TextView = itemView.findViewById(R.id.tv_category_name)
-        private val tvCategoryDescription: TextView = itemView.findViewById(R.id.tv_category_description)
-        private val btnEdit: ImageButton = itemView.findViewById(R.id.btn_edit_category)
-        private val btnDelete: ImageButton = itemView.findViewById(R.id.btn_delete_category)
+    override fun getItemCount(): Int {
+        return categoryMap.size
+    }
 
-        fun bind(category: ServiceCategory) {
-            tvCategoryName.text = category.name
-            tvCategoryDescription.text = category.description
+    fun updateCategories(newCategoryMap: Map<String, String>) {
+        categoryMap = newCategoryMap
+        notifyDataSetChanged() // Notify RecyclerView to refresh the data
+    }
 
-            itemView.setOnClickListener {
-                val intent = Intent(itemView.context, DeviceListAdminActivity::class.java)
-                intent.putExtra("categoryId", category.id)
-                intent.putExtra("categoryName", category.name)
-                itemView.context.startActivity(intent)
+    private fun getInfoCategory(
+        categoryId: String,
+        tvCategoryDescription: TextView
+    ) {
+        // Lấy thông tin danh mục dịch vụ từ Firestore
+        val firestore = FirebaseFirestore.getInstance()
+        val categoryRef = firestore.collection("service_categories").document(categoryId)
+        categoryRef.get().addOnSuccessListener { document ->
+            val category = document.toObject(ServiceCategory::class.java)
+            if (category != null) {
+                tvCategoryDescription.text = category.description
+            } else {
+
             }
+        }.addOnFailureListener { e ->
 
-            btnEdit.setOnClickListener {
-                onEditClick(category)
-            }
-
-            btnDelete.setOnClickListener {
-                onDeleteClick(category)
-            }
         }
 
     }

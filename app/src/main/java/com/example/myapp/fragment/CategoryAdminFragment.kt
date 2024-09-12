@@ -18,7 +18,9 @@ import com.example.myapp.activity.DeviceListAdminActivity
 import com.example.myapp.adapter.CategoryAdminAdapter
 import com.example.myapp.model.ServiceCategory
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 
 class CategoryAdminFragment : Fragment() {
     private var mView: View? = null
@@ -26,46 +28,33 @@ class CategoryAdminFragment : Fragment() {
     private var fab : FloatingActionButton? = null
 
     private lateinit var recyclerViewCategory : RecyclerView
-    private lateinit var categoryAdapter: CategoryAdminAdapter
     private val firestore = FirebaseFirestore.getInstance()
+    private lateinit var categoryAdminAdapter: CategoryAdminAdapter
+
+    private val categoryMap = mutableMapOf<String, String>()
+    // Khởi tạo mảng lưu các idDevice
+    private val deviceIdsToDelete = mutableListOf<String>()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         mView = inflater.inflate(R.layout.fragment_category_admin, container, false)
-
+        initUi()
         initToolbar()
-        initRecyclerView()
-        loadCategoriesFromFirestore()
+        setupRecyclerView()
+        loadCategories()
         initListeners()
-
-
         // Inflate the layout for this fragment
         return mView
     }
 
     private fun initListeners() {
-        fab = mView?.findViewById(R.id.fab_add)
         fab?.setOnClickListener {
-            showDialogAddCategory()
+            showAddCategoryDialog()
         }
-
-        // Lắng nghe sự kiện khi người dùng nhập từ khóa tìm kiếm
-        searchView = mView?.findViewById(R.id.search_view)
-        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                // Không cần thực hiện gì khi nhấn Enter
-                return false
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                categoryAdapter.filterCategories(newText.orEmpty())
-                return true
-            }
-        })
     }
 
-    private fun showDialogAddCategory() {
+    private fun showAddCategoryDialog() {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_category, null)
 
         val etCategoryName = dialogView.findViewById<TextView>(R.id.et_category_name)
@@ -107,17 +96,17 @@ class CategoryAdminFragment : Fragment() {
             .addOnSuccessListener {
                 // Xử lý khi thêm thành công
                 Toast.makeText(context, "Danh mục dịch vụ đã được thêm thành công", Toast.LENGTH_SHORT).show()
-                loadCategoriesFromFirestore()
+                loadCategories()
 
                 // Kiểm tra xem subcollection 'devices' có document nào không
                 newCategoryRef.collection("devices").get()
                     .addOnSuccessListener { querySnapshot ->
                         if (querySnapshot.isEmpty) {
-                            // Nếu subcollection 'devices' rỗng, chuyển đến DeviceListAdminActivity
-                            val intent = Intent(context, DeviceListAdminActivity::class.java)
-                            intent.putExtra("categoryId", categoryId)
-                            intent.putExtra("categoryName", name)
-                            startActivity(intent)
+//                            // Nếu subcollection 'devices' rỗng, chuyển đến DeviceListAdminActivity
+//                            val intent = Intent(context, DeviceListAdminActivity::class.java)
+//                            intent.putExtra("categoryId", categoryId)
+//                            intent.putExtra("categoryName", name)
+//                            startActivity(intent)
                         } else {
                             // Xử lý nếu subcollection 'devices' không rỗng
                             Toast.makeText(context, "Danh mục đã có thiết bị", Toast.LENGTH_SHORT).show()
@@ -134,79 +123,36 @@ class CategoryAdminFragment : Fragment() {
             }
     }
 
-
-    private fun initRecyclerView() {
-        recyclerViewCategory  = mView?.findViewById(R.id.recycler_view_category)!!
-        recyclerViewCategory.layoutManager = LinearLayoutManager(context)
-
-        categoryAdapter = CategoryAdminAdapter(listOf(),
-            onEditClick = { category -> showDialogEditCategory(category) },
-            onDeleteClick = { category -> showDialogDeleteCategory(category)}
-        )
-        recyclerViewCategory.adapter = categoryAdapter
+    private fun setupRecyclerView() {
+        categoryAdminAdapter = CategoryAdminAdapter(categoryMap,
+            onEditClick = { categoryId, categoryName ->
+                getInfoCategory(categoryId, categoryName)
+            },
+            onDeleteClick = { categoryId ->
+                showDialogDeleteCategory(categoryId)
+            },
+            )
+        recyclerViewCategory.layoutManager = LinearLayoutManager(this.context)
+        recyclerViewCategory.adapter = categoryAdminAdapter
     }
 
-    private fun showDialogDeleteCategory(category: ServiceCategory) {
-        val alertDialog = this.context?.let {
-            AlertDialog.Builder(it)
-                .setTitle("Xóa Danh Mục Dịch Vụ")
-                .setMessage("Bạn có chắc chắn muốn xóa danh mục dịch vụ này không? Tất cả các thiết bị và gói dịch vụ liên quan sẽ bị xóa vĩnh viễn.")
-                .setPositiveButton("Xóa") { _, _ ->
-                    deleteServiceCategoryWithDevicesAndPackages(category.id)
-                }
-                .setNegativeButton("Hủy", null)
-                .create()
-        }
-        if (alertDialog != null) {
-            alertDialog.show()
-        }
-    }
-
-    private fun deleteServiceCategoryWithDevicesAndPackages(id: String) {
-        val categoryRef = firestore.collection("service_categories").document(id)
-        // Xóa tất cả các thiết bị và gói dịch vụ trước
-        categoryRef.collection("devices").get().addOnSuccessListener { devicesSnapshot ->
-            for (deviceDoc in devicesSnapshot) {
-                val deviceId = deviceDoc.id
-                val deviceRef = categoryRef.collection("devices").document(deviceId)
-
-                // Xóa tất cả các gói dịch vụ của từng thiết bị
-                deviceRef.collection("service_packages").get().addOnSuccessListener { packagesSnapshot ->
-                    for (packageDoc in packagesSnapshot) {
-                        deviceRef.collection("service_packages").document(packageDoc.id).delete()
-                            .addOnSuccessListener {
-                                Log.d("Firestore", "Đã xóa gói dịch vụ: ${packageDoc.id}")
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("Firestore", "Lỗi khi xóa gói dịch vụ: ${e.message}")
-                            }
-                    }
-
-                    // Sau khi xóa hết các gói dịch vụ, xóa thiết bị
-                    deviceRef.delete().addOnSuccessListener {
-                        Log.d("Firestore", "Đã xóa thiết bị: $deviceId")
-                    }.addOnFailureListener { e ->
-                        Log.e("Firestore", "Lỗi khi xóa thiết bị: ${e.message}")
-                    }
-                }
-            }
-
-            // Sau khi xóa hết các thiết bị, xóa service category
-            categoryRef.delete().addOnSuccessListener {
-                Toast.makeText(context, "Đã xóa danh mục dịch vụ thành công", Toast.LENGTH_SHORT).show()
-                //set text of search view to empty
-                searchView?.setQuery("", false)
-                loadCategoriesFromFirestore()
-            }.addOnFailureListener { e ->
-                Log.e("Firestore", "Lỗi khi xóa danh mục dịch vụ: ${e.message}")
-                Toast.makeText(context, "Lỗi khi xóa danh mục dịch vụ", Toast.LENGTH_SHORT).show()
+    private fun getInfoCategory(categoryId: String, categoryName: String) {
+        // Lấy thông tin danh mục dịch vụ từ Firestore
+        val categoryRef = firestore.collection("service_categories").document(categoryId)
+        categoryRef.get().addOnSuccessListener { document ->
+            val category = document.toObject(ServiceCategory::class.java)
+            if (category != null) {
+                showEditCategoryDialog(category, categoryName)
+            } else {
+                Toast.makeText(context, "Không tìm thấy danh mục dịch vụ", Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener { e ->
-            Log.e("Firestore", "Lỗi khi truy cập danh sách thiết bị: ${e.message}")
+            Toast.makeText(context, "Lỗi khi truy cập danh mục dịch vụ: ${e.message}", Toast.LENGTH_SHORT).show()
         }
+
     }
 
-    private fun showDialogEditCategory(category: ServiceCategory) {
+    private fun showEditCategoryDialog(category: ServiceCategory, categoryName: String) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_category, null)
 
         val etCategoryName = dialogView.findViewById<TextView>(R.id.et_category_name)
@@ -229,7 +175,7 @@ class CategoryAdminFragment : Fragment() {
                             categoryRef.update("name", newName, "description", newDescription)
                                 .addOnSuccessListener {
                                     // Xử lý khi sửa thành công
-                                    loadCategoriesFromFirestore()
+                                    loadCategories()
                                 }
                                 .addOnFailureListener { e ->
                                     // Xử lý khi có lỗi
@@ -253,21 +199,132 @@ class CategoryAdminFragment : Fragment() {
 
     }
 
-    private fun loadCategoriesFromFirestore() {
-        firestore.collection("service_categories")
-            .get()
-            .addOnSuccessListener { querySnapshot ->
-                val categories = querySnapshot.documents.map { document ->
-                    ServiceCategory(
-                        id = document.id,
-                        name = document.getString("name") ?: "",
-                        description = document.getString("description") ?: ""
-                    )
+    private fun showDialogDeleteCategory(categoryId: String) {
+        val alertDialog = this.context?.let {
+            AlertDialog.Builder(it)
+                .setTitle("Xóa Danh Mục Dịch Vụ")
+                .setMessage("Bạn có chắc chắn muốn xóa danh mục dịch vụ này không? Tất cả các thiết bị và gói dịch vụ liên quan sẽ bị xóa vĩnh viễn.")
+                .setPositiveButton("Xóa") { _, _ ->
+                    deleteCategory(categoryId)
                 }
-                categoryAdapter.updateCategories(categories)
+                .setNegativeButton("Hủy", null)
+                .create()
+        }
+        if (alertDialog != null) {
+            alertDialog.show()
+        }
+    }
+
+    private fun deleteCategory(categoryId: String) {
+        val firestore = FirebaseFirestore.getInstance()
+        val categoryRef = firestore.collection("service_categories").document(categoryId)
+
+        // Hàm để xóa một collection và các document bên trong nó
+        fun deleteSubCollection(collectionRef: CollectionReference, onComplete: () -> Unit) {
+            collectionRef.get().addOnSuccessListener { querySnapshot ->
+                val batch = firestore.batch() // Dùng batch để xóa nhiều document cùng lúc
+                for (document in querySnapshot.documents) {
+                    batch.delete(document.reference)
+                }
+
+                // Thực hiện batch delete
+                batch.commit().addOnSuccessListener {
+                    onComplete() // Sau khi xóa xong, gọi lại để tiếp tục xóa các collection tiếp theo
+                }.addOnFailureListener { e ->
+                    Toast.makeText(context, "Lỗi khi xóa sub-collection: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }.addOnFailureListener { e ->
+                Toast.makeText(context, "Lỗi khi truy cập sub-collection: ${e.message}", Toast.LENGTH_SHORT).show()
             }
-            .addOnFailureListener { e ->
-                // Xử lý khi có lỗi
+        }
+
+        // Hàm xóa toàn bộ các thiết bị và các gói dịch vụ của chúng trước khi xóa category
+        fun deleteDevicesAndPackages(devicesRef: CollectionReference, onComplete: () -> Unit) {
+            devicesRef.get().addOnSuccessListener { querySnapshot ->
+                var deleteCount = 0
+                if (querySnapshot.isEmpty) {
+                    // Nếu không có thiết bị, xóa category luôn
+                    onComplete()
+                    return@addOnSuccessListener
+                }
+                for (deviceDoc in querySnapshot.documents) {
+                    val deviceId = deviceDoc.id
+                    deviceIdsToDelete.add(deviceId) // Lưu idDevice vào mảng để sau này xóa ảnh
+
+                    val servicePackagesRef = deviceDoc.reference.collection("service_packages")
+                    deleteSubCollection(servicePackagesRef) {
+                        deviceDoc.reference.delete().addOnSuccessListener {
+                            deleteCount++
+                            // Nếu đã xóa hết các thiết bị, gọi onComplete
+                            if (deleteCount == querySnapshot.size()) {
+                                onComplete()
+                            }
+                        }.addOnFailureListener { e ->
+                            Toast.makeText(context, "Lỗi khi xóa thiết bị: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            }.addOnFailureListener { e ->
+                Toast.makeText(context, "Lỗi khi truy cập thiết bị: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Xóa các thiết bị (devices) và gói dịch vụ (service_packages)
+        val devicesRef = categoryRef.collection("devices")
+        deleteDevicesAndPackages(devicesRef) {
+            // Sau khi đã xóa toàn bộ devices và service_packages, tiếp tục xóa category
+            categoryRef.delete().addOnSuccessListener {
+                Toast.makeText(context, "Danh mục và các sub-collection đã được xóa", Toast.LENGTH_SHORT).show()
+
+                // Gọi hàm xóa tất cả ảnh sau khi đã xóa document
+                deleteAllDeviceImages()
+            }.addOnFailureListener { e ->
+                Toast.makeText(context, "Lỗi khi xóa danh mục: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
+    private fun deleteAllDeviceImages() {
+        val storage = FirebaseStorage.getInstance()
+
+        for (deviceId in deviceIdsToDelete) {
+            val imageRef = storage.reference.child("device/$deviceId/$deviceId.jpg")
+            imageRef.delete().addOnSuccessListener {
+                Log.d("deleteDeviceImage", "Đã xóa ảnh cho thiết bị: $deviceId")
+            }.addOnFailureListener { e ->
+                Log.e("deleteDeviceImage", "Lỗi khi xóa ảnh cho thiết bị $deviceId: ${e.message}")
+            }
+        }
+
+        // Sau khi hoàn tất xóa ảnh, làm trống mảng
+        deviceIdsToDelete.clear()
+
+        // Thông báo sau khi đã xóa hết ảnh
+        Toast.makeText(context, "Đã xóa tất cả ảnh của thiết bị và làm trống danh sách", Toast.LENGTH_SHORT).show()
+    }
+
+
+    private fun loadCategories() {
+        firestore.collection("service_categories")
+            .addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    Log.e("HomeAdminFragment", "Error getting documents.", exception)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    categoryMap.clear()
+                    for (document in snapshot.documents) {
+                        val category = document.toObject(ServiceCategory::class.java)
+                        category?.let {
+                            categoryMap[document.id] = it.name
+
+                        }
+                    }
+                    // Cập nhật adapter khi có sự thay đổi
+                    categoryAdminAdapter.updateCategories(categoryMap)
+                }
             }
     }
 
@@ -276,9 +333,9 @@ class CategoryAdminFragment : Fragment() {
         tvToolbarTitle?.text = getString(R.string.nav_category_admin)
     }
 
-    override fun onResume() {
-        super.onResume()
-        loadCategoriesFromFirestore()
+    private fun initUi() {
+        searchView = mView?.findViewById(R.id.search_view)
+        fab = mView?.findViewById(R.id.fab_add)
+        recyclerViewCategory = mView?.findViewById(R.id.recycler_view_category)!!
     }
-
 }
