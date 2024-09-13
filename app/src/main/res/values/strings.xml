@@ -2,6 +2,7 @@
     <string name="app_name">Luận văn</string>
     <string name="nav_home">Trang chủ</string>
     <string name="nav_history">Lịch sử</string>
+    <string name="nav_order">Đơn hàng</string>
     <string name="nav_job">Công việc</string>
     <string name="nav_account">Tài khoản</string>
     <string name="nav_list">Đơn hàng</string>
@@ -63,10 +64,12 @@
     <string name="label_notes">Mô tả tình trạng</string>
     <string name="label_notes2">Dặn dò</string>
     <string name="label_select_device_brand">Chọn thương hiệu của thiết bị</string>
+    <string name="label_select_technicain">Phân công kỹ thuật viên</string>
     <string name="brand_customize">Tùy chọn nhãn hiệu</string>
     <string name="hint_optional">Bắt buộc</string>
     <string name="hint_optional2"> Không bắt buộc</string>
     <string name="label_total">Thành tiền (Chưa bao gồm chi phí thiết bị thay thế hoặc sửa chữa)</string>
+    <string name="label_warning">Vui lòng chọn kỹ thuật viên trước khi nhận đơn!!</string>
     <string name="label_order">Đặt hàng</string>
     <string name="label_success">Thành công</string>
     <string name="select_role">Lựa chọn đối tượng</string>
@@ -78,7 +81,9 @@
     <string name="phone">Số điện thoại</string>
     <string name="hint_phone">Nhập số điện thoại của bạn</string>
     <string name="address">Địa chỉ</string>
+    <string name="description">Mô tả</string>
     <string name="hint_address">Nhập địa chỉ của bạn</string>
+    <string name="hint_description">Nhập mô tả về khả năng của bạn</string>
     <string name="complete">Hoàn tất</string>
     <string name="default_name">user name</string>
     <string name="edit_avatar">Đổi ảnh</string>

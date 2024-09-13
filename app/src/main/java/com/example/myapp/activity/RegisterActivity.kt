@@ -121,47 +121,53 @@ class RegisterActivity : BaseActivity() {
                     val avatarRef = storage.reference.child("avatar/avatardf.jpg")
                     avatarRef.downloadUrl.addOnSuccessListener { uri ->
                         val avatarUrl = uri.toString()
-
                         // Tạo một bản ghi trong Firestore
                         val db = FirebaseFirestore.getInstance()
-                        val user = User(
-                            email = email,
-                            createdAt = currentTime,
-                            updatedAt = currentTime,
-                            role = selectedRole,
-                            imageURL = avatarUrl
-                        )
+                        val user = userId?.let {
+                            User(
+                                id = it,
+                                email = email,
+                                createdAt = currentTime,
+                                updatedAt = currentTime,
+                                role = selectedRole,
+                                imageURL = avatarUrl
+                            )
+                        }
 
                         // Thêm thông tin user vào collection "Users" document với userId là key
                         userId?.let {
-                            db.collection("Users").document(it)
-                                .set(user)
-                                .addOnSuccessListener {
-                                    // Thêm UID vào collection tương ứng
-                                    addUserToRoleSpecificCollection(userId, selectedRole)
+                            if (user != null) {
+                                db.collection("Users").document(it)
+                                    .set(user)
+                                    .addOnSuccessListener {
+                                        // Thêm UID vào collection tương ứng
+                                        addUserToRoleSpecificCollection(userId, selectedRole)
 
-                                    // Kiểm tra role tương ứng để chuyển hướng
-                                    when (selectedRole) {
-                                        "Customer" -> {
-                                            val intent = Intent(this, MainActivity::class.java)
-                                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-                                            startActivity(intent)
-                                        }
-                                        "Technician" -> {
-                                             val intent = Intent(this, TechnicianActivity::class.java)
-                                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-                                             startActivity(intent)
-                                        }
-                                        else -> {
-                                            val intent = Intent(this, AdminActivity::class.java)
-                                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-                                            startActivity(intent)
+                                        // Kiểm tra role tương ứng để chuyển hướng
+                                        when (selectedRole) {
+                                            "Customer" -> {
+                                                val intent = Intent(this, MainActivity::class.java)
+                                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                                startActivity(intent)
+                                            }
+
+                                            "Technician" -> {
+                                                val intent = Intent(this, TechnicianActivity::class.java)
+                                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                                startActivity(intent)
+                                            }
+
+                                            else -> {
+                                                val intent = Intent(this, AdminActivity::class.java)
+                                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                                startActivity(intent)
+                                            }
                                         }
                                     }
-                                }
-                                .addOnFailureListener { e ->
-                                    showToastMessage("Failed to add user to Firestore: ${e.message}")
-                                }
+                                    .addOnFailureListener { e ->
+                                        showToastMessage("Failed to add user to Firestore: ${e.message}")
+                                    }
+                            }
                         }
 
                     }.addOnFailureListener { exception ->
