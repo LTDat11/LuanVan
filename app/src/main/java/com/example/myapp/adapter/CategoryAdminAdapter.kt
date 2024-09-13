@@ -18,7 +18,6 @@ class CategoryAdminAdapter(
     private val onEditClick: (String, String) -> Unit,
     private val onDeleteClick: (String) -> Unit
 ) : RecyclerView.Adapter<CategoryAdminAdapter.CategoryViewHolder>() {
-
     class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvCategoryName: TextView = itemView.findViewById(R.id.tv_category_name)
         val tvCategoryDescription = itemView.findViewById<TextView>(R.id.tv_category_description)
@@ -32,12 +31,15 @@ class CategoryAdminAdapter(
 
     override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
         val categoryId = categoryMap.keys.elementAt(position)
-        val categoryName = categoryMap[categoryId]
-        val btnEditCategory = holder.itemView.findViewById<ImageButton>(R.id.btn_edit_category)
-        val btnDeleteCategory = holder.itemView.findViewById<ImageButton>(R.id.btn_delete_category)
+        val categoryData = categoryMap[categoryId]?.split(",") ?: listOf("", "")
+        val categoryName = categoryData[0]
+        val categoryDescription = categoryData[1]
 
         holder.tvCategoryName.text = categoryName
-        getInfoCategory(categoryId, holder.tvCategoryDescription )
+        holder.tvCategoryDescription.text = categoryDescription
+
+        val btnEditCategory = holder.itemView.findViewById<ImageButton>(R.id.btn_edit_category)
+        val btnDeleteCategory = holder.itemView.findViewById<ImageButton>(R.id.btn_delete_category)
 
         holder.itemView.setOnClickListener {
             // intent to DeviceListAdminActivity
@@ -45,16 +47,13 @@ class CategoryAdminAdapter(
             intent.putExtra("categoryId", categoryId)
             intent.putExtra("categoryName", categoryName)
             holder.itemView.context.startActivity(intent)
-
         }
 
         btnEditCategory.setOnClickListener {
-            // Handle edit button click
-            onEditClick(categoryId, categoryName!!)
+            onEditClick(categoryId, categoryName)
         }
 
         btnDeleteCategory.setOnClickListener {
-            // Handle delete button click
             onDeleteClick(categoryId)
         }
     }
@@ -68,23 +67,4 @@ class CategoryAdminAdapter(
         notifyDataSetChanged() // Notify RecyclerView to refresh the data
     }
 
-    private fun getInfoCategory(
-        categoryId: String,
-        tvCategoryDescription: TextView
-    ) {
-        // Lấy thông tin danh mục dịch vụ từ Firestore
-        val firestore = FirebaseFirestore.getInstance()
-        val categoryRef = firestore.collection("service_categories").document(categoryId)
-        categoryRef.get().addOnSuccessListener { document ->
-            val category = document.toObject(ServiceCategory::class.java)
-            if (category != null) {
-                tvCategoryDescription.text = category.description
-            } else {
-
-            }
-        }.addOnFailureListener { e ->
-
-        }
-
-    }
 }

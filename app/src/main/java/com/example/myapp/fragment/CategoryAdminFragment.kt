@@ -52,6 +52,29 @@ class CategoryAdminFragment : Fragment() {
         fab?.setOnClickListener {
             showAddCategoryDialog()
         }
+
+        searchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                filterCategories(newText ?: "")
+                return false
+            }
+        })
+
+    }
+
+    private fun filterCategories(query: String) {
+        val filteredCategories = if (query.isEmpty()) {
+            categoryMap
+        } else {
+            categoryMap.filter {
+                it.value.contains(query, ignoreCase = true)
+            }
+        }
+        categoryAdminAdapter.updateCategories(filteredCategories)
     }
 
     private fun showAddCategoryDialog() {
@@ -130,6 +153,7 @@ class CategoryAdminFragment : Fragment() {
             },
             onDeleteClick = { categoryId ->
                 showDialogDeleteCategory(categoryId)
+                searchView?.setQuery("", false)
             },
             )
         recyclerViewCategory.layoutManager = LinearLayoutManager(this.context)
@@ -318,8 +342,7 @@ class CategoryAdminFragment : Fragment() {
                     for (document in snapshot.documents) {
                         val category = document.toObject(ServiceCategory::class.java)
                         category?.let {
-                            categoryMap[document.id] = it.name
-
+                            categoryMap[document.id] = "${it.name},${it.description}"
                         }
                     }
                     // Cập nhật adapter khi có sự thay đổi
