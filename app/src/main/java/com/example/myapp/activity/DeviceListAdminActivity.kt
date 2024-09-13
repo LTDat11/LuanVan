@@ -36,6 +36,9 @@ class DeviceListAdminActivity : AppCompatActivity() {
 
     private lateinit var dialogView: View
     private lateinit var dialog: AlertDialog
+
+    // Khởi tạo mảng lưu các idDevice
+    private val deviceIdsToDelete = mutableListOf<String>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDeviceListAdminBinding.inflate(layoutInflater)
@@ -129,8 +132,6 @@ class DeviceListAdminActivity : AppCompatActivity() {
         newDeviceDocRef.set(newDevice)
             .addOnSuccessListener {
                 uploadImage(newDeviceDocRef.id, imageUri)
-                loadDevices()
-                hideProgressbar()
                 Toast.makeText(this, "Thiết bị đã được thêm thành công", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
@@ -147,6 +148,9 @@ class DeviceListAdminActivity : AppCompatActivity() {
             ref.putFile(it)
                 .addOnSuccessListener {
                     Toast.makeText(this, "Ảnh đã được tải lên", Toast.LENGTH_SHORT).show()
+                    hideProgressbar()
+                    loadDevices()
+
                     isImageSelected = false
                 }
                 .addOnFailureListener {
@@ -191,7 +195,6 @@ class DeviceListAdminActivity : AppCompatActivity() {
                     setupRecyclerView(deviceList)
 
                 } else {
-                    Toast.makeText(this, "Chưa có thiết bị nào", Toast.LENGTH_SHORT).show()
                     showEmptyDeviceOptions()
                 }
             }
@@ -209,15 +212,14 @@ class DeviceListAdminActivity : AppCompatActivity() {
                 showAddDeviceDialog() // Mở dialog thêm thiết bị
             }
             .setNegativeButton("Xóa danh mục") { _, _ ->
-                deleteCategory()
+                deleteCategory(categoryId)
             }
             .show()
     }
 
-    private fun deleteCategory() {
+    private fun deleteCategory(categoryId: String) {
         val firestore = FirebaseFirestore.getInstance()
         val categoryRef = firestore.collection("service_categories").document(categoryId)
-        val storage = FirebaseStorage.getInstance()
 
         // Hàm để xóa một collection và các document bên trong nó
         fun deleteSubCollection(collectionRef: CollectionReference, onComplete: () -> Unit) {
@@ -238,60 +240,71 @@ class DeviceListAdminActivity : AppCompatActivity() {
             }
         }
 
-        // Hàm để xóa ảnh trên Firebase Storage
-        fun deleteDeviceImage(idDevice: String, onComplete: () -> Unit) {
-            val imageRef = storage.reference.child("device/$idDevice/$idDevice.jpg")
-            imageRef.delete().addOnSuccessListener {
-                onComplete() // Gọi lại khi xóa ảnh thành công
-            }.addOnFailureListener { e ->
-                // Nếu không tìm thấy ảnh hoặc có lỗi khi xóa, vẫn tiếp tục
-                Log.e("deleteDeviceImage", "Lỗi khi xóa ảnh: ${e.message}")
-                onComplete()
-            }
-        }
-
-        // Xóa tất cả sub-collection trước khi xóa document chính
-        val devicesRef = categoryRef.collection("devices")
-        deleteSubCollection(devicesRef) {
-            // Sau khi xóa các thiết bị (devices), tiếp tục xóa các sub-collection bên trong devices (service_packages)
+        // Hàm xóa toàn bộ các thiết bị và các gói dịch vụ của chúng trước khi xóa category
+        fun deleteDevicesAndPackages(devicesRef: CollectionReference, onComplete: () -> Unit) {
             devicesRef.get().addOnSuccessListener { querySnapshot ->
                 var deleteCount = 0
+                if (querySnapshot.isEmpty) {
+                    // Nếu không có thiết bị, xóa category luôn
+                    onComplete()
+                    return@addOnSuccessListener
+                }
                 for (deviceDoc in querySnapshot.documents) {
                     val deviceId = deviceDoc.id
+                    deviceIdsToDelete.add(deviceId) // Lưu idDevice vào mảng để sau này xóa ảnh
+
                     val servicePackagesRef = deviceDoc.reference.collection("service_packages")
-
-                    // Xóa ảnh của thiết bị trước khi xóa sub-collection service_packages
-                    deleteDeviceImage(deviceId) {
-                        // Sau khi xóa ảnh xong, tiếp tục xóa sub-collection service_packages
-                        deleteSubCollection(servicePackagesRef) {
+                    deleteSubCollection(servicePackagesRef) {
+                        deviceDoc.reference.delete().addOnSuccessListener {
                             deleteCount++
-                            // Nếu đã xóa hết các sub-collection, xóa document chính
+                            // Nếu đã xóa hết các thiết bị, gọi onComplete
                             if (deleteCount == querySnapshot.size()) {
-                                // Xóa document chính (category)
-                                categoryRef.delete().addOnSuccessListener {
-                                    Toast.makeText(this, "Danh mục và các sub-collection đã được xóa", Toast.LENGTH_SHORT).show()
-                                    finish() // Quay về màn hình trước đó
-                                }.addOnFailureListener { e ->
-                                    Toast.makeText(this, "Lỗi khi xóa danh mục: ${e.message}", Toast.LENGTH_SHORT).show()
-                                }
+                                onComplete()
                             }
+                        }.addOnFailureListener { e ->
+                            Toast.makeText(this, "Lỗi khi xóa thiết bị: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
-                    }
-                }
-
-                // Nếu không có thiết bị nào, xóa document chính luôn
-                if (querySnapshot.isEmpty) {
-                    categoryRef.delete().addOnSuccessListener {
-                        Toast.makeText(this, "Danh mục đã được xóa", Toast.LENGTH_SHORT).show()
-                        finish() // Quay về màn hình trước đó
-                    }.addOnFailureListener { e ->
-                        Toast.makeText(this, "Lỗi khi xóa danh mục: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }.addOnFailureListener { e ->
                 Toast.makeText(this, "Lỗi khi truy cập thiết bị: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
+
+        // Xóa các thiết bị (devices) và gói dịch vụ (service_packages)
+        val devicesRef = categoryRef.collection("devices")
+        deleteDevicesAndPackages(devicesRef) {
+            // Sau khi đã xóa toàn bộ devices và service_packages, tiếp tục xóa category
+            categoryRef.delete().addOnSuccessListener {
+                Toast.makeText(this, "Danh mục và các sub-collection đã được xóa", Toast.LENGTH_SHORT).show()
+
+                // Gọi hàm xóa tất cả ảnh sau khi đã xóa document
+                deleteAllDeviceImages()
+                finish()
+            }.addOnFailureListener { e ->
+                Toast.makeText(this, "Lỗi khi xóa danh mục: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
+    private fun deleteAllDeviceImages() {
+        val storage = FirebaseStorage.getInstance()
+
+        for (deviceId in deviceIdsToDelete) {
+            val imageRef = storage.reference.child("device/$deviceId/$deviceId.jpg")
+            imageRef.delete().addOnSuccessListener {
+                Log.d("deleteDeviceImage", "Đã xóa ảnh cho thiết bị: $deviceId")
+            }.addOnFailureListener { e ->
+                Log.e("deleteDeviceImage", "Lỗi khi xóa ảnh cho thiết bị $deviceId: ${e.message}")
+            }
+        }
+
+        // Sau khi hoàn tất xóa ảnh, làm trống mảng
+        deviceIdsToDelete.clear()
+
+        // Thông báo sau khi đã xóa hết ảnh
+        Toast.makeText(this, "Đã xóa tất cả ảnh của thiết bị và làm trống danh sách", Toast.LENGTH_SHORT).show()
     }
 
 
@@ -457,6 +470,7 @@ class DeviceListAdminActivity : AppCompatActivity() {
             .addOnSuccessListener {
                 Toast.makeText(this, "Thiết bị đã được xóa", Toast.LENGTH_SHORT).show()
                 loadDevices() // Reload lại danh sách thiết bị
+                setupRecyclerView(emptyList()) // Hiển thị danh sách trống
             }
             .addOnFailureListener { e ->
                 Log.e("deleteDevice", "Error deleting device: ${e.message}")
@@ -474,44 +488,44 @@ class DeviceListAdminActivity : AppCompatActivity() {
         val imgToolbarBack = findViewById<ImageView>(R.id.img_toolbar_back)
         val tvToolbarTitle = findViewById<TextView>(R.id.tv_toolbar_title)
         imgToolbarBack.setOnClickListener {
-            finish()
+            onBackPressed()
         }
         // set title toolbar with category name
         tvToolbarTitle.text = "Danh sách thiết bị của $categoryName"
     }
 
-//    override fun onBackPressed() {
-//        super.onBackPressed()
-//        val firestore = FirebaseFirestore.getInstance()
-//
-//        // Kiểm tra xem danh mục có thiết bị nào hay không trước khi thoát
-//        firestore.collection("service_categories")
-//            .document(categoryId)
-//            .collection("devices")
-//            .get()
-//            .addOnSuccessListener { querySnapshot ->
-//                if (querySnapshot.isEmpty) {
-//                    // Hiển thị dialog yêu cầu thêm thiết bị hoặc xóa danh mục nếu trống
-//                    AlertDialog.Builder(this)
-//                        .setTitle("Danh mục trống")
-//                        .setMessage("Danh mục này chưa có thiết bị nào. Bạn hãy thêm ít nhất 1 thiết bị mới hoặc xóa danh mục?")
-//                        .setPositiveButton("Thêm thiết bị") { _, _ ->
-//                            loadDevices()
-//                            showAddDeviceDialog() // Mở dialog thêm thiết bị
-//                        }
-//                        .setNegativeButton("Xóa danh mục") { _, _ ->
-//                            deleteCategory() // Gọi hàm xóa danh mục
-//                        }
-//                        .show()
-//                } else {
-//                    // Nếu danh mục có thiết bị, quay lại màn hình trước đó như bình thường
-//                    finish()
-//                }
-//            }
-//            .addOnFailureListener { e ->
-//                Toast.makeText(this, "Lỗi khi kiểm tra thiết bị: ${e.message}", Toast.LENGTH_SHORT).show()
-//            }
-//    }
+    override fun onBackPressed() {
+        super.onBackPressed()
+        val firestore = FirebaseFirestore.getInstance()
+
+        // Kiểm tra xem danh mục có thiết bị nào hay không trước khi thoát
+        firestore.collection("service_categories")
+            .document(categoryId)
+            .collection("devices")
+            .get()
+            .addOnSuccessListener { querySnapshot ->
+                if (querySnapshot.isEmpty) {
+                    // Hiển thị dialog yêu cầu thêm thiết bị hoặc xóa danh mục nếu trống
+                    AlertDialog.Builder(this)
+                        .setTitle("Danh mục trống")
+                        .setMessage("Danh mục này chưa có thiết bị nào. Bạn hãy thêm ít nhất 1 thiết bị mới hoặc xóa danh mục?")
+                        .setPositiveButton("Thêm thiết bị") { _, _ ->
+                            loadDevices()
+                            showAddDeviceDialog() // Mở dialog thêm thiết bị
+                        }
+                        .setNegativeButton("Xóa danh mục") { _, _ ->
+                            deleteCategory(categoryId) // Gọi hàm xóa danh mục
+                        }
+                        .show()
+                } else {
+                    // Nếu danh mục có thiết bị, quay lại màn hình trước đó như bình thường
+                    finish()
+                }
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Lỗi khi kiểm tra thiết bị: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
 
     private fun showProgressbar() {
         binding.progressBar.visibility = View.VISIBLE

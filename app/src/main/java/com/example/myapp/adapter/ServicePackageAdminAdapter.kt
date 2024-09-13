@@ -63,7 +63,7 @@ class ServicePackageAdminAdapter(var packages: List<ServicePackage>) :  Recycler
                     if (document.exists()) {
                         val deviceName = document.getString("name")
                         if (deviceName != null) {
-                            loadImageFromFirebase(deviceName, imageView)
+                            loadImageFromFirebase(deviceId, imageView)
                         }
                     }else {
                         Log.e("ServicePackageAdapter", "Device document does not exist")
@@ -184,8 +184,8 @@ class ServicePackageAdminAdapter(var packages: List<ServicePackage>) :  Recycler
         return "$formattedPrice VND"
     }
 
-    private fun loadImageFromFirebase(deviceName: String, imageView: ImageView) {
-        val storageRef = FirebaseStorage.getInstance().reference.child("device/$deviceName/")
+    private fun loadImageFromFirebase(deviceId: String, imageView: ImageView) {
+        val storageRef = FirebaseStorage.getInstance().reference.child("device/$deviceId/")
         storageRef.listAll()
             .addOnSuccessListener{listResult ->
                 if (listResult.items.isNotEmpty()) {

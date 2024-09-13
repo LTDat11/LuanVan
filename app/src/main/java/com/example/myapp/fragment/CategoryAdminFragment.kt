@@ -125,11 +125,11 @@ class CategoryAdminFragment : Fragment() {
                 newCategoryRef.collection("devices").get()
                     .addOnSuccessListener { querySnapshot ->
                         if (querySnapshot.isEmpty) {
-//                            // Nếu subcollection 'devices' rỗng, chuyển đến DeviceListAdminActivity
-//                            val intent = Intent(context, DeviceListAdminActivity::class.java)
-//                            intent.putExtra("categoryId", categoryId)
-//                            intent.putExtra("categoryName", name)
-//                            startActivity(intent)
+                            // Nếu subcollection 'devices' rỗng, chuyển đến DeviceListAdminActivity
+                            val intent = Intent(context, DeviceListAdminActivity::class.java)
+                            intent.putExtra("categoryId", categoryId)
+                            intent.putExtra("categoryName", name)
+                            startActivity(intent)
                         } else {
                             // Xử lý nếu subcollection 'devices' không rỗng
                             Toast.makeText(context, "Danh mục đã có thiết bị", Toast.LENGTH_SHORT).show()
