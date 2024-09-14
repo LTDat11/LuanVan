@@ -10,8 +10,14 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
 import com.example.myapp.adapter.OderStatusPagerAdapter
 import com.example.myapp.model.OrderStatus
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class OrderFragment : Fragment() {
     private var mView: View? = null
@@ -27,9 +33,38 @@ class OrderFragment : Fragment() {
 
         initToolbar()
         setupViewPager()
+        listenChange()
 
         // Inflate the layout for this fragment
         return mView
+    }
+
+    private fun listenChange() {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+                val db = FirebaseFirestore.getInstance()
+                db.collection("orders")
+                    .whereEqualTo("status", "pending")
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            return@addSnapshotListener
+                        }
+                        if (snapshot != null) {
+                            val count = snapshot.size()
+                            updateBadge(0, count)
+                        }
+                    }
+            }
+        }
+
+    }
+
+    private fun updateBadge(tabPosition: Int, count: Int) {
+        val tab = tabOrder.getTabAt(tabPosition)
+        tab?.orCreateBadge?.apply {
+            isVisible = count > 0
+            number = count
+        }
     }
 
     private fun setupViewPager() {
