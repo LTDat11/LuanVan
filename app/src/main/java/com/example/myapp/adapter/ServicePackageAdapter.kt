@@ -61,7 +61,7 @@ class ServicePackageAdapter(var packages: List<ServicePackage>) : RecyclerView.A
                     if (document.exists()) {
                         val deviceName = document.getString("name")
                         if (deviceName != null) {
-                            loadImageFromFirebase(deviceName, imageView) { imageUrl ->
+                            loadImageFromFirebase(deviceId, imageView) { imageUrl ->
                                 // Khi đã lấy được imageUrl, ta truyền nó qua intent
                                 itemView.setOnClickListener {
                                     val intent = Intent(itemView.context, DetailPackageActivity::class.java)
@@ -84,8 +84,8 @@ class ServicePackageAdapter(var packages: List<ServicePackage>) : RecyclerView.A
             }
         }
 
-        private fun loadImageFromFirebase(deviceName: String, imageView: ImageView, onImageUrlReady: (String) -> Unit) {
-            val storageRef = FirebaseStorage.getInstance().reference.child("device/$deviceName/")
+        private fun loadImageFromFirebase(deviceId: String, imageView: ImageView, onImageUrlReady: (String) -> Unit) {
+            val storageRef = FirebaseStorage.getInstance().reference.child("device/$deviceId/")
 
             storageRef.listAll()
                 .addOnSuccessListener { listResult ->
@@ -100,7 +100,7 @@ class ServicePackageAdapter(var packages: List<ServicePackage>) : RecyclerView.A
                             Log.e("ServicePackageAdapter", "Error loading image URL", exception)
                         }
                     } else {
-                        Log.e("ServicePackageAdapter", "No images found in storage for $deviceName")
+                        Log.e("ServicePackageAdapter", "No images found in storage for $deviceId")
                     }
                 }
                 .addOnFailureListener { exception ->
