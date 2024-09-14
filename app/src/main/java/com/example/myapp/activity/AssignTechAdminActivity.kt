@@ -4,7 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
-import android.widget.SearchView
+import androidx.appcompat.widget.SearchView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,12 +15,15 @@ import com.example.myapp.databinding.ActivityAssignTechAdminBinding
 import com.example.myapp.model.Order
 import com.example.myapp.model.User
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AssignTechAdminActivity : AppCompatActivity() {
     lateinit var binding: ActivityAssignTechAdminBinding
     private var order: Order? = null
     private lateinit var recyclerView: RecyclerView
-    private lateinit var searchView: SearchView
     private lateinit var TechnicainListAdapter: TechnicainListAdapter
     private val technicain = mutableListOf<User>()
     private var orderId = ""
@@ -35,29 +38,60 @@ class AssignTechAdminActivity : AppCompatActivity() {
         intitUI()
         loadTechnicainsList()
         innitListener()
+        //function check use snapshot id_techician in order not null then show layout_bottom
+        checkTechInOrder()
+
+    }
+
+    private fun checkTechInOrder() {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+                val db = FirebaseFirestore.getInstance()
+                db.collection("orders").document(orderId)
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            // Xử lý lỗi nếu cần
+                            return@addSnapshotListener
+                        }
+
+                        if (snapshot != null) {
+                            val idTechnician = snapshot.getString("id_technician") // Truy cập trực tiếp field id_technician
+                            if (idTechnician != null) {
+                                binding.layoutBottom.visibility = View.VISIBLE
+                            } else {
+                                binding.layoutBottom.visibility = View.GONE // Ẩn nếu không có kỹ thuật viên
+                            }
+                        }
+                    }
+            }
+        }
     }
 
     private fun loadTechnicainsList() {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("Users")
-            .whereEqualTo("role", "Technician")
-            .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    // Xử lý lỗi nếu cần
-                    return@addSnapshotListener
-                }
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+                val db = FirebaseFirestore.getInstance()
+                db.collection("Users")
+                    .whereEqualTo("role", "Technician")
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            // Xử lý lỗi nếu cần
+                            return@addSnapshotListener
+                        }
 
-                if (snapshot != null) {
-                    technicain.clear()
-                    for (document in snapshot.documents) {
-                        val tech = document.toObject(User::class.java)
-                        if (tech != null) {
-                            technicain.add(tech)
+                        if (snapshot != null) {
+                            technicain.clear()
+                            for (document in snapshot.documents) {
+                                val tech = document.toObject(User::class.java)
+                                if (tech != null) {
+                                    technicain.add(tech)
+                                }
+                            }
+                            TechnicainListAdapter.notifyDataSetChanged()
                         }
                     }
-                    TechnicainListAdapter.notifyDataSetChanged()
-                }
             }
+        }
     }
 
 
@@ -73,6 +107,41 @@ class AssignTechAdminActivity : AppCompatActivity() {
                     rvTechnicians.visibility = View.GONE
                 }
             }
+
+            tvAddOrder.setOnClickListener {
+                // update status order to processing
+                CoroutineScope(Dispatchers.IO).launch {
+                    val currentTime = java.util.Date()
+                    val db = FirebaseFirestore.getInstance()
+                    db.collection("orders").document(orderId)
+                        .update("status", "processing","updatedAt", currentTime)
+                        .addOnSuccessListener {
+                            finish()
+                        }
+                        .addOnFailureListener {
+
+                        }
+                }
+            }
+
+            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    return false
+                }
+
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    if (newText != null) {
+                        val filteredOrders = technicain.filter { technicain ->
+                            technicain.name?.contains(newText, ignoreCase = true) ?: false ||
+                                    technicain.description?.contains(newText, ignoreCase = true) ?: false
+                        }
+                        TechnicainListAdapter = TechnicainListAdapter(filteredOrders, orderId)
+                        recyclerView.adapter = TechnicainListAdapter
+                    }
+                    return true
+                }
+            })
+
         }
     }
 

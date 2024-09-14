@@ -40,8 +40,8 @@
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:background="@color/bgFilter"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="8dp"/>
 
         <!-- Đang chờ -->
         <androidx.recyclerview.widget.RecyclerView

@@ -10,6 +10,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.myapp.R
 import com.example.myapp.model.User
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class TechnicainListAdapter(private val technicains: List<User>, private val orderId: String): RecyclerView.Adapter<TechnicainListAdapter.TechnicainViewHolder>() {
 
@@ -32,11 +36,13 @@ class TechnicainListAdapter(private val technicains: List<User>, private val ord
                 holder.itemUnSelect.drawable.constantState == holder.itemView.context.resources.getDrawable(R.drawable.ic_item_unselect).constantState && !isSelected -> {
                     holder.itemUnSelect.setImageResource(R.drawable.ic_item_selected)
                     isSelected = true
-                    Toast.makeText(holder.itemView.context, "Đã chọn ktv ${technicain.id} và thêm vào order ${orderId}", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(holder.itemView.context, "Đã chọn ktv ${technicain.id} và thêm vào order ${orderId}", Toast.LENGTH_SHORT).show()
+                    addTechnicainToOrder(technicain.id, orderId)
                 }
                 holder.itemUnSelect.drawable.constantState == holder.itemView.context.resources.getDrawable(R.drawable.ic_item_selected).constantState && isSelected -> {
                     holder.itemUnSelect.setImageResource(R.drawable.ic_item_unselect)
                     isSelected = false
+                    removeTechnicainFromOrder(technicain.id, orderId)
                 }
                 holder.itemUnSelect.drawable.constantState == holder.itemView.context.resources.getDrawable(R.drawable.ic_item_unselect).constantState && isSelected -> {
                     Toast.makeText(holder.itemView.context, "Chỉ chọn 1 kỹ thuật viên", Toast.LENGTH_SHORT).show()
@@ -44,6 +50,36 @@ class TechnicainListAdapter(private val technicains: List<User>, private val ord
             }
         }
 
+    }
+
+    private fun removeTechnicainFromOrder(id: String, orderId: String) {
+        // update technicain id to order
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = FirebaseFirestore.getInstance()
+            db.collection("orders").document(orderId)
+                .update("id_technician", null)
+                .addOnSuccessListener {
+
+                }
+                .addOnFailureListener {
+
+                }
+        }
+    }
+
+    private fun addTechnicainToOrder(id: String, orderId: String) {
+        // update technicain id to order
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = FirebaseFirestore.getInstance()
+            db.collection("orders").document(orderId)
+                .update("id_technician", id)
+                .addOnSuccessListener {
+
+                }
+                .addOnFailureListener {
+
+                }
+        }
     }
 
     override fun getItemCount(): Int {

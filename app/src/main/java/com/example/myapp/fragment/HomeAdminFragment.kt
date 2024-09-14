@@ -29,6 +29,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.relex.circleindicator.CircleIndicator3
 import java.text.NumberFormat
 import java.util.Locale
@@ -86,63 +90,69 @@ class HomeAdminFragment : Fragment() {
     }
 
     private fun filter(text: String) {
-        // Kiểm tra nếu chưa chọn thiết bị
-        if (selectedDeviceId.isNullOrEmpty()) {
-            Toast.makeText(requireContext(), "Vui lòng chọn thiết bị trước khi tìm kiếm", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // Nếu đã chọn thiết bị thì tiến hành tìm kiếm
-        val firestore = FirebaseFirestore.getInstance()
-        firestore.collection("service_categories")
-            .document(selectedTabId ?: "")
-            .collection("devices")
-            .document(selectedDeviceId ?: "")
-            .collection("service_packages")
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val packages = mutableListOf<ServicePackage>()
-                for (document in snapshot.documents) {
-                    val servicePackage = document.toObject(ServicePackage::class.java)
-                    servicePackage?.let {
-                        packages.add(it)
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+                if (selectedDeviceId.isNullOrEmpty()) {
+                    // Nếu chưa chọn thiết bị thì không thực hiện tìm kiếm
+                    return@withContext
+                }
+                // Nếu đã chọn thiết bị thì tiến hành tìm kiếm
+                val firestore = FirebaseFirestore.getInstance()
+                firestore.collection("service_categories")
+                    .document(selectedTabId ?: "")
+                    .collection("devices")
+                    .document(selectedDeviceId ?: "")
+                    .collection("service_packages")
+                    .get()
+                    .addOnSuccessListener { snapshot ->
+                        val packages = mutableListOf<ServicePackage>()
+                        for (document in snapshot.documents) {
+                            val servicePackage = document.toObject(ServicePackage::class.java)
+                            servicePackage?.let {
+                                packages.add(it)
+                            }
+                        }
+                        val filteredPackages = packages.filter {
+                            it.name.contains(text, ignoreCase = true) ||
+                                    it.description.contains(text, ignoreCase = true) ||
+                                    it.price.contains(text, ignoreCase = true)
+                        }
+                        updateServicePackageRecyclerView(filteredPackages)
                     }
-                }
-                val filteredPackages = packages.filter {
-                    it.name.contains(text, ignoreCase = true) ||
-                            it.description.contains(text, ignoreCase = true) ||
-                            it.price.contains(text, ignoreCase = true)
-                }
-                updateServicePackageRecyclerView(filteredPackages)
+                    .addOnFailureListener { exception ->
+                        Log.e("HomeAdminFragment", "Error getting service packages.", exception)
+                    }
             }
-            .addOnFailureListener { exception ->
-                Log.e("HomeAdminFragment", "Error getting service packages.", exception)
-            }
+        }
     }
 
 
     private fun loadCategories() {
-        val firestore = FirebaseFirestore.getInstance()
-        firestore.collection("service_categories")
-            .addSnapshotListener { snapshot, exception ->
-                if (exception != null) {
-                    Log.e("HomeAdminFragment", "Error getting documents.", exception)
-                    return@addSnapshotListener
-                }
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+                val firestore = FirebaseFirestore.getInstance()
+                firestore.collection("service_categories")
+                    .addSnapshotListener { snapshot, exception ->
+                        if (exception != null) {
+                            Log.e("HomeAdminFragment", "Error getting documents.", exception)
+                            return@addSnapshotListener
+                        }
 
-                if (snapshot != null) {
-                    categoryMap.clear()
-                    tabCategory?.removeAllTabs()
-                    for (document in snapshot.documents) {
-                        val category = document.toObject(ServiceCategory::class.java)
-                        category?.let {
-                            categoryMap[document.id] = it.name
-                            tabCategory?.newTab()?.setText(it.name)
-                                ?.let { it1 -> tabCategory?.addTab(it1) }
+                        if (snapshot != null) {
+                            categoryMap.clear()
+                            tabCategory?.removeAllTabs()
+                            for (document in snapshot.documents) {
+                                val category = document.toObject(ServiceCategory::class.java)
+                                category?.let {
+                                    categoryMap[document.id] = it.name
+                                    tabCategory?.newTab()?.setText(it.name)
+                                        ?.let { it1 -> tabCategory?.addTab(it1) }
+                                }
+                            }
                         }
                     }
-                }
             }
+        }
     }
 
     private fun innitListener() {
@@ -182,27 +192,31 @@ class HomeAdminFragment : Fragment() {
     }
 
     private fun loadDevicesForCategory(categoryId: String) {
-        val firestore = FirebaseFirestore.getInstance()
-        firestore.collection("service_categories")
-            .document(categoryId)
-            .collection("devices")
-            .addSnapshotListener { snapshot, exception ->
-                if (exception != null) {
-                    Log.e("HomeAdminFragment", "Error getting devices.", exception)
-                    return@addSnapshotListener
-                }
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+                val firestore = FirebaseFirestore.getInstance()
+                firestore.collection("service_categories")
+                    .document(categoryId)
+                    .collection("devices")
+                    .addSnapshotListener { snapshot, exception ->
+                        if (exception != null) {
+                            Log.e("HomeAdminFragment", "Error getting devices.", exception)
+                            return@addSnapshotListener
+                        }
 
-                if (snapshot != null) {
-                    val devices = mutableListOf<Device>()
-                    for (document in snapshot.documents) {
-                        val device = document.toObject(Device::class.java)
-                        device?.let {
-                            devices.add(it)
+                        if (snapshot != null) {
+                            val devices = mutableListOf<Device>()
+                            for (document in snapshot.documents) {
+                                val device = document.toObject(Device::class.java)
+                                device?.let {
+                                    devices.add(it)
+                                }
+                            }
+                            updateDeviceRecyclerView(devices)
                         }
                     }
-                    updateDeviceRecyclerView(devices)
-                }
             }
+        }
     }
 
     private fun updateDeviceRecyclerView(devices: List<Device>) {
@@ -220,26 +234,30 @@ class HomeAdminFragment : Fragment() {
     }
 
     private fun loadServicePackagesForDevice(deviceId: String) {
-        val firestore = FirebaseFirestore.getInstance()
-        firestore.collection("service_categories")
-            .document(selectedTabId ?: "")
-            .collection("devices")
-            .document(deviceId)
-            .collection("service_packages")
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val packages = mutableListOf<ServicePackage>()
-                for (document in snapshot.documents) {
-                    val servicePackage = document.toObject(ServicePackage::class.java)
-                    servicePackage?.let {
-                        packages.add(it)
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main) {
+                val firestore = FirebaseFirestore.getInstance()
+                firestore.collection("service_categories")
+                    .document(selectedTabId ?: "")
+                    .collection("devices")
+                    .document(deviceId)
+                    .collection("service_packages")
+                    .get()
+                    .addOnSuccessListener { snapshot ->
+                        val packages = mutableListOf<ServicePackage>()
+                        for (document in snapshot.documents) {
+                            val servicePackage = document.toObject(ServicePackage::class.java)
+                            servicePackage?.let {
+                                packages.add(it)
+                            }
+                        }
+                        updateServicePackageRecyclerView(packages)
                     }
-                }
-                updateServicePackageRecyclerView(packages)
+                    .addOnFailureListener { exception ->
+                        Log.e("HomeAdminFragment", "Error getting service packages.", exception)
+                    }
             }
-            .addOnFailureListener { exception ->
-                Log.e("HomeAdminFragment", "Error getting service packages.", exception)
-            }
+        }
     }
 
     private fun updateServicePackageRecyclerView(packages: List<ServicePackage>) {
@@ -271,7 +289,11 @@ class HomeAdminFragment : Fragment() {
 
                 if (name.isNotEmpty() && description.isNotEmpty() && price.isNotEmpty()) {
                     // Thêm gói dịch vụ vào Firestore
-                    addServicePackage(name, description, price, selectedTabId!!, selectedDeviceId!!)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        withContext(Dispatchers.Main){
+                            addServicePackage(name, description, price, selectedTabId!!, selectedDeviceId!!)
+                        }
+                    }
                 } else {
                     Toast.makeText(requireContext(), "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show()
                 }
@@ -336,22 +358,26 @@ class HomeAdminFragment : Fragment() {
     }
 
     private fun getListPhotoBanners() {
-        val storageReference = FirebaseStorage.getInstance().reference.child("banner/")
-        storageReference.listAll()
-            .addOnSuccessListener { listResult ->
-                listPhotoBanners.clear()
-                for (fileRef in listResult.items) {
-                    fileRef.downloadUrl.addOnSuccessListener { uri ->
-                        listPhotoBanners.add(PhotoBanner(uri.toString()))
-                        if (listPhotoBanners.size == listResult.items.size) {
-                            displayListBanner()
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+                val storageReference = FirebaseStorage.getInstance().reference.child("banner/")
+                storageReference.listAll()
+                    .addOnSuccessListener { listResult ->
+                        listPhotoBanners.clear()
+                        for (fileRef in listResult.items) {
+                            fileRef.downloadUrl.addOnSuccessListener { uri ->
+                                listPhotoBanners.add(PhotoBanner(uri.toString()))
+                                if (listPhotoBanners.size == listResult.items.size) {
+                                    displayListBanner()
+                                }
+                            }
                         }
                     }
-                }
+                    .addOnFailureListener { exception ->
+                        Log.e("Storage", "Error getting banner images: ", exception)
+                    }
             }
-            .addOnFailureListener { exception ->
-                Log.e("Storage", "Error getting banner images: ", exception)
-            }
+        }
     }
 
     private fun displayListBanner() {

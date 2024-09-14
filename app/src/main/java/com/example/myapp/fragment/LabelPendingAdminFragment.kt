@@ -13,6 +13,10 @@ import com.example.myapp.adapter.OrderAdapter
 import com.example.myapp.adapter.OrderAdminAdapter
 import com.example.myapp.model.Order
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LabelPendingAdminFragment : Fragment() {
 
@@ -75,27 +79,32 @@ class LabelPendingAdminFragment : Fragment() {
     }
 
     private fun loadOrders() {
-        val db = FirebaseFirestore.getInstance()
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+                val db = FirebaseFirestore.getInstance()
 
-        db.collection("orders")
-            .whereEqualTo("status", "pending")
-            .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    // Xử lý lỗi nếu cần
-                    return@addSnapshotListener
-                }
+                db.collection("orders")
+                    .whereEqualTo("status", "pending")
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            // Xử lý lỗi nếu cần
+                            return@addSnapshotListener
+                        }
 
-                if (snapshot != null) {
-                    orders.clear()
-                    for (document in snapshot.documents) {
-                        val order = document.toObject(Order::class.java)
-                        if (order != null) {
-                            orders.add(order)
+                        if (snapshot != null) {
+                            orders.clear()
+                            for (document in snapshot.documents) {
+                                val order = document.toObject(Order::class.java)
+                                if (order != null) {
+                                    orders.add(order)
+                                }
+                            }
+                            orderAminAdapter.notifyDataSetChanged()
                         }
                     }
-                    orderAminAdapter.notifyDataSetChanged()
-                }
             }
+        }
+
     }
 
 }

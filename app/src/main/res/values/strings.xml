@@ -69,7 +69,7 @@
     <string name="hint_optional">Bắt buộc</string>
     <string name="hint_optional2"> Không bắt buộc</string>
     <string name="label_total">Thành tiền (Chưa bao gồm chi phí thiết bị thay thế hoặc sửa chữa)</string>
-    <string name="label_warning">Vui lòng chọn kỹ thuật viên trước khi nhận đơn!!</string>
+    <string name="label_warning">Kiểm tra và phân công kỹ thuật viên phù hợp!!</string>
     <string name="label_order">Đặt hàng</string>
     <string name="label_success">Thành công</string>
     <string name="select_role">Lựa chọn đối tượng</string>
