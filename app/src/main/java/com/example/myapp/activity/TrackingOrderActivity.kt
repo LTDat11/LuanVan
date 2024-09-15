@@ -124,9 +124,38 @@ class TrackingOrderActivity : AppCompatActivity() {
             tvNoteValue.text = order.notes2?.takeIf { it.isNotEmpty() } ?: "Không có"
             tvPackagePrice.text = order.price.toString()
 
+            //function get name of technician by id_technician and set text to tv_technician_name
+            getNameTech(order.id_technician, tvTechnicianName)
+
             Glide.with(this@TrackingOrderActivity).load(order.imgURLServicePackage).into(imgPackage)
 
             order.status?.let { updateOrderStatusUI(it) }
+        }
+    }
+
+    private fun getNameTech(idTechnician: String?, tvTechnicianName: TextView) {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+
+                val db = FirebaseFirestore.getInstance()
+                db.collection("Users")
+                    .document(idTechnician ?: return@withContext) // Kiểm tra null cho idTechnician
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            // Xử lý lỗi nếu có
+                            tvTechnicianName.text = "Lỗi khi lắng nghe dữ liệu"
+                            return@addSnapshotListener
+                        }
+
+                        if (snapshot != null && snapshot.exists()) {
+                            val name = snapshot.getString("name") // Lấy giá trị name
+                            tvTechnicianName.text = name ?: "Không có tên"
+                        } else {
+                            tvTechnicianName.text = "Chưa có nhân viên xử lý"
+                        }
+                    }
+
+            }
         }
     }
 
