@@ -41,22 +41,25 @@ class OrderFragment : Fragment() {
 
     private fun listenChange() {
         CoroutineScope(Dispatchers.IO).launch {
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
                 val db = FirebaseFirestore.getInstance()
-                db.collection("orders")
-                    .whereEqualTo("status", "pending")
-                    .addSnapshotListener { snapshot, e ->
-                        if (e != null) {
-                            return@addSnapshotListener
+                val statuses = listOf("pending", "processing", "completed", "finish")
+
+                statuses.forEachIndexed { index, status ->
+                    db.collection("orders")
+                        .whereEqualTo("status", status)
+                        .addSnapshotListener { snapshot, e ->
+                            if (e != null) {
+                                return@addSnapshotListener
+                            }
+                            if (snapshot != null) {
+                                val count = snapshot.size()
+                                updateBadge(index, count)
+                            }
                         }
-                        if (snapshot != null) {
-                            val count = snapshot.size()
-                            updateBadge(0, count)
-                        }
-                    }
+                }
             }
         }
-
     }
 
     private fun updateBadge(tabPosition: Int, count: Int) {
@@ -66,6 +69,7 @@ class OrderFragment : Fragment() {
             number = count
         }
     }
+
 
     private fun setupViewPager() {
         val statusList = listOf(
