@@ -23,6 +23,8 @@ class OrderFragment : Fragment() {
     private var mView: View? = null
     private lateinit var viewPagerOrder: ViewPager2
     private lateinit var tabOrder: TabLayout
+    // Biến lưu trạng thái đã xem cho từng status
+    private val viewedOrders = mutableMapOf<String, List<String>>()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -53,8 +55,17 @@ class OrderFragment : Fragment() {
                                 return@addSnapshotListener
                             }
                             if (snapshot != null) {
-                                val count = snapshot.size()
-                                updateBadge(index, count)
+                                val orderIds = snapshot.documents.map { it.id } // Lấy danh sách id đơn hàng hiện tại
+                                val previouslyViewed = viewedOrders[status] ?: emptyList()
+
+                                // Nếu là "pending", luôn cập nhật badge
+                                if (status == "pending") {
+                                    updateBadge(index, orderIds.size)
+                                } else if (orderIds != previouslyViewed) {
+                                    // Chỉ cập nhật badge nếu có đơn hàng mới chưa xem (cho các trạng thái khác pending)
+                                    updateBadge(index, orderIds.size)
+                                    viewedOrders[status] = orderIds
+                                }
                             }
                         }
                 }
@@ -62,11 +73,19 @@ class OrderFragment : Fragment() {
         }
     }
 
+    // Hàm cập nhật badge cho từng tab, ngoại trừ "pending" luôn giữ badge
     private fun updateBadge(tabPosition: Int, count: Int) {
         val tab = tabOrder.getTabAt(tabPosition)
         tab?.orCreateBadge?.apply {
-            isVisible = count > 0
-            number = count
+            if (tabPosition == 0) {
+                // Tab "pending" luôn hiện badge nếu có dữ liệu
+                isVisible = count > 0
+                number = count
+            } else {
+                // Các tab khác chỉ hiện nếu có nội dung mới
+                isVisible = count > 0
+                number = count
+            }
         }
     }
 
@@ -87,17 +106,17 @@ class OrderFragment : Fragment() {
         // Add the listener for tab selection
         tabOrder.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                // Handle tab selected
-                viewPagerOrder.currentItem = tab.position
+                val position = tab.position
+                // Nếu là các tab khác "pending", xóa badge khi nhấn vào
+                if (position != 0) {
+                    val selectedStatus = listOf("pending", "processing", "completed", "finish")[position]
+                    viewedOrders[selectedStatus] = emptyList() // Đặt trạng thái đã xem là rỗng
+                    updateBadge(position, 0) // Xóa badge
+                }
             }
 
-            override fun onTabUnselected(tab: TabLayout.Tab) {
-                // Handle tab unselected
-            }
-
-            override fun onTabReselected(tab: TabLayout.Tab) {
-                // Handle tab reselected
-            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
     }
 
