@@ -12,6 +12,10 @@ import com.bumptech.glide.Glide
 import com.example.myapp.R
 import com.example.myapp.model.Device
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class DeviceListAdminAdapter(
     private var deviceList: List<Device>,
@@ -74,31 +78,38 @@ class DeviceListAdminAdapter(
         }
     }
     private fun loadImage(idDevice: String, circleImageView: ImageView) {
-        val storage = FirebaseStorage.getInstance()
-        val ref = storage.reference.child("device/${idDevice}/")
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
 
-        ref.listAll()
-            .addOnSuccessListener { listResult ->
-                if (listResult.items.isNotEmpty()) {
-                    val imageRef = listResult.items[0]
-                    imageRef.downloadUrl
-                        .addOnSuccessListener { uri ->
-                            Glide.with(circleImageView.context)
-                                .load(uri)
-                                .into(circleImageView)
+                val storage = FirebaseStorage.getInstance()
+                val ref = storage.reference.child("device/${idDevice}/")
+
+                ref.listAll()
+                    .addOnSuccessListener { listResult ->
+                        if (listResult.items.isNotEmpty()) {
+                            val imageRef = listResult.items[0]
+                            imageRef.downloadUrl
+                                .addOnSuccessListener { uri ->
+                                    Glide.with(circleImageView.context)
+                                        .load(uri)
+                                        .into(circleImageView)
+                                }
+                                .addOnFailureListener { exception ->
+                                    Log.e("DeviceListAdminAdapter", "Error loading image URL", exception)
+                                }
+                        } else {
+                            // No image found, handle as needed
+                            circleImageView.setImageResource(R.drawable.ic_launcher_foreground) // Set a placeholder image
                         }
-                        .addOnFailureListener { exception ->
-                            Log.e("DeviceListAdminAdapter", "Error loading image URL", exception)
-                        }
-                } else {
-                    // No image found, handle as needed
-                    circleImageView.setImageResource(R.drawable.ic_launcher_foreground) // Set a placeholder image
-                }
+                    }
+                    .addOnFailureListener {
+                        Log.e("DeviceListAdminAdapter", "Error loading image", it)
+                        circleImageView.setImageResource(R.drawable.ic_launcher_foreground) // Set a placeholder on failure
+                    }
+
             }
-            .addOnFailureListener {
-                Log.e("DeviceListAdminAdapter", "Error loading image", it)
-                circleImageView.setImageResource(R.drawable.ic_launcher_foreground) // Set a placeholder on failure
-            }
+        }
+
     }
 
 }
