@@ -101,22 +101,6 @@ class AdminActivity : AppCompatActivity() {
                         }
 
                     }
-
-                db.collection("orders")
-                    .whereEqualTo("status", "finish")
-                    .addSnapshotListener { snapshot, e ->
-                        if (e != null) return@addSnapshotListener
-                        snapshot?.let {
-                            val count = it.size()
-                            if (count > previousCount) {
-                                sendNotification(count, "high_priority_channel_id", "Đơn hàng đã thanh toán", "Bạn có đơn hàng đã thanh toán.")
-                            }
-
-                            // Cập nhật giá trị previousCount
-                            previousCount = count
-                        }
-                    }
-
             }
         }
 
