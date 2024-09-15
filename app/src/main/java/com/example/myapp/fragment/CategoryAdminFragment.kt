@@ -87,23 +87,27 @@ class CategoryAdminFragment : Fragment() {
         val etCategoryName = dialogView.findViewById<TextView>(R.id.et_category_name)
         val etCategoryDescription = dialogView.findViewById<TextView>(R.id.et_category_description)
 
-        val dialog = AlertDialog.Builder(requireContext())
-            .setView(dialogView)
-            .setTitle("Thêm danh mục dịch vụ")
-            .setPositiveButton("Thêm") { _, _ ->
-                val name = etCategoryName.text.toString()
-                val description = etCategoryDescription.text.toString()
+        val dialog = context?.let {
+            AlertDialog.Builder(it)
+                .setView(dialogView)
+                .setTitle("Thêm danh mục dịch vụ")
+                .setPositiveButton("Thêm") { _, _ ->
+                    val name = etCategoryName.text.toString()
+                    val description = etCategoryDescription.text.toString()
 
-                if (name.isNotEmpty() && description.isNotEmpty()) {
-                    addCategory(name, description)
-                } else {
-                    // Hiển thị thông báo lỗi
-                    Toast.makeText(context, "Vui lòng nhập đủ thông tin", Toast.LENGTH_SHORT).show()
+                    if (name.isNotEmpty() && description.isNotEmpty()) {
+                        addCategory(name, description)
+                    } else {
+                        // Hiển thị thông báo lỗi
+                        Toast.makeText(context, "Vui lòng nhập đủ thông tin", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            }
-            .setNegativeButton("Hủy") { _, _ -> }
-            .create()
-        dialog.show()
+                .setNegativeButton("Hủy") { _, _ -> }
+                .create()
+        }
+        if (dialog != null) {
+            dialog.show()
+        }
     }
 
     private fun addCategory(name: String, description: String) {

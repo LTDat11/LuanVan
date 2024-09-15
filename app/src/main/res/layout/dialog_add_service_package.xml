@@ -45,7 +45,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Giá thiết bị"
+        android:text="Giá gói dịch vụ"
         android:textSize="16sp"
         android:textColor="@color/textColorHeading"
         android:layout_marginBottom="8dp"/>
@@ -54,7 +54,7 @@
         android:id="@+id/et_package_price"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Nhập giá thiết bị"
+        android:hint="Nhập giá gói dịch vụ"
         android:inputType="numberDecimal"
         android:padding="10dp"
         android:background="@drawable/bg_white_corner_16_border_gray"/>
