@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
 
                     // Kiểm tra nếu có đơn hàng hoàn thành và gửi thông báo
                     if (hasCompletedOrder) {
-                        sendNotification()
+                        sendNotification("high_priority_channel_id", "Đơn hàng hoàn tất sửa chữa", "Bạn có đơn hàng đã sửa chữa xong. Vui lòng kiểm tra để thanh toán!.")
                     }
 
                 }
@@ -131,27 +131,23 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun sendNotification() {
+    private fun sendNotification(channelId: String, title: String, message: String) {
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
-        // Tạo một Intent để mở ứng dụng khi thông báo được nhấn
         val intent = Intent(this, SplashActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 
-        // Tạo một PendingIntent từ Intent
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
-        // Tạo thông báo
-        val notificationBuilder = NotificationCompat.Builder(this, "default_channel_id")
-            .setSmallIcon(R.drawable.ic_step_enable) // Đảm bảo rằng ic_notification là một drawable hợp lệ
-            .setContentTitle("Đơn hàng chờ thanh toán")
-            .setContentText("Bạn có một đơn hàng đã hoàn thành. Vui lòng kiểm tra để thanh toán")
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.ic_step_enable)
+            .setContentTitle(title)
+            .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
-            .setContentIntent(pendingIntent) // Gán PendingIntent cho thông báo
+            .setContentIntent(pendingIntent)
 
-        // Hiển thị thông báo
-        notificationManager.notify(1, notificationBuilder.build())
+        notificationManager.notify(channelId.hashCode(), notificationBuilder.build())
     }
 
 

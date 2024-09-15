@@ -17,6 +17,10 @@ import com.example.myapp.databinding.ActivityAdminBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AdminActivity : AppCompatActivity() {
     lateinit var binding: ActivityAdminBinding
@@ -72,28 +76,50 @@ class AdminActivity : AppCompatActivity() {
     }
 
     private fun listenChange() {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("orders")
-            .whereEqualTo("status", "pending")
-            .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    // Xử lý lỗi nếu cần
-                    return@addSnapshotListener
-                }
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
 
-                if (snapshot != null) {
-                    val count = snapshot.size()
-                    if (count > previousCount) {
-                        sendNotification(count)
+                val db = FirebaseFirestore.getInstance()
+                db.collection("orders")
+                    .whereEqualTo("status", "pending")
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            // Xử lý lỗi nếu cần
+                            return@addSnapshotListener
+                        }
+
+                        if (snapshot != null) {
+                            val count = snapshot.size()
+                            if (count > previousCount) {
+                                sendNotification(count, "high_priority_channel_id", "Đơn hàng mới", "Bạn có $count đơn hàng mới đang chờ xác nhận.")
+                            }
+                            updateBadgeForBottomNav(count)
+
+
+                            // Cập nhật giá trị previousCount
+                            previousCount = count
+                        }
+
                     }
-                    updateBadgeForBottomNav(count)
 
+                db.collection("orders")
+                    .whereEqualTo("status", "finish")
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) return@addSnapshotListener
+                        snapshot?.let {
+                            val count = it.size()
+                            if (count > previousCount) {
+                                sendNotification(count, "high_priority_channel_id", "Đơn hàng đã thanh toán", "Bạn có đơn hàng đã thanh toán.")
+                            }
 
-                    // Cập nhật giá trị previousCount
-                    previousCount = count
-                }
+                            // Cập nhật giá trị previousCount
+                            previousCount = count
+                        }
+                    }
 
             }
+        }
+
     }
 
     private fun updateBadgeForBottomNav(count: Int) {
@@ -104,27 +130,23 @@ class AdminActivity : AppCompatActivity() {
         }
     }
 
-    private fun sendNotification(count: Int) {
+    private fun sendNotification(count: Int, channelId: String, title: String, message: String) {
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
-        // Tạo một Intent để mở ứng dụng khi thông báo được nhấn
         val intent = Intent(this, SplashActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 
-        // Tạo một PendingIntent từ Intent
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
-        // Tạo thông báo
-        val notificationBuilder = NotificationCompat.Builder(this, "default_channel_id")
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.drawable.baseline_fiber_new_24)
-            .setContentTitle("Đơn hàng mới")
-            .setContentText("Bạn có ${count} đơn hàng đang chờ để xử lý. Vui lòng kiểm tra")
+            .setContentTitle(title)
+            .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
-            .setContentIntent(pendingIntent) // Gán PendingIntent cho thông báo
+            .setContentIntent(pendingIntent)
 
-        // Hiển thị thông báo
-        notificationManager.notify(3, notificationBuilder.build())
+        notificationManager.notify(channelId.hashCode(), notificationBuilder.build())
     }
 
     private fun showBottomSheetDialog() {

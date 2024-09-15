@@ -82,7 +82,7 @@ class TechnicianActivity : AppCompatActivity() {
                 if (snapshot != null) {
                     val count = snapshot.size()
                     if (count > previousCount) {
-                        sendNotification(count)
+                        sendNotification(count, "high_priority_channel_id", "Đơn hàng được phân công", "Bạn có $count đơn hàng được phân công.")
                     }
 
                     // Cập nhật giá trị previousCount
@@ -92,27 +92,23 @@ class TechnicianActivity : AppCompatActivity() {
             }
     }
 
-    private fun sendNotification(count: Int) {
+    private fun sendNotification(count: Int, channelId: String, title: String, message: String) {
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
-        // Tạo một Intent để mở ứng dụng khi thông báo được nhấn
         val intent = Intent(this, SplashActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 
-        // Tạo một PendingIntent từ Intent
         val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
 
-        // Tạo thông báo
-        val notificationBuilder = NotificationCompat.Builder(this, "default_channel_id")
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.drawable.baseline_fiber_new_24)
-            .setContentTitle("Đơn hàng phụ trách")
-            .setContentText("Bạn có ${count} đơn hàng được giao để xử lý. Vui lòng kiểm tra")
+            .setContentTitle(title)
+            .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
-            .setContentIntent(pendingIntent) // Gán PendingIntent cho thông báo
+            .setContentIntent(pendingIntent)
 
-        // Hiển thị thông báo
-        notificationManager.notify(2, notificationBuilder.build())
+        notificationManager.notify(channelId.hashCode(), notificationBuilder.build())
     }
 
 

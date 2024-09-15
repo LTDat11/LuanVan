@@ -62,6 +62,7 @@ class SplashActivity : AppCompatActivity() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Kênh mặc định
             val channelId = "default_channel_id"
             val channelName = "Default Channel"
             val channelDescription = "Channel for default notifications"
@@ -71,8 +72,30 @@ class SplashActivity : AppCompatActivity() {
                 description = channelDescription
             }
 
+            // Kênh ưu tiên cao
+            val highPriorityChannelId = "high_priority_channel_id"
+            val highPriorityChannelName = "High Priority Channel"
+            val highPriorityChannelDescription = "Channel for high priority notifications"
+            val highPriorityImportance = NotificationManager.IMPORTANCE_HIGH
+
+            val highPriorityChannel = NotificationChannel(highPriorityChannelId, highPriorityChannelName, highPriorityImportance).apply {
+                description = highPriorityChannelDescription
+            }
+
+            // Kênh ưu tiên thấp
+            val lowPriorityChannelId = "low_priority_channel_id"
+            val lowPriorityChannelName = "Low Priority Channel"
+            val lowPriorityChannelDescription = "Channel for low priority notifications"
+            val lowPriorityImportance = NotificationManager.IMPORTANCE_LOW
+
+            val lowPriorityChannel = NotificationChannel(lowPriorityChannelId, lowPriorityChannelName, lowPriorityImportance).apply {
+                description = lowPriorityChannelDescription
+            }
+
             val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
+            notificationManager.createNotificationChannel(highPriorityChannel)
+            notificationManager.createNotificationChannel(lowPriorityChannel)
         }
     }
 
