@@ -141,6 +141,33 @@
                 android:padding="10dp" />
         </LinearLayout>
 
+        <!-- Description Field -->
+        <LinearLayout
+            android:id="@+id/layout_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="16dp">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/baseline_description_24"
+                android:layout_marginEnd="8dp" />
+
+            <EditText
+                android:id="@+id/edt_description"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/description"
+                android:background="@drawable/bg_white_corner_16_border_gray"
+                android:textSize="16sp"
+                android:inputType="textPostalAddress"
+                android:padding="10dp" />
+        </LinearLayout>
+
         <!-- Save Button -->
         <Button
             android:id="@+id/btn_save"
