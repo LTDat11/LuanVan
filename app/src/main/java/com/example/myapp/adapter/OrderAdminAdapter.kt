@@ -10,6 +10,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapp.R
 import com.example.myapp.activity.AssignTechAdminActivity
+import com.example.myapp.activity.InfoProcessingAdminActivity
+import com.example.myapp.activity.ReceiptOrderActivity
+import com.example.myapp.activity.TrackingOrderTechActivity
 import com.example.myapp.model.Order
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
@@ -45,9 +48,21 @@ class OrderAdminAdapter(private val orders: List<Order>): RecyclerView.Adapter<O
             }
             "completed" -> {
                 holder.tvStatus.text = "Chờ thanh toán"
+                // hide button accept and hide
+                holder.layoutInstruction.visibility = View.GONE
+                holder.btnAcecept.visibility = View.GONE
+                // set text status description title and status description
+                holder.tvStatusDescriptionTitle.text = "Nhân viên xử lý:"
+                getNameTech(order.id_technician, holder.tvStatusDescription)
             }
             "finish" -> {
                 holder.tvStatus.text = "Đã thanh toán"
+                // hide button accept and hide
+                holder.layoutInstruction.visibility = View.GONE
+                holder.btnAcecept.visibility = View.GONE
+                // set text status description title and status description
+                holder.tvStatusDescriptionTitle.text = "Nhân viên xử lý:"
+                getNameTech(order.id_technician, holder.tvStatusDescription)
             }
         }
 
@@ -62,13 +77,26 @@ class OrderAdminAdapter(private val orders: List<Order>): RecyclerView.Adapter<O
                     context.startActivity(intent)
                 }
                 "processing" -> {
-                    // do nothing
+                    val context = holder.itemView.context
+                    val intent = Intent(context, InfoProcessingAdminActivity::class.java)
+                    // truyền dữ liệu order qua màn hình tiếp theo
+                    intent.putExtra("order", order)
+                    context.startActivity(intent)
                 }
                 "completed" -> {
-                    // do nothing
+                    val context = holder.itemView.context
+                    val intent = Intent(context, TrackingOrderTechActivity::class.java)
+                    // truyền dữ liệu order qua màn hình tiếp theo
+                    intent.putExtra("order_id", order.id)
+                    intent.putExtra("imgURL", order.imgURLServicePackage)
+                    context.startActivity(intent)
                 }
                 "finish" -> {
-                    // do nothing
+                    val context = holder.itemView.context
+                    val intent = Intent(context, ReceiptOrderActivity::class.java)
+                    // truyền dữ liệu order qua màn hình tiếp theo
+                    intent.putExtra("order_id", order.id)
+                    context.startActivity(intent)
                 }
             }
         }
