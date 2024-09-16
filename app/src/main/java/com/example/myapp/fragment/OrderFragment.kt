@@ -23,8 +23,11 @@ class OrderFragment : Fragment() {
     private var mView: View? = null
     private lateinit var viewPagerOrder: ViewPager2
     private lateinit var tabOrder: TabLayout
-    // Biến lưu trạng thái đã xem cho từng status
     private val viewedOrders = mutableMapOf<String, List<String>>()
+
+    // Danh sách trạng thái đơn hàng dùng chung
+    private val statuses = listOf("pending", "processing", "completed", "finish")
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -37,84 +40,67 @@ class OrderFragment : Fragment() {
         setupViewPager()
         listenChange()
 
-        // Inflate the layout for this fragment
         return mView
     }
 
     private fun listenChange() {
-        CoroutineScope(Dispatchers.IO).launch {
-            withContext(Dispatchers.Main) {
-                val db = FirebaseFirestore.getInstance()
-                val statuses = listOf("pending", "processing", "completed", "finish")
+        val db = FirebaseFirestore.getInstance()
 
-                statuses.forEachIndexed { index, status ->
-                    db.collection("orders")
-                        .whereEqualTo("status", status)
-                        .addSnapshotListener { snapshot, e ->
-                            if (e != null) {
-                                return@addSnapshotListener
-                            }
-                            if (snapshot != null) {
-                                val orderIds = snapshot.documents.map { it.id } // Lấy danh sách id đơn hàng hiện tại
-                                val previouslyViewed = viewedOrders[status] ?: emptyList()
+        statuses.forEachIndexed { index, status ->
+            db.collection("orders")
+                .whereEqualTo("status", status)
+                .addSnapshotListener { snapshot, e ->
+                    if (e != null || snapshot == null) return@addSnapshotListener
 
-                                // Nếu là "pending", luôn cập nhật badge
-                                if (status == "pending") {
-                                    updateBadge(index, orderIds.size)
-                                } else if (orderIds != previouslyViewed) {
-                                    // Chỉ cập nhật badge nếu có đơn hàng mới chưa xem (cho các trạng thái khác pending)
-                                    updateBadge(index, orderIds.size)
-                                    viewedOrders[status] = orderIds
-                                }
-                            }
+                    val orderIds = snapshot.documents.map { it.id }
+                    val previouslyViewed = viewedOrders[status] ?: emptyList()
+
+                    if (status == "pending") {
+                        // Luôn cập nhật badge cho "pending" với tổng số đơn hàng
+                        updateBadge(index, orderIds.size)
+                    } else {
+                        // Chỉ cập nhật badge nếu có đơn hàng mới mà người dùng chưa xem
+                        val newOrders = orderIds.filter { it !in previouslyViewed }
+                        if (newOrders.isNotEmpty()) {
+                            updateBadge(index, newOrders.size)  // Cập nhật badge với số đơn hàng mới
+                            viewedOrders[status] = orderIds     // Lưu trạng thái mới đã xem
                         }
+                    }
                 }
-            }
         }
     }
 
-    // Hàm cập nhật badge cho từng tab, ngoại trừ "pending" luôn giữ badge
+
     private fun updateBadge(tabPosition: Int, count: Int) {
         val tab = tabOrder.getTabAt(tabPosition)
         tab?.orCreateBadge?.apply {
-            if (tabPosition == 0) {
-                // Tab "pending" luôn hiện badge nếu có dữ liệu
-                isVisible = count > 0
-                number = count
-            } else {
-                // Các tab khác chỉ hiện nếu có nội dung mới
-                isVisible = count > 0
-                number = count
-            }
+            isVisible = count > 0
+            number = count
         }
     }
-
 
     private fun setupViewPager() {
         val statusList = listOf(
             OrderStatus("Chờ nhận đơn", LabelPendingAdminFragment()),
             OrderStatus("Đang xử lý", LabelProcessingAdminFragment()),
             OrderStatus("Chờ thanh toán", LabelCompleteAdminFragment()),
-            OrderStatus("Đã thanh toán", LabelFinishAdminFragment()),
+            OrderStatus("Đã thanh toán", LabelFinishAdminFragment())
         )
+
         val adapter = OderStatusPagerAdapter(requireActivity(), statusList)
         viewPagerOrder.adapter = adapter
         TabLayoutMediator(tabOrder, viewPagerOrder) { tab, position ->
             tab.text = statusList[position].title
         }.attach()
 
-        // Add the listener for tab selection
         tabOrder.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
-                val position = tab.position
-                // Nếu là các tab khác "pending", xóa badge khi nhấn vào
-                if (position != 0) {
-                    val selectedStatus = listOf("pending", "processing", "completed", "finish")[position]
-                    viewedOrders[selectedStatus] = emptyList() // Đặt trạng thái đã xem là rỗng
-                    updateBadge(position, 0) // Xóa badge
+                if (tab.position != 0) {
+                    val selectedStatus = statuses[tab.position]
+                    viewedOrders[selectedStatus] = emptyList()
+                    updateBadge(tab.position, 0)
                 }
             }
-
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
@@ -124,6 +110,4 @@ class OrderFragment : Fragment() {
         val tvToolbarTitle = mView?.findViewById<TextView>(R.id.tv_toolbar_title)
         tvToolbarTitle?.text = getString(R.string.nav_order)
     }
-
-
 }
