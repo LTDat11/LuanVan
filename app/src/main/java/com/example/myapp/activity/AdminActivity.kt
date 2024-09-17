@@ -16,6 +16,7 @@ import com.example.myapp.adapter.MyViewPagerAdminAdapter
 import com.example.myapp.databinding.ActivityAdminBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -84,26 +85,39 @@ class AdminActivity : AppCompatActivity() {
                     .whereEqualTo("status", "pending")
                     .addSnapshotListener { snapshot, e ->
                         if (e != null) {
-                            // Xử lý lỗi nếu cần
                             return@addSnapshotListener
                         }
 
                         if (snapshot != null) {
                             val count = snapshot.size()
-                            if (count > previousCount) {
-                                sendNotification(count, "high_priority_channel_id", "Đơn hàng mới", "Bạn có $count đơn hàng mới đang chờ xác nhận.")
+
+                            // Kiểm tra vai trò người dùng
+                            checkUserRole { isAdmin ->
+                                if (isAdmin && count > previousCount) {
+                                    sendNotification(count, "high_priority_channel_id", "Đơn hàng mới", "Bạn có $count đơn hàng mới đang chờ xác nhận.")
+                                }
+                                updateBadgeForBottomNav(count)
                             }
-                            updateBadgeForBottomNav(count)
 
-
-                            // Cập nhật giá trị previousCount
                             previousCount = count
                         }
 
                     }
             }
         }
+    }
 
+    private fun checkUserRole(callback: (Boolean) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val db = FirebaseFirestore.getInstance()
+            db.collection("Users").document(currentUser.uid).get().addOnSuccessListener { documentSnapshot ->
+                val role = documentSnapshot.getString("role")
+                callback(role == "admin") // Chỉ cho phép admin nhận thông báo
+            }
+        } else {
+            callback(false)
+        }
     }
 
     private fun updateBadgeForBottomNav(count: Int) {
