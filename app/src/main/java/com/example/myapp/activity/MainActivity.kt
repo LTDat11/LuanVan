@@ -84,43 +84,65 @@ class MainActivity : AppCompatActivity() {
         val db = FirebaseFirestore.getInstance()
         val auth = FirebaseAuth.getInstance()
 
-        // Danh sách trạng thái cần lọc
-        val statuses = listOf("pending", "processing", "completed")
+        // Kiểm tra vai trò người dùng trước khi tiếp tục
+        checkUserRole { isCustomer ->
+            if (isCustomer) {
+                // Danh sách trạng thái cần lọc
+                val statuses = listOf("pending", "processing", "completed")
 
-        // Lắng nghe thay đổi của đơn hàng theo các trạng thái
-        db.collection("orders")
-            .whereEqualTo("id_customer", auth.currentUser?.uid)
-            .whereIn("status", statuses) // Dùng whereIn để lọc các trạng thái
-            .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    // Xử lý lỗi nếu cần
-                    return@addSnapshotListener
-                }
-
-                if (snapshot != null) {
-                    // Đếm số lượng đơn hàng theo trạng thái
-                    var totalCount = 0
-                    var hasCompletedOrder = false
-
-                    for (doc in snapshot.documents) {
-                        val status = doc.getString("status") ?: continue
-                        if (statuses.contains(status)) {
-                            totalCount++
+                // Lắng nghe thay đổi của đơn hàng theo các trạng thái
+                db.collection("orders")
+                    .whereEqualTo("id_customer", auth.currentUser?.uid)
+                    .whereIn("status", statuses) // Dùng whereIn để lọc các trạng thái
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            // Xử lý lỗi nếu cần
+                            return@addSnapshotListener
                         }
-                        if (status == "completed") {
-                            hasCompletedOrder = true
+
+                        if (snapshot != null) {
+                            // Đếm số lượng đơn hàng theo trạng thái
+                            var totalCount = 0
+                            var hasCompletedOrder = false
+
+                            for (doc in snapshot.documents) {
+                                val status = doc.getString("status") ?: continue
+                                if (statuses.contains(status)) {
+                                    totalCount++
+                                }
+                                if (status == "completed") {
+                                    hasCompletedOrder = true
+                                }
+                            }
+
+                            updateBadgeForBottomNav(totalCount)
+
+                            // Kiểm tra nếu có đơn hàng hoàn thành và gửi thông báo
+                            if (hasCompletedOrder) {
+                                sendNotification("high_priority_channel_id", "Đơn hàng hoàn tất sửa chữa", "Bạn có đơn hàng đã sửa chữa xong. Vui lòng kiểm tra để thanh toán!.")
+                            }
                         }
                     }
-
-                    updateBadgeForBottomNav(totalCount)
-
-                    // Kiểm tra nếu có đơn hàng hoàn thành và gửi thông báo
-                    if (hasCompletedOrder) {
-                        sendNotification("high_priority_channel_id", "Đơn hàng hoàn tất sửa chữa", "Bạn có đơn hàng đã sửa chữa xong. Vui lòng kiểm tra để thanh toán!.")
-                    }
-
-                }
             }
+        }
+    }
+
+    // Hàm kiểm tra vai trò người dùng
+    private fun checkUserRole(callback: (Boolean) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val db = FirebaseFirestore.getInstance()
+            db.collection("Users").document(currentUser.uid).get().addOnSuccessListener { documentSnapshot ->
+                val role = documentSnapshot.getString("role")
+                // Kiểm tra nếu vai trò là customer (khách hàng)
+                callback(role == "Customer")
+            }.addOnFailureListener {
+                // Xử lý lỗi nếu không lấy được role
+                callback(false)
+            }
+        } else {
+            callback(false)
+        }
     }
 
     private fun updateBadgeForBottomNav(totalCount: Int) {

@@ -69,27 +69,49 @@ class TechnicianActivity : AppCompatActivity() {
         val db = FirebaseFirestore.getInstance()
         val auth = FirebaseAuth.getInstance()
 
-        // Lắng nghe thay đổi của đơn hàng được phân công
-        db.collection("orders")
-            .whereEqualTo("id_technician", auth.currentUser?.uid)
-            .whereEqualTo("status", "processing")
-            .addSnapshotListener { snapshot, e ->
-                if (e != null) {
-                    // Xử lý lỗi nếu cần
-                    return@addSnapshotListener
-                }
+        // Kiểm tra vai trò của người dùng
+        checkUserRole { isTechnician ->
+            if (isTechnician) {
+                // Lắng nghe thay đổi của đơn hàng được phân công nếu là kỹ thuật viên
+                db.collection("orders")
+                    .whereEqualTo("id_technician", auth.currentUser?.uid)
+                    .whereEqualTo("status", "processing")
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            // Xử lý lỗi nếu cần
+                            return@addSnapshotListener
+                        }
 
-                if (snapshot != null) {
-                    val count = snapshot.size()
-                    if (count > previousCount) {
-                        sendNotification(count, "high_priority_channel_id", "Đơn hàng được phân công", "Bạn có $count đơn hàng được phân công.")
+                        if (snapshot != null) {
+                            val count = snapshot.size()
+                            if (count > previousCount) {
+                                sendNotification(count, "high_priority_channel_id", "Đơn hàng được phân công", "Bạn có $count đơn hàng được phân công.")
+                            }
+
+                            // Cập nhật giá trị previousCount
+                            previousCount = count
+                        }
                     }
-
-                    // Cập nhật giá trị previousCount
-                    previousCount = count
-                }
-
             }
+        }
+    }
+
+    // Hàm kiểm tra vai trò người dùng
+    private fun checkUserRole(callback: (Boolean) -> Unit) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val db = FirebaseFirestore.getInstance()
+            db.collection("Users").document(currentUser.uid).get().addOnSuccessListener { documentSnapshot ->
+                val role = documentSnapshot.getString("role")
+                // Kiểm tra nếu vai trò là technician (kỹ thuật viên)
+                callback(role == "Technician")
+            }.addOnFailureListener {
+                // Xử lý lỗi nếu không lấy được role
+                callback(false)
+            }
+        } else {
+            callback(false)
+        }
     }
 
     private fun sendNotification(count: Int, channelId: String, title: String, message: String) {

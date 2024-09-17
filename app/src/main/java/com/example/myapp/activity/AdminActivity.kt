@@ -113,7 +113,7 @@ class AdminActivity : AppCompatActivity() {
             val db = FirebaseFirestore.getInstance()
             db.collection("Users").document(currentUser.uid).get().addOnSuccessListener { documentSnapshot ->
                 val role = documentSnapshot.getString("role")
-                callback(role == "admin") // Chỉ cho phép admin nhận thông báo
+                callback(role == "Admin") // Chỉ cho phép admin nhận thông báo
             }
         } else {
             callback(false)

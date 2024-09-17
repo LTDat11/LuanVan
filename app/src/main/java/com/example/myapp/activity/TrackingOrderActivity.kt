@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -34,6 +35,7 @@ class TrackingOrderActivity : AppCompatActivity() {
     lateinit var binding: ActivityTrackingOrderBinding
     private var orderId :String = ""
     private var orderListener: ListenerRegistration? = null // Biến lưu trữ ListenerRegistration
+    private var selectedPaymentMethodId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +55,11 @@ class TrackingOrderActivity : AppCompatActivity() {
     }
 
     private fun createBillAndUpdateOrder() {
+        if (selectedPaymentMethodId.isNullOrEmpty()) {
+            Toast.makeText(this, "Vui lòng chọn phương thức thanh toán", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         CoroutineScope(Dispatchers.IO).launch {
             val db = FirebaseFirestore.getInstance()
             val auth = FirebaseAuth.getInstance()
@@ -63,7 +70,7 @@ class TrackingOrderActivity : AppCompatActivity() {
                 id = db.collection("orders").document(orderId).collection("bills").document().id,
                 id_customer = uid,
                 id_order = orderId,
-                id_paymentMethod = "1", // Hoặc lấy từ dữ liệu được chọn
+                id_paymentMethod = selectedPaymentMethodId, // Sử dụng id của phương thức thanh toán đã chọn
                 total = binding.tvTotalPrice.text.toString(),
                 createdAt = Date()
             )
@@ -71,11 +78,10 @@ class TrackingOrderActivity : AppCompatActivity() {
             // Lưu Bill vào subcollection bills
             val billRef = db.collection("orders").document(orderId).collection("bills").document(bill.id!!)
             billRef.set(bill).addOnSuccessListener {
-                // Cập nhật trạng thái đơn hàng thành 'payed'
+                // Cập nhật trạng thái đơn hàng thành 'finish'
                 val orderRef = db.collection("orders").document(orderId)
                 orderRef.update("status", "finish").addOnSuccessListener {
-                    Log.d("TrackingOrderActivity", "Order status updated to 'payed'")
-                    //ẩn button thanh toán
+                    Log.d("TrackingOrderActivity", "Order status updated to 'finish'")
                     binding.layoutBottom.visibility = LinearLayout.GONE
                     finish()
                 }.addOnFailureListener { e ->
@@ -86,6 +92,7 @@ class TrackingOrderActivity : AppCompatActivity() {
             }
         }
     }
+
 
     private fun initUi() {
         CoroutineScope(Dispatchers.IO).launch {
@@ -203,7 +210,10 @@ class TrackingOrderActivity : AppCompatActivity() {
                 val docRef = db.collection("paymentMethods")
                 docRef.get().addOnSuccessListener { documents ->
                     val paymentMethods = documents.toObjects(PaymentMethod::class.java)
-                    val adapter = PaymentMethodAdapter(paymentMethods)
+                    val adapter = PaymentMethodAdapter(paymentMethods) { selectedPaymentMethod ->
+                        selectedPaymentMethodId = selectedPaymentMethod.id // Cập nhật id đã chọn
+                        Log.d("TrackingOrderActivity", "Selected payment method: ${selectedPaymentMethod.id}")
+                    }
                     binding.rcvPaymentMethod.layoutManager = LinearLayoutManager(this@TrackingOrderActivity)
                     binding.rcvPaymentMethod.adapter = adapter
                 }
