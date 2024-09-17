@@ -153,10 +153,9 @@ class AdminActivity : AppCompatActivity() {
         }
 
         bottomSheetView.findViewById<TextView>(R.id.option_three).setOnClickListener {
-//            val intent = Intent(this, OptionThreeActivity::class.java)
-//            startActivity(intent)
-//            bottomSheetDialog.dismiss()
-            Toast.makeText(this, "Option Three", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, BannerManagementActivity::class.java)
+            startActivity(intent)
+            bottomSheetDialog.dismiss()
         }
 
         bottomSheetDialog.setOnDismissListener {

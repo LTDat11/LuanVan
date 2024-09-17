@@ -129,9 +129,9 @@
 
 
     <!-- Bottom sheet    -->
-    <string name="option_one">Sửa dịch vụ</string>
-    <string name="option_two">Sửa gói dịch vụ</string>
-    <string name="option_three">Sửa Banner</string>
+    <string name="option_one">Quản lý kỹ thuật viên</string>
+    <string name="option_two">Quản lý khách hàng</string>
+    <string name="option_three">Quản lý Banner</string>
 
 
     <!-- String array    -->
