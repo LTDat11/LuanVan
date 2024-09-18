@@ -136,6 +136,7 @@ class UserInfoActivity : AppCompatActivity() {
             val phone = edtPhone.text.toString().trim()
             val address = edtAddress.text.toString().trim()
             val description = edtDescription.text.toString().trim()
+            val currentTime = java.util.Date()
 
             val currentUser = firebaseAuth.currentUser
             currentUser?.let { user ->
@@ -144,6 +145,7 @@ class UserInfoActivity : AppCompatActivity() {
                 userDocument.update("phone", phone)
                 userDocument.update("address", address)
                 userDocument.update("description", description)
+                userDocument.update("updatedAt", currentTime)
                     .addOnSuccessListener {
                         // Cập nhật thông tin thành công
                         Toast.makeText(this@UserInfoActivity, "Cập nhật thông tin thành công!", Toast.LENGTH_SHORT).show()

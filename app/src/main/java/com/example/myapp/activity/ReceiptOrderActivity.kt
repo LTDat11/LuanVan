@@ -102,21 +102,34 @@ class ReceiptOrderActivity : AppCompatActivity() {
         binding.apply {
             CoroutineScope(Dispatchers.IO).launch {
                 withContext(Dispatchers.Main){
-                    val uid = auth.currentUser?.uid
-                    db.collection("Users").document(uid!!)
+                    // Lấy id khách hàng từ đơn hàng
+                    db.collection("orders").document(orderId)
                         .get()
-                        .addOnSuccessListener {
-                            val userName = it.getString("name")
-                            val userPhone = it.getString("phone")
-                            val userAddress = it.getString("address")
-                            tvName.text = userName
-                            tvPhone.text = userPhone
-                            tvAddress.text = userAddress
+                        .addOnSuccessListener { orderSnapshot ->
+                            val order = orderSnapshot.toObject(Order::class.java)
+                            val customerId = order?.id_customer
+
+                            // Lấy thông tin khách hàng từ Firestore theo id_customer
+                            if (customerId != null) {
+                                db.collection("Users").document(customerId)
+                                    .get()
+                                    .addOnSuccessListener { userSnapshot ->
+                                        val userName = userSnapshot.getString("name")
+                                        val userPhone = userSnapshot.getString("phone")
+                                        val userAddress = userSnapshot.getString("address")
+                                        tvName.text = userName
+                                        tvPhone.text = userPhone
+                                        tvAddress.text = userAddress
+                                    }
+                            } else {
+                                Log.e("getCustomerInfo", "Customer ID is null")
+                            }
                         }
                 }
             }
         }
     }
+
 
     private fun getOrder() {
         binding.apply {
