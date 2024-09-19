@@ -234,31 +234,38 @@ class HomeAdminFragment : Fragment() {
     }
 
     private fun loadServicePackagesForDevice(deviceId: String) {
-        val firestore = FirebaseFirestore.getInstance()
-        firestore.collection("service_categories")
-            .document(selectedTabId ?: "")
-            .collection("devices")
-            .document(deviceId)
-            .collection("service_packages")
-            .addSnapshotListener { snapshot, exception ->
-                if (exception != null) {
-                    Log.e("HomeAdminFragment", "Error getting service packages.", exception)
-                    return@addSnapshotListener
-                }
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main) {
 
-                if (snapshot != null && !snapshot.isEmpty) {
-                    val packages = mutableListOf<ServicePackage>()
-                    for (document in snapshot.documents) {
-                        val servicePackage = document.toObject(ServicePackage::class.java)
-                        servicePackage?.let {
-                            packages.add(it)
+                val firestore = FirebaseFirestore.getInstance()
+                firestore.collection("service_categories")
+                    .document(selectedTabId ?: "")
+                    .collection("devices")
+                    .document(deviceId)
+                    .collection("service_packages")
+                    .addSnapshotListener { snapshot, exception ->
+                        if (exception != null) {
+                            Log.e("HomeAdminFragment", "Error getting service packages.", exception)
+                            return@addSnapshotListener
+                        }
+
+                        if (snapshot != null && !snapshot.isEmpty) {
+                            val packages = mutableListOf<ServicePackage>()
+                            for (document in snapshot.documents) {
+                                val servicePackage = document.toObject(ServicePackage::class.java)
+                                servicePackage?.let {
+                                    packages.add(it)
+                                }
+                            }
+                            updateServicePackageRecyclerView(packages)
+                        } else {
+                            Log.d("HomeAdminFragment", "No service packages found.")
                         }
                     }
-                    updateServicePackageRecyclerView(packages)
-                } else {
-                    Log.d("HomeAdminFragment", "No service packages found.")
-                }
+
             }
+        }
+
     }
 
 
