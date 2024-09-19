@@ -198,7 +198,7 @@ class CategoryAdminFragment : Fragment() {
     }
 
     private fun showEditCategoryDialog(category: ServiceCategory, categoryName: String) {
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_category, null)
+        val dialogView = LayoutInflater.from(this.context).inflate(R.layout.dialog_add_category, null)
 
         val etCategoryName = dialogView.findViewById<TextView>(R.id.et_category_name)
         val etCategoryDescription = dialogView.findViewById<TextView>(R.id.et_category_description)

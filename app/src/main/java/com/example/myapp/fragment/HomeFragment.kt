@@ -182,7 +182,7 @@ class HomeFragment : Fragment() {
         val adapter = DeviceAdapter(devices) { selectedDevice ->
             loadServicePackagesForDevice(categoryId, selectedDevice.id_device)
         }
-        recyclerViewDevices.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        recyclerViewDevices.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         recyclerViewDevices.adapter = adapter
 
         // Chọn thiết bị đầu tiên mặc định
@@ -225,7 +225,7 @@ class HomeFragment : Fragment() {
 
     private fun setupServicePackageRecyclerView(servicePackages: List<ServicePackage>) {
         val adapter = ServicePackageAdapter(servicePackages)
-        recycler_view_packages.layoutManager = LinearLayoutManager(requireContext())
+        recycler_view_packages.layoutManager = LinearLayoutManager(context)
         recycler_view_packages.adapter = adapter
     }
 
