@@ -11,8 +11,9 @@ import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapp.R
 import com.example.myapp.adapter.UserManagementAdapter
-import com.example.myapp.databinding.ActivityTechManagementBinding
+import com.example.myapp.databinding.ActivityCustomerManagementBinding
 import com.example.myapp.model.User
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.CoroutineScope
@@ -20,20 +21,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class TechManagementActivity : AppCompatActivity() {
-    lateinit var binding: ActivityTechManagementBinding
-
+class CustomerManagementActivity : AppCompatActivity() {
+    lateinit var binding: ActivityCustomerManagementBinding
     private lateinit var userManagementAdapter: UserManagementAdapter
-    private var technicianList = mutableListOf<User>()
+    private var customerList = mutableListOf<User>()
     private var registration: ListenerRegistration? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityTechManagementBinding.inflate(layoutInflater)
+        binding = ActivityCustomerManagementBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         initToolbar()
         initRecyclerView()
-        loadTechnicians()
+        loadCustomers()
         setupSearchView()
     }
 
@@ -44,9 +44,8 @@ class TechManagementActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                val filteredList = technicianList.filter {
+                val filteredList = customerList.filter {
                     it.name?.contains(newText ?: return@filter false, ignoreCase = true) ?: false ||
-                            it.description?.contains(newText ?: return@filter false, ignoreCase = true) ?: false ||
                             it.address?.contains(newText ?: return@filter false, ignoreCase = true) ?: false ||
                             it.phone?.contains(newText ?: return@filter false, ignoreCase = true) ?: false ||
                             it.email.contains(newText ?: return@filter false, ignoreCase = true)
@@ -57,16 +56,48 @@ class TechManagementActivity : AppCompatActivity() {
         })
     }
 
+    private fun loadCustomers() {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+
+                val db = FirebaseFirestore.getInstance()
+                registration = db.collection("Users")
+                    .whereEqualTo("role", "Customer")
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            Log.w("FireStore", "Listen failed.", e)
+                            return@addSnapshotListener
+                        }
+
+                        if (snapshot != null && !snapshot.isEmpty) {
+                            customerList.clear()
+                            for (document in snapshot.documents) {
+                                val customer = document.toObject(User::class.java)
+                                if (customer != null) {
+                                    customerList.add(customer)
+                                }
+                            }
+                            userManagementAdapter.notifyDataSetChanged()
+                        } else {
+                            Log.d("FireStore", "No such documents")
+                        }
+                    }
+
+            }
+        }
+
+    }
+
     private fun initRecyclerView() {
-        userManagementAdapter = UserManagementAdapter(technicianList) { technician ->
+        userManagementAdapter = UserManagementAdapter(customerList) { customer ->
             // Handle on more button click
-            showDialogOption(technician)
+            showDialogOption(customer)
         }
         binding.rcvViewManagement.adapter = userManagementAdapter
         binding.rcvViewManagement.layoutManager = LinearLayoutManager(this)
     }
 
-    private fun showDialogOption(technician: User) {
+    private fun showDialogOption(customer: User) {
         // Tạo AlertDialog Builder
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Chọn hành động")
@@ -78,8 +109,9 @@ class TechManagementActivity : AppCompatActivity() {
         builder.setItems(options) { dialog, which ->
             when (which) {
                 0 -> {
-                    showGrantAdminConfirmationDialog(technician)
-                }
+                    // Phân quyền admin
+                    showGrantAdminConfirmationDialog(customer)
+                } 
                 else -> {
                     dialog.dismiss()
                 }
@@ -90,14 +122,14 @@ class TechManagementActivity : AppCompatActivity() {
         builder.create().show()
     }
 
-    private fun showGrantAdminConfirmationDialog(technician: User) {
+    private fun showGrantAdminConfirmationDialog(customer: User) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Xác nhận phân quyền")
         builder.setMessage("Bạn có chắc chắn muốn phân quyền admin cho người dùng này không?")
 
         // Set hành động khi nhấn vào nút "Xác nhận"
         builder.setPositiveButton("Xác nhận") { dialog, _ ->
-            grantAdminRole(technician)  // Gọi hàm phân quyền
+            grantAdminRole(customer)  // Gọi hàm phân quyền
             dialog.dismiss()
         }
 
@@ -110,32 +142,32 @@ class TechManagementActivity : AppCompatActivity() {
         builder.create().show()
     }
 
-    private fun grantAdminRole(technician: User) {
+    private fun grantAdminRole(customer: User) {
         CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.Main){
 
                 val db = FirebaseFirestore.getInstance()
 
                 // Cập nhật role của người dùng thành "Admin"
-                val userRef = db.collection("Users").document(technician.id)
+                val userRef = db.collection("Users").document(customer.id)
                 userRef.update("role", "Admin")
                     .addOnSuccessListener {
-                        Toast.makeText(this@TechManagementActivity, "Đã phân quyền admin thành công", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@CustomerManagementActivity, "Đã phân quyền admin thành công", Toast.LENGTH_SHORT).show()
                     }
                     .addOnFailureListener { e ->
-                        Toast.makeText(this@TechManagementActivity, "Lỗi khi phân quyền admin: ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@CustomerManagementActivity, "Lỗi khi phân quyền admin: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
 
             }
         }
-
     }
+
 
     private fun initToolbar() {
         val imgToolbarBack = findViewById<ImageView>(R.id.img_toolbar_back)
         val tvToolbarTitle = findViewById<TextView>(R.id.tv_toolbar_title)
         imgToolbarBack.setOnClickListener { finish() }
-        tvToolbarTitle.text = getString(R.string.tech_management)
+        tvToolbarTitle.text = getString(R.string.cust_management)
     }
 
     override fun onStop() {
@@ -143,36 +175,5 @@ class TechManagementActivity : AppCompatActivity() {
         registration?.remove() // Remove listener to prevent memory leaks
     }
 
-    private fun loadTechnicians() {
-        CoroutineScope(Dispatchers.IO).launch {
-           withContext(Dispatchers.Main){
-
-               val db = FirebaseFirestore.getInstance()
-               registration = db.collection("Users")
-                   .whereEqualTo("role", "Technician")
-                   .addSnapshotListener { snapshot, e ->
-                       if (e != null) {
-                           Log.w("FireStore", "Listen failed.", e)
-                           return@addSnapshotListener
-                       }
-
-                       if (snapshot != null && !snapshot.isEmpty) {
-                           technicianList.clear()
-                           for (document in snapshot.documents) {
-                               val technician = document.toObject(User::class.java)
-                               if (technician != null) {
-                                   technicianList.add(technician)
-                               }
-                           }
-                           userManagementAdapter.notifyDataSetChanged()
-                       } else {
-                           Log.d("FireStore", "No such documents")
-                       }
-                   }
-
-           }
-        }
-
-    }
 
 }
