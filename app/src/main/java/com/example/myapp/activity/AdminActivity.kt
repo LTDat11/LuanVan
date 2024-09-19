@@ -153,10 +153,9 @@ class AdminActivity : AppCompatActivity() {
         bottomSheetDialog.setContentView(bottomSheetView)
 
         bottomSheetView.findViewById<TextView>(R.id.option_one).setOnClickListener {
-//            val intent = Intent(this, OptionOneActivity::class.java)
-//            startActivity(intent)
-//            bottomSheetDialog.dismiss()
-            Toast.makeText(this, "Option One", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, TechManagementActivity::class.java)
+            startActivity(intent)
+            bottomSheetDialog.dismiss()
         }
 
         bottomSheetView.findViewById<TextView>(R.id.option_two).setOnClickListener {

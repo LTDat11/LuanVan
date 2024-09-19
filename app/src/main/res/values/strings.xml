@@ -35,6 +35,7 @@
     <string name="msg_reset_password_error">Lỗi!! không thể lấy lại mật khẩu.</string>
     <string name="action_ok">Đồng ý</string>
     <string name="reset_password">Gửi lại mật khẩu</string>
+    <string name="tech_management">Quản lý kỹ thuật viên</string>
     <string name="msg_old_password_require">Vui lòng nhập mật khẩu cũ</string>
     <string name="msg_new_password_require">Vui lòng nhập mật khẩu mới</string>
     <string name="msg_confirm_password_require">Vui lòng xác nhận mật khẩu mới</string>
