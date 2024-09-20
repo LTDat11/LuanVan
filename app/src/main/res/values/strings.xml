@@ -53,6 +53,9 @@
     <string name="label_process">Đang xử lý</string>
     <string name="label_done">Hoàn thành</string>
     <string name="feedback">Phản hồi</string>
+    <string name="view_feedback">Xem phản hồi</string>
+    <string name="send_feedback">Gửi phản hồi</string>
+    <string name="feedback_comment">Nội dung(*)</string>
     <string name="contact">Liên hệ</string>
     <string name="change_password">Đổi mật khẩu</string>
     <string name="sign_out">Đăng xuất</string>

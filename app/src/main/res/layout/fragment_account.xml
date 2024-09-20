@@ -87,6 +87,7 @@
                     android:src="@drawable/baseline_feedback_24" />
 
                 <TextView
+                    android:id="@+id/tv_feedback"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/feedback"

@@ -16,6 +16,10 @@ import com.example.myapp.activity.MainActivity
 import com.example.myapp.activity.UserInfoActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AccountFragment : Fragment() {
     private var mView: View? = null
@@ -77,9 +81,11 @@ class AccountFragment : Fragment() {
         val tvEmail = mView?.findViewById<TextView>(R.id.tv_email)
         val tvName = mView?.findViewById<TextView>(R.id.tv_user_name)
         val civ_avatar = mView?.findViewById<ImageView>(R.id.civ_avatar)
+        val layoutFeedback = mView?.findViewById<View>(R.id.layout_feedback)
+        val tvFeedback = mView?.findViewById<TextView>(R.id.tv_feedback)
 
         // Gọi hàm lấy thông tin người dùng từ Firestore
-        getUserInfo { name, email, imageURL ->
+        getUserInfo { name, email, imageURL, role ->
             tvName?.text = name ?: getString(R.string.default_name)
             tvEmail?.text = email ?: firebaseAuth.currentUser?.email
             // Load ảnh đại diện
@@ -91,37 +97,63 @@ class AccountFragment : Fragment() {
                         .into(civ_avatar)
                 }
             }
-        }
 
-    }
-
-    // Hàm lấy thông tin người dùng từ Firestore theo thời gian thực
-    private fun getUserInfo(callback: (name: String?, email: String?, imageURL: String?) -> Unit) {
-        val currentUser = firebaseAuth.currentUser
-        if (currentUser != null) {
-            val uid = currentUser.uid
-            firestore.collection("Users").document(uid)
-                .addSnapshotListener { documentSnapshot, error ->
-                    if (error != null) {
-                        callback(null, currentUser.email, null)  // Trả email nếu có lỗi
-                        return@addSnapshotListener
-                    }
-
-                    if (documentSnapshot != null && documentSnapshot.exists()) {
-                        val name = documentSnapshot.getString("name")
-                        val email = documentSnapshot.getString("email")
-                        val imageURL = documentSnapshot.getString("imageURL")
-                        callback(name, email, imageURL)  // Trả kết quả về thông qua callback
-                    } else {
-                        callback(null, currentUser.email, null)  // Trả email nếu không tìm thấy document
-                    }
+            // Kiểm tra vai trò của người dùng
+            if (role == "Admin") {
+                tvFeedback?.text = getString(R.string.view_feedback)
+                layoutFeedback?.setOnClickListener {
+                    // Chuyển đến trang xem phản hồi cho Admin
+//                    val intent = Intent(context, ViewFeedbackActivity::class.java)
+//                    startActivity(intent)
                 }
-        } else {
-            callback(null, null, null)  // Nếu không có người dùng đăng nhập, trả về null
+            } else {
+                tvFeedback?.text = getString(R.string.send_feedback)
+                layoutFeedback?.setOnClickListener {
+                    // Chuyển đến trang gửi phản hồi cho người dùng khác putExtra name, email, imageURL
+//                    val intent = Intent(context, SendFeedbackActivity::class.java)
+//                    intent.putExtra("name", name)
+//                    intent.putExtra("email", email)
+//                    intent.putExtra("imageURL", imageURL)
+//                    startActivity(intent)
+                }
+            }
         }
     }
 
-// set up the toolbar text, back button click listener and set text to Account
+
+    // Hàm lấy thông tin người dùng từ Firestore theo thời gian thực, bao gồm cả role
+    private fun getUserInfo(callback: (name: String?, email: String?, imageURL: String?, role: String?) -> Unit) {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main) {
+                val currentUser = firebaseAuth.currentUser
+                if (currentUser != null) {
+                    val uid = currentUser.uid
+                    firestore.collection("Users").document(uid)
+                        .addSnapshotListener { documentSnapshot, error ->
+                            if (error != null) {
+                                callback(null, currentUser.email, null, null)  // Trả email nếu có lỗi
+                                return@addSnapshotListener
+                            }
+
+                            if (documentSnapshot != null && documentSnapshot.exists()) {
+                                val name = documentSnapshot.getString("name")
+                                val email = documentSnapshot.getString("email")
+                                val imageURL = documentSnapshot.getString("imageURL")
+                                val role = documentSnapshot.getString("role")  // Lấy role từ Firestore
+                                callback(name, email, imageURL, role)  // Trả kết quả về thông qua callback
+                            } else {
+                                callback(null, currentUser.email, null, null)  // Trả email nếu không tìm thấy document
+                            }
+                        }
+                } else {
+                    callback(null, null, null, null)  // Nếu không có người dùng đăng nhập, trả về null
+                }
+            }
+        }
+    }
+
+
+    // set up the toolbar text, back button click listener and set text to Account
     private fun initToolbar() {
 //        val imgToolbarBack = mView?.findViewById<ImageView>(R.id.img_toolbar_back)
         val tvToolbarTitle = mView?.findViewById<TextView>(R.id.tv_toolbar_title)
