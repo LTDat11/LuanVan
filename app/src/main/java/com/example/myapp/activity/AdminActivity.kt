@@ -171,7 +171,9 @@ class AdminActivity : AppCompatActivity() {
         }
 
         bottomSheetView.findViewById<TextView>(R.id.option_four).setOnClickListener {
-
+            val intent = Intent(this, AdminManagementActivity::class.java)
+            startActivity(intent)
+            bottomSheetDialog.dismiss()
         }
 
         bottomSheetDialog.setOnDismissListener {

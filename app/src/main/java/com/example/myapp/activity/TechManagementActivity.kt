@@ -92,8 +92,8 @@ class TechManagementActivity : AppCompatActivity() {
 
     private fun showGrantAdminConfirmationDialog(technician: User) {
         val builder = AlertDialog.Builder(this)
-        builder.setTitle("Xác nhận phân quyền")
-        builder.setMessage("Bạn có chắc chắn muốn phân quyền admin cho người dùng này không?")
+        builder.setTitle("Xác nhận phân quyền quản trị viên")
+        builder.setMessage("Bạn có chắc chắn muốn phân quyền admin cho kỹ thuật viên ${technician.name}?")
 
         // Set hành động khi nhấn vào nút "Xác nhận"
         builder.setPositiveButton("Xác nhận") { dialog, _ ->

@@ -39,7 +39,13 @@ class UserManagementAdapter (private var technicianList: List<User>, private val
             .load(technician.imageURL)
             .placeholder(R.drawable.ic_launcher_foreground)
             .into(holder.imgTechnician)
-        holder.layoutTechnicianDiscription.visibility = if (technician.description.isNullOrEmpty()) View.GONE else View.VISIBLE
+
+        // check role of  user and show/hide layout based on role of user
+        // if user is admin and customer then hide layoutTechnicianDiscription
+        // if user is technician then show layoutTechnicianDiscription
+        holder.layoutTechnicianDiscription.visibility = if (technician.role == "Technician") View.VISIBLE else View.GONE
+
+//        holder.layoutTechnicianDiscription.visibility = if (technician.description.isNullOrEmpty()) View.GONE else View.VISIBLE
         holder.btnMore.setOnClickListener { onMoreClickListener(technician) }
     }
 
