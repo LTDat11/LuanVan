@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".activity.ViewFeedbackActivity">
+
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/layout_toolbar"/>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/materialCardView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardUseCompatPadding="true"
+        app:cardCornerRadius="8dp">
+
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/search_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:iconifiedByDefault="false"
+            android:queryHint="@string/hint_home_search"
+            android:paddingBottom="5dp"/>
+
+    </com.google.android.material.card.MaterialCardView>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/recycler_view_feedback"
+        android:padding="16dp"
+        android:background="@color/white"/>
+
+</LinearLayout>

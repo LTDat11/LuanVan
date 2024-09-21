@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_item_package"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/iv_avatar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginLeft="10dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_launcher_foreground"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+
+            <TextView
+                android:id="@+id/tv_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="user name"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tv_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="không có"
+                android:textSize="14sp"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_comment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/textColorHeading"
+                    android:text="Phản hồi: "
+                    android:textSize="14sp"/>
+
+                <TextView
+                    android:id="@+id/tv_comment_content"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginStart="5dp"
+                    android:text="không có"
+                    android:textSize="14sp"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="date"/>
+
+            <RatingBar
+                android:id="@+id/ratingBar"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_marginTop="5dp"
+                android:layout_gravity="center"
+                android:numStars="5"
+                android:rating="3.0"
+                android:stepSize="1.0"
+                android:isIndicator="true"
+                android:progressTint="@color/yellow"
+                android:progressBackgroundTint="@color/colorAccent"/>
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

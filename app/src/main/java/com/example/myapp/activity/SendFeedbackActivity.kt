@@ -47,12 +47,20 @@ class SendFeedbackActivity : AppCompatActivity() {
         binding.apply {
             val feedbackComment = edtComment.text.toString().trim()
             val createdAt = java.util.Date()
-            if (feedbackComment.isEmpty()) {
+            val feedbackRating = ratingBar.rating
+            if (feedbackComment.isEmpty() || feedbackRating == 0f) {
                 showToast(getString(R.string.comment_require))
                 return
             }
 
-            val feedback = Feedback(name, phone, email, feedbackComment, createdAt)
+            val feedback = Feedback(
+                name = name,
+                phone = phone,
+                email = email,
+                comment = feedbackComment,
+                rating = feedbackRating,  // Gán giá trị đánh giá
+                createdAt = createdAt  // Lưu thời gian hiện tại
+            )
 
             saveFeedbackToFirestore(feedback)
         }

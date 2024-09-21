@@ -5,5 +5,6 @@ data class Feedback(
     var phone: String? = null,
     var email: String? = null,
     var comment: String? = null,
+    var rating: Float? = null,
     val createdAt: java.util.Date? = null
 )

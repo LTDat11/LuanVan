@@ -40,6 +40,27 @@
             android:textSize="14sp"
             tools:ignore="Autofill,LabelFor" />
 
+        <!-- Thêm TextView cho phần đánh giá -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/feedback_rating"
+            android:textColor="@color/black" />
+
+        <!-- Thêm RatingBar -->
+
+        <RatingBar
+            android:id="@+id/ratingBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:numStars="5"
+            android:rating="3.0"
+            android:stepSize="1.0"
+            android:progressTint="@color/yellow"
+            android:progressBackgroundTint="@color/colorAccent"/>
+
         <TextView
             android:id="@+id/tv_send_feedback"
             android:layout_width="200dp"

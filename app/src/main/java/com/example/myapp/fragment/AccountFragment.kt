@@ -15,6 +15,7 @@ import com.example.myapp.activity.LoginActivity
 import com.example.myapp.activity.MainActivity
 import com.example.myapp.activity.SendFeedbackActivity
 import com.example.myapp.activity.UserInfoActivity
+import com.example.myapp.activity.ViewFeedbackActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
@@ -104,8 +105,8 @@ class AccountFragment : Fragment() {
                 tvFeedback?.text = getString(R.string.view_feedback)
                 layoutFeedback?.setOnClickListener {
                     // Chuyển đến trang xem phản hồi cho Admin
-//                    val intent = Intent(context, ViewFeedbackActivity::class.java)
-//                    startActivity(intent)
+                    val intent = Intent(context, ViewFeedbackActivity::class.java)
+                    startActivity(intent)
                 }
             } else {
                 tvFeedback?.text = getString(R.string.send_feedback)
