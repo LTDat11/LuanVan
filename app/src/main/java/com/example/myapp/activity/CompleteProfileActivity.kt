@@ -179,7 +179,8 @@ class CompleteProfileActivity : BaseActivity() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle(getString(R.string.confirm_exit_app))
         builder.setPositiveButton(getString(R.string.yes)) { _, _ ->
-            finish()
+            // Khi người dùng chọn "Đồng ý" thì thoát ứng dụng
+            finishAffinity()
         }
         builder.setNegativeButton(getString(R.string.no)) { dialog, _ ->
             dialog.dismiss()
