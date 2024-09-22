@@ -7,6 +7,7 @@ import android.text.TextWatcher
 import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -25,7 +26,9 @@ class LoginActivity : BaseActivity()  {
     private var btnLogin: Button? = null
     private var layoutRegister: LinearLayout? = null
     private var tvForgotPassword: TextView? = null
+    private var imgTogglePassword: ImageView? = null
     private var isEnableButtonLogin = false
+    private var isPasswordVisible = false
 
     private val db: FirebaseFirestore = Firebase.firestore
 
@@ -44,6 +47,7 @@ class LoginActivity : BaseActivity()  {
         btnLogin = findViewById(R.id.btn_login)
         layoutRegister = findViewById(R.id.layout_register)
         tvForgotPassword = findViewById(R.id.tv_forgot_password)
+        imgTogglePassword = findViewById(R.id.img_toggle_password)
     }
 
     private fun initListener() {
@@ -67,6 +71,16 @@ class LoginActivity : BaseActivity()  {
         btnLogin?.setOnClickListener { onClickValidateLogin() }
         tvForgotPassword?.setOnClickListener {
             startActivity(Intent(this, ForgotPasswordActivity::class.java))
+        }
+
+        imgTogglePassword?.setOnClickListener {
+            isPasswordVisible = !isPasswordVisible
+            edtPassword?.let {
+                val selection = it.selectionStart
+                it.transformationMethod = if (isPasswordVisible) null else android.text.method.PasswordTransformationMethod.getInstance()
+                it.setSelection(selection)
+            }
+            imgTogglePassword?.setImageResource(if (isPasswordVisible) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24)
         }
     }
 
