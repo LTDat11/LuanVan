@@ -8,6 +8,7 @@ import android.util.Log
 import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioGroup
 import androidx.core.content.ContextCompat
@@ -25,8 +26,9 @@ class RegisterActivity : BaseActivity() {
     private var btnRegister: Button? = null
     private var layoutLogin: LinearLayout? = null
     private var radioGroupRole: RadioGroup? = null
+    private var imgTogglePassword: ImageView? = null
     private var isEnableButtonRegister = false
-
+    private var isPasswordVisible = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
@@ -42,6 +44,7 @@ class RegisterActivity : BaseActivity() {
         btnRegister = findViewById(R.id.btn_register)
         layoutLogin = findViewById(R.id.layout_login)
         radioGroupRole = findViewById(R.id.radio_group_role)
+        imgTogglePassword = findViewById(R.id.img_toggle_password)
     }
 
     private fun initListener() {
@@ -61,6 +64,17 @@ class RegisterActivity : BaseActivity() {
         })
         layoutLogin?.setOnClickListener { finish() }
         btnRegister?.setOnClickListener { onClickValidateRegister() }
+
+        imgTogglePassword?.setOnClickListener {
+            isPasswordVisible = !isPasswordVisible
+            edtPassword?.let {
+                val selection = it.selectionStart
+                it.transformationMethod = if (isPasswordVisible) null else android.text.method.PasswordTransformationMethod.getInstance()
+                it.setSelection(selection)
+            }
+            imgTogglePassword?.setImageResource(if (isPasswordVisible) R.drawable.baseline_visibility_24 else R.drawable.baseline_visibility_off_24)
+        }
+
     }
 
     private fun updateUIState() {

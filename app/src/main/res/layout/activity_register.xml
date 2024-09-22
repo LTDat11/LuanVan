@@ -64,20 +64,35 @@
             android:textColor="@color/textColorHeading"
             android:textSize="12sp" />
 
-        <EditText
-            android:id="@+id/edt_password"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
-            android:background="@drawable/bg_white_corner_16_border_gray"
-            android:hint="@string/hint_password"
-            android:imeOptions="actionDone"
-            android:inputType="textPassword"
-            android:padding="14dp"
-            android:textColor="@color/textColorHeading"
-            android:textColorHint="@color/textColorAccent"
-            android:textSize="14sp"
-            tools:ignore="Autofill" />
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/edt_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/bg_white_corner_16_border_gray"
+                android:hint="@string/hint_password"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword"
+                android:padding="14dp"
+                android:textColor="@color/textColorHeading"
+                android:textColorHint="@color/textColorAccent"
+                android:textSize="14sp"
+                tools:ignore="Autofill" />
+
+            <ImageView
+                android:id="@+id/img_toggle_password"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:padding="10dp"
+                android:src="@drawable/baseline_visibility_off_24" />
+
+        </RelativeLayout>
 
         <!-- Thêm phần lựa chọn đối tượng đăng ký -->
         <TextView
