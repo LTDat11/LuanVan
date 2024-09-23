@@ -135,6 +135,7 @@
     <string name="label_date_and_time">Thời gian</string>
     <string name="label_payment_method">Phương thức thanh toán:</string>
     <string name="infor_title">Thông tin khách hàng</string>
+    <string name="infor_contact">Liên hệ</string>
     <string name="Dont_have_any_order_yet">Không có đơn hàng</string>
 
 

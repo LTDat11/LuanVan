@@ -11,6 +11,7 @@ import android.widget.TextView
 import com.bumptech.glide.Glide
 import com.example.myapp.R
 import com.example.myapp.activity.ChangePassActivity
+import com.example.myapp.activity.ContactActivity
 import com.example.myapp.activity.LoginActivity
 import com.example.myapp.activity.MainActivity
 import com.example.myapp.activity.SendFeedbackActivity
@@ -55,6 +56,12 @@ class AccountFragment : Fragment() {
         val layoutChangePass = mView?.findViewById<View>(R.id.layout_change_password)
         layoutChangePass?.setOnClickListener {
             val intent = Intent(activity, ChangePassActivity::class.java)
+            startActivity(intent)
+        }
+
+        val layoutContact = mView?.findViewById<View>(R.id.layout_contact)
+        layoutContact?.setOnClickListener {
+            val intent = Intent(activity, ContactActivity::class.java)
             startActivity(intent)
         }
     }
