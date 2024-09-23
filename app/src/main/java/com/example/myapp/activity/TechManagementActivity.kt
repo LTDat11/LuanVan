@@ -138,41 +138,50 @@ class TechManagementActivity : AppCompatActivity() {
         tvToolbarTitle.text = getString(R.string.tech_management)
     }
 
-    override fun onStop() {
-        super.onStop()
-        registration?.remove() // Remove listener to prevent memory leaks
-    }
-
     private fun loadTechnicians() {
         CoroutineScope(Dispatchers.IO).launch {
-           withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
+                val db = FirebaseFirestore.getInstance()
+                registration = db.collection("Users")
+                    .whereEqualTo("role", "Technician")
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            Log.w("FireStore", "Listen failed.", e)
+                            return@addSnapshotListener
+                        }
 
-               val db = FirebaseFirestore.getInstance()
-               registration = db.collection("Users")
-                   .whereEqualTo("role", "Technician")
-                   .addSnapshotListener { snapshot, e ->
-                       if (e != null) {
-                           Log.w("FireStore", "Listen failed.", e)
-                           return@addSnapshotListener
-                       }
+                        if (snapshot != null) {
+                            for (documentChange in snapshot.documentChanges) {
+                                val technician = documentChange.document.toObject(User::class.java)
 
-                       if (snapshot != null && !snapshot.isEmpty) {
-                           technicianList.clear()
-                           for (document in snapshot.documents) {
-                               val technician = document.toObject(User::class.java)
-                               if (technician != null) {
-                                   technicianList.add(technician)
-                               }
-                           }
-                           userManagementAdapter.notifyDataSetChanged()
-                       } else {
-                           Log.d("FireStore", "No such documents")
-                       }
-                   }
+                                when (documentChange.type) {
+                                    // Khi tài liệu được thêm mới
+                                    com.google.firebase.firestore.DocumentChange.Type.ADDED -> {
+                                        technicianList.add(technician)
+                                    }
+                                    // Khi tài liệu bị sửa đổi
+                                    com.google.firebase.firestore.DocumentChange.Type.MODIFIED -> {
+                                        val index = technicianList.indexOfFirst { it.id == technician.id }
+                                        if (index != -1) {
+                                            technicianList[index] = technician // Cập nhật dữ liệu mới
+                                        }
+                                    }
+                                    // Khi tài liệu bị xóa
+                                    com.google.firebase.firestore.DocumentChange.Type.REMOVED -> {
+                                        technicianList.removeIf { it.id == technician.id }
+                                    }
+                                }
+                            }
 
-           }
+                            // Cập nhật lại giao diện
+                            userManagementAdapter.notifyDataSetChanged()
+                        } else {
+                            Log.d("FireStore", "No such documents")
+                        }
+                    }
+            }
         }
-
     }
+
 
 }

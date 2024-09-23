@@ -57,10 +57,13 @@ class CustomerManagementActivity : AppCompatActivity() {
     }
 
     private fun loadCustomers() {
+
         CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.Main){
 
                 val db = FirebaseFirestore.getInstance()
+
+                // Lắng nghe thay đổi theo thời gian thực
                 registration = db.collection("Users")
                     .whereEqualTo("role", "Customer")
                     .addSnapshotListener { snapshot, e ->
@@ -69,14 +72,30 @@ class CustomerManagementActivity : AppCompatActivity() {
                             return@addSnapshotListener
                         }
 
-                        if (snapshot != null && !snapshot.isEmpty) {
-                            customerList.clear()
-                            for (document in snapshot.documents) {
-                                val customer = document.toObject(User::class.java)
-                                if (customer != null) {
-                                    customerList.add(customer)
+                        if (snapshot != null) {
+                            for (documentChange in snapshot.documentChanges) {
+                                val customer = documentChange.document.toObject(User::class.java)
+
+                                when (documentChange.type) {
+                                    // Khi tài liệu được thêm mới
+                                    com.google.firebase.firestore.DocumentChange.Type.ADDED -> {
+                                        customerList.add(customer)
+                                    }
+                                    // Khi tài liệu bị sửa đổi
+                                    com.google.firebase.firestore.DocumentChange.Type.MODIFIED -> {
+                                        val index = customerList.indexOfFirst { it.id == customer.id }
+                                        if (index != -1) {
+                                            customerList[index] = customer // Cập nhật dữ liệu mới
+                                        }
+                                    }
+                                    // Khi tài liệu bị xóa
+                                    com.google.firebase.firestore.DocumentChange.Type.REMOVED -> {
+                                        customerList.removeIf { it.id == customer.id }
+                                    }
                                 }
                             }
+
+                            // Cập nhật lại giao diện
                             userManagementAdapter.notifyDataSetChanged()
                         } else {
                             Log.d("FireStore", "No such documents")
@@ -87,6 +106,7 @@ class CustomerManagementActivity : AppCompatActivity() {
         }
 
     }
+
 
     private fun initRecyclerView() {
         userManagementAdapter = UserManagementAdapter(customerList) { customer ->
@@ -169,11 +189,5 @@ class CustomerManagementActivity : AppCompatActivity() {
         imgToolbarBack.setOnClickListener { finish() }
         tvToolbarTitle.text = getString(R.string.cust_management)
     }
-
-    override fun onStop() {
-        super.onStop()
-        registration?.remove() // Remove listener to prevent memory leaks
-    }
-
 
 }

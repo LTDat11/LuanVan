@@ -15,6 +15,7 @@ import com.example.myapp.activity.ContactActivity
 import com.example.myapp.activity.LoginActivity
 import com.example.myapp.activity.MainActivity
 import com.example.myapp.activity.SendFeedbackActivity
+import com.example.myapp.activity.SplashActivity
 import com.example.myapp.activity.UserInfoActivity
 import com.example.myapp.activity.ViewFeedbackActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -77,12 +78,8 @@ class AccountFragment : Fragment() {
     //    log out of the app
     private fun signOut() {
         FirebaseAuth.getInstance().signOut()
-        val intent = Intent(activity, LoginActivity::class.java)
-
-        // Clear the activity stack to prevent the user from going back to this activity after signing out
+        val intent = Intent(activity, SplashActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-
-        // Start LoginActivity
         startActivity(intent)
     }
 

@@ -36,7 +36,7 @@
     <string name="action_ok">Đồng ý</string>
     <string name="reset_password">Gửi lại mật khẩu</string>
     <string name="tech_management">Quản lý kỹ thuật viên</string>
-    <string name="cust_management">Quản lý kỹ khách hàng</string>
+    <string name="cust_management">Quản lý khách hàng</string>
     <string name="admin_management">Quản lý quản trị viên</string>
     <string name="msg_old_password_require">Vui lòng nhập mật khẩu cũ</string>
     <string name="msg_new_password_require">Vui lòng nhập mật khẩu mới</string>

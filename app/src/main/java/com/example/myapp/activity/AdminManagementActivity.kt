@@ -57,12 +57,13 @@ class AdminManagementActivity : AppCompatActivity() {
     }
 
     private fun loadAdmins() {
-        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-
         CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.Main){
 
+                val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
                 val db = FirebaseFirestore.getInstance()
+
+                // Lắng nghe thay đổi theo thời gian thực
                 registration = db.collection("Users")
                     .whereEqualTo("role", "Admin")
                     .addSnapshotListener { snapshot, e ->
@@ -71,15 +72,33 @@ class AdminManagementActivity : AppCompatActivity() {
                             return@addSnapshotListener
                         }
 
-                        if (snapshot != null && !snapshot.isEmpty) {
-                            adminList.clear()
-                            for (document in snapshot.documents) {
-                                val admin = document.toObject(User::class.java)
-                                if (admin != null && admin.id != currentUserId) {
-                                    // Loại trừ tài khoản admin hiện tại
-                                    adminList.add(admin)
+                        if (snapshot != null) {
+                            for (documentChange in snapshot.documentChanges) {
+                                val admin = documentChange.document.toObject(User::class.java)
+                                if (admin.id == currentUserId) {
+                                    continue // Loại trừ tài khoản admin hiện tại
+                                }
+
+                                when (documentChange.type) {
+                                    // Khi tài liệu được thêm mới
+                                    com.google.firebase.firestore.DocumentChange.Type.ADDED -> {
+                                        adminList.add(admin)
+                                    }
+                                    // Khi tài liệu bị sửa đổi
+                                    com.google.firebase.firestore.DocumentChange.Type.MODIFIED -> {
+                                        val index = adminList.indexOfFirst { it.id == admin.id }
+                                        if (index != -1) {
+                                            adminList[index] = admin // Cập nhật dữ liệu mới
+                                        }
+                                    }
+                                    // Khi tài liệu bị xóa
+                                    com.google.firebase.firestore.DocumentChange.Type.REMOVED -> {
+                                        adminList.removeIf { it.id == admin.id }
+                                    }
                                 }
                             }
+
+                            // Cập nhật lại giao diện
                             userManagementAdapter.notifyDataSetChanged()
                         } else {
                             Log.d("FireStore", "No such documents")
@@ -207,11 +226,7 @@ class AdminManagementActivity : AppCompatActivity() {
         val imgToolbarBack = findViewById<ImageView>(R.id.img_toolbar_back)
         val tvToolbarTitle = findViewById<TextView>(R.id.tv_toolbar_title)
         imgToolbarBack.setOnClickListener { finish() }
-        tvToolbarTitle.text = getString(R.string.cust_management)
+        tvToolbarTitle.text = getString(R.string.admin_management)
     }
 
-    override fun onStop() {
-        super.onStop()
-        registration?.remove() // Remove listener to prevent memory leaks
-    }
 }
