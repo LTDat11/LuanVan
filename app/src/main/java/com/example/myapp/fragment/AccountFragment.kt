@@ -1,5 +1,8 @@
 package com.example.myapp.fragment
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context.ALARM_SERVICE
 import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -18,11 +21,13 @@ import com.example.myapp.activity.SendFeedbackActivity
 import com.example.myapp.activity.SplashActivity
 import com.example.myapp.activity.UserInfoActivity
 import com.example.myapp.activity.ViewFeedbackActivity
+import com.example.myapp.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class AccountFragment : Fragment() {
@@ -78,10 +83,26 @@ class AccountFragment : Fragment() {
     //    log out of the app
     private fun signOut() {
         FirebaseAuth.getInstance().signOut()
-        val intent = Intent(activity, SplashActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
+
+        // Tạo Intent để khởi động lại ứng dụng
+        val restartIntent = Intent(activity, SplashActivity::class.java)
+        restartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+        // Tạo PendingIntent để restart app
+        val pendingIntent = PendingIntent.getActivity(
+            activity, 0, restartIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Sử dụng AlarmManager để restart ứng dụng ngay lập tức
+        val alarmManager = activity?.getSystemService(ALARM_SERVICE) as AlarmManager
+        alarmManager.set(
+            AlarmManager.RTC, System.currentTimeMillis() + 100, pendingIntent
+        )
+
+        // Đóng tất cả activity
+        activity?.finishAffinity()
     }
+
 
     private fun initUi() {
         val tvEmail = mView?.findViewById<TextView>(R.id.tv_email)
@@ -90,74 +111,62 @@ class AccountFragment : Fragment() {
         val layoutFeedback = mView?.findViewById<View>(R.id.layout_feedback)
         val tvFeedback = mView?.findViewById<TextView>(R.id.tv_feedback)
 
-        // Gọi hàm lấy thông tin người dùng từ Firestore
-        getUserInfo { name, email, imageURL, role, phone ->
-            tvName?.text = name ?: getString(R.string.default_name)
-            tvEmail?.text = email ?: firebaseAuth.currentUser?.email
-            // Load ảnh đại diện
-            if (imageURL != null) {
-                if (civ_avatar != null) {
-                    Glide.with(this)
-                        .load(imageURL)
-                        .circleCrop()
-                        .into(civ_avatar)
-                }
-            }
+        CoroutineScope(Dispatchers.Main).launch {
+            val userInfo = getUserInfo()
+            if (userInfo != null) {
+                tvName?.text = userInfo.name ?: getString(R.string.default_name)
+                tvEmail?.text = userInfo.email ?: firebaseAuth.currentUser?.email
 
-            // Kiểm tra vai trò của người dùng
-            if (role == "Admin") {
-                tvFeedback?.text = getString(R.string.view_feedback)
-                layoutFeedback?.setOnClickListener {
-                    // Chuyển đến trang xem phản hồi cho Admin
-                    val intent = Intent(context, ViewFeedbackActivity::class.java)
-                    startActivity(intent)
+                // Load ảnh đại diện
+                if (userInfo.imageURL != null) {
+                    Glide.with(this@AccountFragment)
+                        .load(userInfo.imageURL)
+                        .circleCrop()
+                        .into(civ_avatar!!)
                 }
-            } else {
-                tvFeedback?.text = getString(R.string.send_feedback)
-                layoutFeedback?.setOnClickListener {
-                    // Chuyển đến trang gửi phản hồi cho người dùng khác putExtra name, email, imageURL
-                    val intent = Intent(context, SendFeedbackActivity::class.java)
-                    intent.putExtra("name", name)
-                    intent.putExtra("email", email)
-                    intent.putExtra("phone", phone)
-                    startActivity(intent)
+
+                // Kiểm tra vai trò của người dùng
+                if (userInfo.role == "Admin") {
+                    tvFeedback?.text = getString(R.string.view_feedback)
+                    layoutFeedback?.setOnClickListener {
+                        val intent = Intent(context, ViewFeedbackActivity::class.java)
+                        startActivity(intent)
+                    }
+                } else {
+                    tvFeedback?.text = getString(R.string.send_feedback)
+                    layoutFeedback?.setOnClickListener {
+                        val intent = Intent(context, SendFeedbackActivity::class.java)
+                        intent.putExtra("name", userInfo.name)
+                        intent.putExtra("email", userInfo.email)
+                        intent.putExtra("phone", userInfo.phone)
+                        startActivity(intent)
+                    }
                 }
             }
         }
     }
+
 
 
     // Hàm lấy thông tin người dùng từ Firestore theo thời gian thực, bao gồm cả role
-    private fun getUserInfo(callback: (name: String?, email: String?, imageURL: String?, role: String?, phone: String?) -> Unit) {
-        CoroutineScope(Dispatchers.IO).launch {
-            withContext(Dispatchers.Main) {
-                val currentUser = firebaseAuth.currentUser
-                if (currentUser != null) {
-                    val uid = currentUser.uid
-                    firestore.collection("Users").document(uid)
-                        .addSnapshotListener { documentSnapshot, error ->
-                            if (error != null) {
-                                callback(null, currentUser.email, null, null, null)  // Trả email nếu có lỗi
-                                return@addSnapshotListener
-                            }
+    private suspend fun getUserInfo(): User? {
+        val currentUser = firebaseAuth.currentUser ?: return null
+        val uid = currentUser.uid
 
-                            if (documentSnapshot != null && documentSnapshot.exists()) {
-                                val name = documentSnapshot.getString("name")
-                                val email = documentSnapshot.getString("email")
-                                val imageURL = documentSnapshot.getString("imageURL")
-                                val role = documentSnapshot.getString("role")  // Lấy role từ Firestore
-                                val phone = documentSnapshot.getString("phone")
-                                callback(name, email, imageURL, role, phone)  // Trả kết quả về thông qua callback
-                            } else {
-                                callback(null, currentUser.email, null, null, null)  // Trả email nếu không tìm thấy document
-                            }
-                        }
-                } else {
-                    callback(null, null, null, null, null)  // Nếu không có người dùng đăng nhập, trả về null
+        return try {
+            val documentSnapshot = firestore.collection("Users").document(uid).get().await()
+            if (documentSnapshot.exists()) {
+                documentSnapshot.toObject(User::class.java)?.apply {
+                    id = uid  // Đặt ID từ currentUser vào object
                 }
+            } else {
+                null
             }
+        } catch (e: Exception) {
+            null
         }
     }
+
 
 
     // set up the toolbar text, back button click listener and set text to Account
