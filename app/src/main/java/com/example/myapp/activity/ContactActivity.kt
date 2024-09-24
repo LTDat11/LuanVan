@@ -1,5 +1,7 @@
 package com.example.myapp.activity
 
+import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageView
@@ -29,7 +31,41 @@ class ContactActivity : AppCompatActivity() {
         initToolbar()
 
         // Thiết lập RecyclerView
-        val contactAdapter = ContactAdapter(contactList)
+        val contactAdapter = ContactAdapter(contactList){contactItem ->
+            // Xử lý sự kiện khi click vào một item
+            // Ví dụ: mở một trang web tương ứng với mỗi item
+            when (contactItem.name) {
+                "Điện thoại" -> {
+                    // Mở ứng dụng điện thoại
+                    val phoneIntent = Intent(Intent.ACTION_DIAL)
+                    phoneIntent.data = Uri.parse("tel:0363897083")
+                    startActivity(phoneIntent)
+                }
+                "Facebook" -> {
+                    // Mở ứng dụng Facebook
+                    val facebookIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/lutandat2k2/?locale=vi_VN"))
+                    startActivity(facebookIntent)
+                }
+                "Zalo" -> {
+                    // Mở ứng dụng Zalo
+                    val zaloIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://zalo.me/0363897083"))
+                    startActivity(zaloIntent)
+                }
+                "Instagram" -> {
+                    // Mở ứng dụng Instagram
+                    val instagramIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.instagram.com/_dat.lu/"))
+                    startActivity(instagramIntent)
+                }
+                "Mail" -> {
+                    // Mở ứng dụng Mail
+                    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                        data = Uri.parse("mailto:datb2004718@student.ctu.edu.vn")
+                        putExtra(Intent.EXTRA_SUBJECT, "Contact Subject")
+                    }
+                    startActivity(emailIntent)
+                }
+            }
+        }
         binding.rvContact.apply {
             layoutManager = GridLayoutManager(this@ContactActivity, 3)
             adapter = contactAdapter
