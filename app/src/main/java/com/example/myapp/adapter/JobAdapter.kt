@@ -37,7 +37,7 @@ class JobAdapter(private val jobs: List<Order>) : RecyclerView.Adapter<JobAdapte
                 holder.tvStatus.text = "Đã hoàn thành"
             }
             "finish" -> {
-                holder.tvStatus.text = "Đã hoàn thành"
+                holder.tvStatus.text = "Đã thanh toán"
             }
         }
 

@@ -16,6 +16,7 @@ import com.example.myapp.adapter.RepairTechAdapter
 import com.example.myapp.databinding.ActivityTrackingOrderTechBinding
 import com.example.myapp.model.Order
 import com.example.myapp.model.Repair
+import com.example.myapp.model.User
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.NumberFormat
 import java.util.Locale
@@ -26,7 +27,6 @@ class TrackingOrderTechActivity : AppCompatActivity() {
     private var orderId: String = ""
     private var imgURL : String = ""
     private var idCustomer: String = ""
-    private var tokenCustomer: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +40,29 @@ class TrackingOrderTechActivity : AppCompatActivity() {
         fetchOrderData()
         fetchRepairs()
         initListeners()
+    }
+
+    private fun fetchInfoCustomer() {
+        val db = FirebaseFirestore.getInstance()
+        val customerRef = db.collection("Users").document(idCustomer)
+
+        // Lấy thông tin của khách hàng từ Firestore
+        customerRef.get().addOnSuccessListener { documentSnapshot ->
+            if (documentSnapshot.exists()) {
+                // Parse dữ liệu của Order
+                val customer = documentSnapshot.toObject(User::class.java)
+                customer?.let {
+                    // Hiển thị dữ liệu lên giao diện
+                    binding.tvNameCustomerValue.text = customer.name
+                    binding.tvPhoneCustomerValue.text = customer.phone
+                    binding.tvAddressCustomerValue.text = customer.address
+                }
+            } else {
+                Log.d("TrackingOrderTech", "Customer document không tồn tại.")
+            }
+        }.addOnFailureListener { exception ->
+            Log.e("TrackingOrderTech", "Lỗi khi lấy dữ liệu khách hàng", exception)
+        }
     }
 
     private fun checkStatusOrder() {
@@ -95,6 +118,8 @@ class TrackingOrderTechActivity : AppCompatActivity() {
                 order?.let {
                     // Hiển thị dữ liệu lên giao diện
                     displayOrderData(it)
+                    idCustomer = order.id_customer.toString()
+                    fetchInfoCustomer()
                 }
             } else {
                 Log.d("TrackingOrderTech", "Order document không tồn tại.")
@@ -113,8 +138,6 @@ class TrackingOrderTechActivity : AppCompatActivity() {
             tvDescriptionValue.text = order.description
             tvNoteValue.text = order.notes2
             Glide.with(this@TrackingOrderTechActivity).load(imgURL).into(imgPackage)
-
-            idCustomer = order.id_customer.toString()
         }
     }
 

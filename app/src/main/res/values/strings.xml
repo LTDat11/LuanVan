@@ -110,6 +110,9 @@
     <string name="hint_password_confirm">Vui lòng xác nhận mật khẩu mới...</string>
     <string name="label_created_at">Tạo lúc:</string>
     <string name="label_updated_at">Cập nhật lúc:</string>
+    <string name="label_name_customer">Tên khách hàng:</string>
+    <string name="label_phone_customer">Số điện thoại khách hàng:</string>
+    <string name="label_address_customer">Địa chỉ khách hàng:</string>
     <string name="label_waiting_order">Đang chờ nhận đơn</string>
     <string name="label_takes_order">Đã nhận đơn và phân công kỹ thuật viên</string>
     <string name="label_order_complete">Đơn hàng của bạn đã hoàn tất</string>

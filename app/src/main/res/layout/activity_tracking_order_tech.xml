@@ -125,6 +125,78 @@
                         android:orientation="horizontal">
 
                         <TextView
+                            android:id="@+id/tv_name_customer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_name_customer"
+                            android:textSize="12sp"
+                            android:textColor="@color/textColorHeading"/>
+
+                        <TextView
+                            android:id="@+id/tv_name_customer_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/app_name"
+                            android:textSize="12sp"
+                            android:textColor="@color/textColorHeading"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tv_phone_customer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_phone_customer"
+                            android:textSize="12sp"
+                            android:textColor="@color/textColorHeading"/>
+
+                        <TextView
+                            android:id="@+id/tv_phone_customer_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/app_name"
+                            android:textSize="12sp"
+                            android:textColor="@color/textColorHeading"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tv_address_customer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/label_address_customer"
+                            android:textSize="12sp"
+                            android:textColor="@color/textColorHeading"/>
+
+                        <TextView
+                            android:id="@+id/tv_address_customer_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/app_name"
+                            android:textSize="12sp"
+                            android:textColor="@color/textColorHeading"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
                             android:id="@+id/tv_description"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
