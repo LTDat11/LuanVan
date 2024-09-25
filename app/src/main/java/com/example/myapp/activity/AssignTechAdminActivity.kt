@@ -159,7 +159,7 @@ class AssignTechAdminActivity : AppCompatActivity() {
             tvNameBrand.text = order?.selectedBrand
             tvCreatedAt.text = order?.createdAt.toString()
             // fucntion get info User
-            getInfoUser()
+            getInfoCustomer()
 
 
             recyclerView = rvTechnicians
@@ -172,7 +172,7 @@ class AssignTechAdminActivity : AppCompatActivity() {
         }
     }
 
-    private fun getInfoUser() {
+    private fun getInfoCustomer() {
         CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.Main){
                 val db = FirebaseFirestore.getInstance()

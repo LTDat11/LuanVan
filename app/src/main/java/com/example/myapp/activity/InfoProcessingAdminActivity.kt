@@ -40,8 +40,32 @@ class InfoProcessingAdminActivity : AppCompatActivity() {
             }
             tvNameBrand.text = order?.selectedBrand
             tvCreatedAt.text = order?.createdAt.toString()
+            getInfoCustomer()
 
             getInfoTechnicain(order?.id_technician)
+        }
+    }
+
+    private fun getInfoCustomer() {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+                val db = FirebaseFirestore.getInstance()
+                // use snapshot to get name and phone of user by id user
+                db.collection("Users").document(order?.id_customer!!)
+                    .get()
+                    .addOnSuccessListener { document ->
+                        if (document != null) {
+                            val name = document.getString("name")
+                            val phone = document.getString("phone")
+                            val address = document.getString("address")
+                            binding.apply {
+                                tvNameCustomer.text = name
+                                tvPhoneCustomer.text = phone
+                                tvAddressCustomer.text = address
+                            }
+                        }
+                    }
+            }
         }
     }
 
