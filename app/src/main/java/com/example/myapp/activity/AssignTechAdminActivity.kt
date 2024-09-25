@@ -158,6 +158,9 @@ class AssignTechAdminActivity : AppCompatActivity() {
             }
             tvNameBrand.text = order?.selectedBrand
             tvCreatedAt.text = order?.createdAt.toString()
+            // fucntion get info User
+            getInfoUser()
+
 
             recyclerView = rvTechnicians
             recyclerView.layoutManager = LinearLayoutManager(this@AssignTechAdminActivity)
@@ -166,6 +169,29 @@ class AssignTechAdminActivity : AppCompatActivity() {
 
             searchView.visibility = View.GONE
             rvTechnicians.visibility = View.GONE
+        }
+    }
+
+    private fun getInfoUser() {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+                val db = FirebaseFirestore.getInstance()
+                db.collection("Users").document(order?.id_customer.toString())
+                    .get()
+                    .addOnSuccessListener { document ->
+                        if (document != null) {
+                            val user = document.toObject(User::class.java)
+                            binding.apply {
+                                tvNameCustomer.text = user?.name
+                                tvPhoneCustomer.text = user?.phone
+                                tvAddressCustomer.text = user?.address
+                            }
+                        }
+                    }
+                    .addOnFailureListener { exception ->
+
+                    }
+            }
         }
     }
 
