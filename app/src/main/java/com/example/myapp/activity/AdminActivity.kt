@@ -21,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class AdminActivity : AppCompatActivity() {
@@ -78,8 +79,9 @@ class AdminActivity : AppCompatActivity() {
 
     private fun listenChange() {
         CoroutineScope(Dispatchers.IO).launch {
-            withContext(Dispatchers.Main){
+            val isAdmin = checkUserRole()
 
+            withContext(Dispatchers.Main) {
                 val db = FirebaseFirestore.getInstance()
                 db.collection("orders")
                     .whereEqualTo("status", "pending")
@@ -91,32 +93,34 @@ class AdminActivity : AppCompatActivity() {
                         if (snapshot != null) {
                             val count = snapshot.size()
 
-                            // Kiểm tra vai trò người dùng
-                            checkUserRole { isAdmin ->
-                                if (isAdmin && count > previousCount) {
-                                    sendNotification(count, "high_priority_channel_id", "Đơn hàng mới", "Bạn có $count đơn hàng mới đang chờ xác nhận.")
-                                }
-                                updateBadgeForBottomNav(count)
+                            if (isAdmin && count > previousCount) {
+                                sendNotification(
+                                    count,
+                                    "high_priority_channel_id",
+                                    "Đơn hàng mới",
+                                    "Bạn có $count đơn hàng mới đang chờ xác nhận."
+                                )
                             }
 
+                            updateBadgeForBottomNav(count)
                             previousCount = count
                         }
-
                     }
             }
         }
     }
 
-    private fun checkUserRole(callback: (Boolean) -> Unit) {
-        val currentUser = FirebaseAuth.getInstance().currentUser
-        if (currentUser != null) {
-            val db = FirebaseFirestore.getInstance()
-            db.collection("Users").document(currentUser.uid).get().addOnSuccessListener { documentSnapshot ->
-                val role = documentSnapshot.getString("role")
-                callback(role == "Admin") // Chỉ cho phép admin nhận thông báo
-            }
-        } else {
-            callback(false)
+
+    private suspend fun checkUserRole(): Boolean {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return false
+        val db = FirebaseFirestore.getInstance()
+
+        return try {
+            val documentSnapshot = db.collection("Users").document(currentUser.uid).get().await()
+            val role = documentSnapshot.getString("role")
+            role == "Admin" // Chỉ cho phép admin nhận thông báo
+        } catch (e: Exception) {
+            false
         }
     }
 
