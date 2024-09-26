@@ -139,6 +139,9 @@ class TechnicianActivity : AppCompatActivity() {
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
 
+        // Xóa thông báo cũ trước khi gửi thông báo mới
+        notificationManager.cancel(channelId.hashCode())  // Xóa thông báo cũ, nếu có
+
         notificationManager.notify(channelId.hashCode(), notificationBuilder.build())
     }
 
