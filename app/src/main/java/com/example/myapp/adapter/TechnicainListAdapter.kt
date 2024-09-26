@@ -14,6 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TechnicainListAdapter(private val technicains: List<User>, private val orderId: String): RecyclerView.Adapter<TechnicainListAdapter.TechnicainViewHolder>() {
 
@@ -29,6 +30,8 @@ class TechnicainListAdapter(private val technicains: List<User>, private val ord
         holder.tvTechnicainDesciption.text = technicain.description
         // set image with glide
         Glide.with(holder.itemView.context).load(technicain.imageURL).into(holder.technicainImg)
+
+        getTechJobCount(technicain.id, holder)
 
         holder.itemView.setOnClickListener {
             // kiểm tra nếu itemUnSelect có src là ic_unselect thì set src là ic_select
@@ -50,6 +53,34 @@ class TechnicainListAdapter(private val technicains: List<User>, private val ord
             }
         }
 
+    }
+
+    private fun getTechJobCount(id: String, holder: TechnicainListAdapter.TechnicainViewHolder) {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+
+                val db = FirebaseFirestore.getInstance()
+
+                db.collection("orders")
+                    .whereEqualTo("id_technician", id)
+                    .whereEqualTo("status", "processing")
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            // Xử lý lỗi
+                            holder.tvJobCount.text = "Không tìm thấy"
+                            return@addSnapshotListener
+                        }
+
+                        if (snapshot != null && !snapshot.isEmpty) {
+                            // Cập nhật số lượng đơn hàng của technician
+                            holder.tvJobCount.text = snapshot.size().toString()
+                        } else {
+                            holder.tvJobCount.text = "0"
+                        }
+                    }
+
+            }
+        }
     }
 
     private fun removeTechnicainFromOrder(id: String, orderId: String) {
@@ -91,5 +122,6 @@ class TechnicainListAdapter(private val technicains: List<User>, private val ord
         val tvTechnicainName: TextView = itemView.findViewById(R.id.technicain_name)
         val tvTechnicainDesciption: TextView = itemView.findViewById(R.id.technicain_description)
         val itemUnSelect: ImageView = itemView.findViewById(R.id.item_unselect)
+        val tvJobCount: TextView = itemView.findViewById(R.id.technicain_job_count)
     }
 }
