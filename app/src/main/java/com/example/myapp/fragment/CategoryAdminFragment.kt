@@ -266,7 +266,7 @@ class CategoryAdminFragment : Fragment() {
 
     private fun deleteCategory(categoryId: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
 
                 val firestore = FirebaseFirestore.getInstance()
                 val categoryRef = firestore.collection("service_categories").document(categoryId)
@@ -299,21 +299,65 @@ class CategoryAdminFragment : Fragment() {
                             onComplete()
                             return@addOnSuccessListener
                         }
+
+                        var pendingChecks = querySnapshot.size() // Số lượng kiểm tra liên quan đến gói dịch vụ
+                        var hasLinkedOrder = false
+
                         for (deviceDoc in querySnapshot.documents) {
                             val deviceId = deviceDoc.id
                             deviceIdsToDelete.add(deviceId) // Lưu idDevice vào mảng để sau này xóa ảnh
 
                             val servicePackagesRef = deviceDoc.reference.collection("service_packages")
-                            deleteSubCollection(servicePackagesRef) {
-                                deviceDoc.reference.delete().addOnSuccessListener {
-                                    deleteCount++
-                                    // Nếu đã xóa hết các thiết bị, gọi onComplete
-                                    if (deleteCount == querySnapshot.size()) {
-                                        onComplete()
+
+                            servicePackagesRef.get().addOnSuccessListener { servicePackageSnapshot ->
+                                if (servicePackageSnapshot.isEmpty) {
+                                    pendingChecks--
+                                    if (pendingChecks == 0 && !hasLinkedOrder) {
+                                        onComplete() // Nếu đã kiểm tra hết và không có liên quan đến hóa đơn
                                     }
-                                }.addOnFailureListener { e ->
-                                    Toast.makeText(context, "Lỗi khi xóa thiết bị: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    return@addOnSuccessListener
                                 }
+
+                                for (servicePackageDoc in servicePackageSnapshot.documents) {
+                                    val servicePackageId = servicePackageDoc.id
+
+                                    firestore.collection("orders")
+                                        .whereEqualTo("id_servicepackage", servicePackageId)
+                                        .get()
+                                        .addOnSuccessListener { orderSnapshot ->
+                                            if (!orderSnapshot.isEmpty) {
+                                                hasLinkedOrder = true
+                                                Toast.makeText(
+                                                    context,
+                                                    "Danh mục này chứa các gói có liên quan tới hóa đơn. Vui lòng cân nhắc trước khi xóa.",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                                return@addOnSuccessListener // Dừng việc xóa
+                                            }
+
+                                            pendingChecks--
+                                            if (pendingChecks == 0 && !hasLinkedOrder) {
+                                                // Nếu đã kiểm tra hết và không có liên quan đến hóa đơn, tiếp tục xóa
+                                                deleteSubCollection(servicePackagesRef) {
+                                                    deviceDoc.reference.delete().addOnSuccessListener {
+                                                        deleteCount++
+                                                        // Nếu đã xóa hết các thiết bị, gọi onComplete
+                                                        if (deleteCount == querySnapshot.size()) {
+                                                            onComplete()
+                                                        }
+                                                    }.addOnFailureListener { e ->
+                                                        Toast.makeText(context, "Lỗi khi xóa thiết bị: ${e.message}", Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
+                                            }
+                                        }.addOnFailureListener { e ->
+                                            Toast.makeText(context, "Lỗi khi kiểm tra đơn hàng: ${e.message}", Toast.LENGTH_SHORT).show()
+                                            pendingChecks--
+                                        }
+                                }
+                            }.addOnFailureListener { e ->
+                                Toast.makeText(context, "Lỗi khi truy cập gói dịch vụ: ${e.message}", Toast.LENGTH_SHORT).show()
+                                pendingChecks--
                             }
                         }
                     }.addOnFailureListener { e ->
@@ -334,11 +378,10 @@ class CategoryAdminFragment : Fragment() {
                         Toast.makeText(context, "Lỗi khi xóa danh mục: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
-
             }
         }
-
     }
+
 
 
     private fun deleteAllDeviceImages() {
