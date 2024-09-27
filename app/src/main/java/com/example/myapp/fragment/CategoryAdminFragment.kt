@@ -329,7 +329,7 @@ class CategoryAdminFragment : Fragment() {
                                                 hasLinkedOrder = true
                                                 Toast.makeText(
                                                     context,
-                                                    "Danh mục này chứa các gói có liên quan tới hóa đơn. Vui lòng cân nhắc trước khi xóa.",
+                                                    "Danh mục này chứa các gói dịch vụ có liên quan tới hóa đơn. Truy cập vào bên trong để xóa từng thiết bị!!",
                                                     Toast.LENGTH_LONG
                                                 ).show()
                                                 return@addOnSuccessListener // Dừng việc xóa
