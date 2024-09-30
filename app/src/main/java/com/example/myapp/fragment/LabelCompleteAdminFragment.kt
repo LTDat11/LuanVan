@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,7 +21,7 @@ import kotlinx.coroutines.withContext
 class LabelCompleteAdminFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var orderAminAdapter: OrderAdminAdapter
-
+    private lateinit var noDataTextView: TextView
     private lateinit var searchView: SearchView
     private val orders = mutableListOf<Order>()
 
@@ -30,6 +31,7 @@ class LabelCompleteAdminFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val mView = inflater.inflate(R.layout.fragment_label_complete_admin, container, false)
+        noDataTextView = mView.findViewById(R.id.tv_no_data)
         recyclerView = mView.findViewById(R.id.rcv_label_complete)
         recyclerView.layoutManager = LinearLayoutManager(context)
         orderAminAdapter = OrderAdminAdapter(orders)
@@ -70,6 +72,9 @@ class LabelCompleteAdminFragment : Fragment() {
 
         orderAminAdapter = OrderAdminAdapter(filteredOrders)
         recyclerView.adapter = orderAminAdapter
+
+        // Kiểm tra nếu danh sách trống sau khi tìm kiếm
+        checkDataVisibility(filteredOrders.isEmpty())
     }
 
     private fun loadOrders() {
@@ -95,10 +100,23 @@ class LabelCompleteAdminFragment : Fragment() {
                                 }
                             }
                             orderAminAdapter.notifyDataSetChanged()
+
+                            // Kiểm tra nếu danh sách trống sau khi tải dữ liệu
+                           checkDataVisibility(orders.isEmpty())
                         }
                     }
 
             }
+        }
+    }
+
+    private fun checkDataVisibility(isEmpty: Boolean) {
+        if (isEmpty) {
+            noDataTextView.visibility = View.VISIBLE
+            recyclerView.visibility = View.GONE
+        } else {
+            noDataTextView.visibility = View.GONE
+            recyclerView.visibility = View.VISIBLE
         }
     }
 
