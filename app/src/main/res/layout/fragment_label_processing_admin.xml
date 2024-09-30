@@ -43,6 +43,17 @@
             android:layout_marginTop="5dp"
             android:layout_marginBottom="8dp"/>
 
+        <!-- TextView hiển thị khi không có dữ liệu -->
+        <TextView
+            android:id="@+id/tv_no_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Không có dữ liệu"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
         <!-- Đang chờ -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rcv_label_processing"
