@@ -110,9 +110,9 @@ class LabelFinishAdminFragment : Fragment() {
         // Lọc theo ngày nếu ngày đã được chọn
         selectedDate?.let { date ->
             filteredOrders = tempFilteredOrders.filter { order ->
-                order.createdAt?.let { createdAt ->
+                order.updatedAt?.let { updatedAt ->
                     val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                    sdf.format(createdAt) == sdf.format(date)
+                    sdf.format(updatedAt) == sdf.format(date)
                 } ?: false
             }.toMutableList()
         } ?: run {

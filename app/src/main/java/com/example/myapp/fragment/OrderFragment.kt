@@ -46,29 +46,62 @@ class OrderFragment : Fragment() {
     private fun listenChange() {
         val db = FirebaseFirestore.getInstance()
 
+        // Lắng nghe cho tất cả các trạng thái đơn hàng
         statuses.forEachIndexed { index, status ->
-            db.collection("orders")
-                .whereEqualTo("status", status)
-                .addSnapshotListener { snapshot, e ->
-                    if (e != null || snapshot == null) return@addSnapshotListener
+            if (status == "finish") {
+                // Lắng nghe cho trạng thái "finish" và kiểm tra đơn hàng của ngày hiện tại
+                db.collection("orders")
+                    .whereEqualTo("status", status)
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null || snapshot == null) return@addSnapshotListener
 
-                    val orderIds = snapshot.documents.map { it.id }
-                    val previouslyViewed = viewedOrders[status] ?: emptyList()
+                        val currentDate = java.util.Date() // Ngày hiện tại
+                        val calendar = java.util.Calendar.getInstance()
+                        calendar.time = currentDate
+                        calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+                        calendar.set(java.util.Calendar.MINUTE, 0)
+                        calendar.set(java.util.Calendar.SECOND, 0)
+                        calendar.set(java.util.Calendar.MILLISECOND, 0)
+                        val startOfDay = calendar.time // Bắt đầu của ngày hiện tại
 
-                    if (status == "pending") {
-                        // Luôn cập nhật badge cho "pending" với tổng số đơn hàng
-                        updateBadge(index, orderIds.size)
-                    } else {
-                        // Chỉ cập nhật badge nếu có đơn hàng mới mà người dùng chưa xem
-                        val newOrders = orderIds.filter { it !in previouslyViewed }
-                        if (newOrders.isNotEmpty()) {
-                            updateBadge(index, newOrders.size)  // Cập nhật badge với số đơn hàng mới
-                            viewedOrders[status] = orderIds     // Lưu trạng thái mới đã xem
+                        calendar.add(java.util.Calendar.DAY_OF_MONTH, 1)
+                        val endOfDay = calendar.time // Kết thúc của ngày hiện tại
+
+                        // Lọc các đơn hàng có timestamp nằm trong khoảng thời gian của ngày hiện tại
+                        val ordersToday = snapshot.documents.filter { doc ->
+                            val orderTimestamp = doc.getTimestamp("updatedAt")?.toDate()
+                            orderTimestamp != null && orderTimestamp.after(startOfDay) && orderTimestamp.before(endOfDay)
+                        }
+
+                        // Cập nhật badge với số lượng đơn hàng trong ngày hiện tại
+                        updateBadge(index, ordersToday.size) // Cập nhật badge cho "finish"
+                    }
+            } else {
+                // Lắng nghe các trạng thái khác mà không cần lọc ngày
+                db.collection("orders")
+                    .whereEqualTo("status", status)
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null || snapshot == null) return@addSnapshotListener
+
+                        val orderIds = snapshot.documents.map { it.id }
+                        val previouslyViewed = viewedOrders[status] ?: emptyList()
+
+                        if (status == "pending") {
+                            // Luôn cập nhật badge cho "pending" với tổng số đơn hàng
+                            updateBadge(index, orderIds.size)
+                        } else {
+                            // Chỉ cập nhật badge nếu có đơn hàng mới mà người dùng chưa xem
+                            val newOrders = orderIds.filter { it !in previouslyViewed }
+                            if (newOrders.isNotEmpty()) {
+                                updateBadge(index, newOrders.size)  // Cập nhật badge với số đơn hàng mới
+                                viewedOrders[status] = orderIds     // Lưu trạng thái mới đã xem
+                            }
                         }
                     }
-                }
+            }
         }
     }
+
 
 
     private fun updateBadge(tabPosition: Int, count: Int) {
