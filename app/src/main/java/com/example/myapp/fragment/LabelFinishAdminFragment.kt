@@ -54,8 +54,12 @@ class LabelFinishAdminFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setUpSearchView()
-
         tvFilterDate = view.findViewById(R.id.tv_filter_date)
+        // Khởi tạo với ngày hiện tại
+        val calendar = Calendar.getInstance()
+        selectedDate = calendar.time // Ngày hiện tại
+        // Hiển thị ngày hiện tại trong TextView
+        tvFilterDate.text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(selectedDate)
         tvFilterDate.setOnClickListener {
             showDatePickerDialog()
         }
@@ -97,13 +101,13 @@ class LabelFinishAdminFragment : Fragment() {
     }
 
     private fun filterOrders() {
-        // Bước 1: Lọc theo từ khóa tìm kiếm
+        // Lọc theo từ khóa tìm kiếm
         val tempFilteredOrders = orders.filter { order ->
             order.id?.contains(currentQuery, ignoreCase = true) ?: false ||
                     order.namePackage?.contains(currentQuery, ignoreCase = true) ?: false
         }
 
-        // Bước 2: Lọc theo ngày nếu ngày đã được chọn
+        // Lọc theo ngày nếu ngày đã được chọn
         selectedDate?.let { date ->
             filteredOrders = tempFilteredOrders.filter { order ->
                 order.createdAt?.let { createdAt ->
