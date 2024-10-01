@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapp.R
@@ -17,6 +18,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 class LabelProcessTechFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var jobAdapter: JobAdapter
+    private lateinit var noDataTextView: TextView
     private val jobs = mutableListOf<Order>()
 
     override fun onCreateView(
@@ -24,6 +26,7 @@ class LabelProcessTechFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val mView = inflater.inflate(R.layout.fragment_label_process_tech, container, false)
+        noDataTextView = mView.findViewById(R.id.tv_no_data)
         recyclerView = mView.findViewById(R.id.rcv_label_process_tech)
         recyclerView.layoutManager = LinearLayoutManager(context)
         jobAdapter = JobAdapter(jobs)
@@ -56,8 +59,21 @@ class LabelProcessTechFragment : Fragment() {
                         }
                     }
                     jobAdapter.notifyDataSetChanged()
+
+                    // Kiểm tra nếu danh sách trống sau khi tải dữ liệu
+                    checkDataVisibility(jobs.isEmpty())
                 }
             }
+    }
+
+    private fun checkDataVisibility(isEmpty: Boolean) {
+        if (isEmpty) {
+            noDataTextView.visibility = View.VISIBLE
+            recyclerView.visibility = View.GONE
+        } else {
+            noDataTextView.visibility = View.GONE
+            recyclerView.visibility = View.VISIBLE
+        }
     }
 
 }
