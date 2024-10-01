@@ -3,16 +3,88 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragment.LabelDoneTechFragment">
 
-    <!-- Đã xử lý -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rcv_label_done_tech"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:focusable="false"
-        android:nestedScrollingEnabled="false"
-        tools:listitem="@layout/item_order"
-        />
+        android:background="@color/white"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/materialCardView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardUseCompatPadding="true"
+                app:cardCornerRadius="8dp">
+
+                <androidx.appcompat.widget.SearchView
+                    android:id="@+id/search_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:iconifiedByDefault="false"
+                    android:queryHint="@string/hint_home_search"
+                    android:paddingBottom="5dp"/>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginLeft="10dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/bg_button_disable_corner_16"
+            android:padding="3dp">
+
+            <TextView
+                android:id="@+id/tv_filter_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chọn ngày cần tìm?"
+                android:padding="10dp"
+                android:textSize="16sp"
+                android:background="?attr/selectableItemBackground"
+                android:drawableRight="@drawable/baseline_calendar_month_24"
+                android:clickable="true"
+                android:focusable="true"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@color/bgFilter"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Đã xử lý -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rcv_label_done_tech"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:focusable="false"
+            android:nestedScrollingEnabled="false"
+            tools:listitem="@layout/item_order"
+            />
+
+        <TextView
+            android:id="@+id/tv_no_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Không có dữ liệu"
+            android:visibility="gone"
+            android:layout_gravity="center"
+            android:textSize="16sp"/>
+
+    </LinearLayout>
 
 </FrameLayout>
