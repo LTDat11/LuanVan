@@ -18,15 +18,16 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            >
+            android:layout_height="wrap_content">
+
             <!--Search bar-->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/materialCardView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardUseCompatPadding="true"
-                app:cardCornerRadius="8dp">
+                app:cardCornerRadius="8dp"
+                android:layout_toStartOf="@+id/image_button_microphone">
 
                 <androidx.appcompat.widget.SearchView
                     android:id="@+id/search_view"
@@ -34,11 +35,19 @@
                     android:layout_height="wrap_content"
                     app:iconifiedByDefault="false"
                     android:queryHint="@string/hint_home_search"
-                    android:paddingBottom="5dp"/>
-
+                    android:paddingBottom="5dp" />
             </com.google.android.material.card.MaterialCardView>
 
+            <ImageButton
+                android:id="@+id/image_button_microphone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="@null"
+                android:src="@drawable/baseline_mic_none_24" />
         </RelativeLayout>
+
         <!--Banner section -->
         <RelativeLayout
             android:layout_width="match_parent"
@@ -60,8 +69,8 @@
                 android:layout_alignParentBottom="true"
                 app:ci_drawable="@drawable/bg_indicator_selected"
                 app:ci_drawable_unselected="@drawable/bg_indicator_unselected" />
-
         </RelativeLayout>
+
         <!--Cart section-->
 
         <!-- Primary TabLayout for Service Categories -->
@@ -75,10 +84,12 @@
             app:tabIndicatorColor="@color/blue"
             app:tabMode="scrollable"
             android:layout_marginTop="10dp"/>
+
         <View
             android:layout_width="match_parent"
             android:layout_height="2dp"
             android:background="@color/bgMainColor"/>
+
         <!-- RecyclerView for displaying devices -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view_devices"
@@ -87,6 +98,7 @@
             android:orientation="horizontal"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"/>
+
         <View
             android:layout_width="match_parent"
             android:layout_height="2dp"

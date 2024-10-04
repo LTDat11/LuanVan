@@ -1,13 +1,19 @@
 package com.example.myapp.fragment
 
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.speech.RecognizerIntent
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.myapp.R
@@ -24,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myapp.adapter.DeviceAdapter
 import com.example.myapp.adapter.ServicePackageAdapter
 import com.example.myapp.model.Device
+import java.util.Locale
 
 
 class HomeFragment : Fragment() {
@@ -32,6 +39,7 @@ class HomeFragment : Fragment() {
     private var viewPager: ViewPager2? = null
     private var indicator: CircleIndicator3? = null
     private var searchView: SearchView? = null
+    private var imageButtonMicrophone: ImageButton? = null
     private val listPhotoBanners = mutableListOf<PhotoBanner>()
     private lateinit var mHandlerBanner: Handler
     private lateinit var mRunnableBanner: Runnable
@@ -45,9 +53,7 @@ class HomeFragment : Fragment() {
     private var currentDeviceId: String? = null // Lưu trữ ID của thiết bị hiện tại
     private var currentSearchText: String = "" // Biến lưu trữ nội dung tìm kiếm hiện tại
 
-
-
-
+    private val REQUEST_CODE_VOICE_RECOGNITION = 100
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -59,7 +65,42 @@ class HomeFragment : Fragment() {
         setupTabLayout()
         getListPhotoBanners()
         setupSearchView()
+        initListeners()
         return mView
+    }
+
+    private fun initListeners() {
+        imageButtonMicrophone?.setOnClickListener {
+            openVoiceRecognizer()
+        }
+    }
+
+    private fun openVoiceRecognizer() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Nói điều gì đó...")
+        }
+
+        try {
+            startActivityForResult(intent, REQUEST_CODE_VOICE_RECOGNITION)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(context, "Không hỗ trợ nhận diện giọng nói.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_CODE_VOICE_RECOGNITION && resultCode == Activity.RESULT_OK) {
+            val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            results?.let {
+                if (it.isNotEmpty()) {
+                    // Điền kết quả vào SearchView
+                    searchView?.setQuery(it[0], false)
+                }
+            }
+        }
     }
 
     private fun setupSearchView() {
@@ -238,7 +279,7 @@ class HomeFragment : Fragment() {
         recycler_view_packages = mView?.findViewById(R.id.recycler_view_packages)!!
         indicator = mView?.findViewById(R.id.indicator)
         tvEmptyPackage = mView?.findViewById(R.id.tv_empty_package)!!
-
+        imageButtonMicrophone = mView?.findViewById(R.id.image_button_microphone)
     }
 
     private fun getListPhotoBanners() {
