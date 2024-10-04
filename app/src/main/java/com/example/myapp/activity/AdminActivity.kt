@@ -34,6 +34,9 @@ class AdminActivity : AppCompatActivity() {
         binding = ActivityAdminBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Kiểm tra thông tin người dùng và chuyển hướng tới trang điền thông tin còn thiếu
+        checkUserProfileAndNavigate()
+
         binding.apply {
             mBottomNavigationView = bottomNavigation
             viewPager2 = viewpager2
@@ -76,6 +79,44 @@ class AdminActivity : AppCompatActivity() {
         }
         listenChange()
     }
+
+    private fun checkUserProfileAndNavigate() {
+        val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+        val auth: FirebaseAuth = FirebaseAuth.getInstance()
+        val user = auth.currentUser ?: return
+        val userId = user.uid
+
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+                // Check user profile status from Firestore
+                val docRef = db.collection("Users").document(userId)
+                docRef.get()
+                    .addOnSuccessListener { document ->
+                        if (document.exists()) {
+                            val name = document.getString("name")
+                            val phone = document.getString("phone")
+                            val address = document.getString("address")
+
+                            if (name.isNullOrEmpty() || phone.isNullOrEmpty() || address.isNullOrEmpty()) {
+                                navigateToCompleteProfile()
+                            }
+                        } else {
+
+                        }
+                    }
+                    .addOnFailureListener {
+                        // Handle failure (e.g., show a message to the user)
+                    }
+            }
+        }
+
+    }
+
+    private fun navigateToCompleteProfile() {
+        val intent = Intent(this, CompleteProfileActivity::class.java)
+        startActivity(intent)
+    }
+
 
     private fun listenChange() {
         CoroutineScope(Dispatchers.IO).launch {
