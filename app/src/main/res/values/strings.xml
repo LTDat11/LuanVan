@@ -16,7 +16,7 @@
     <string name="hint_password">Nhập mật khẩu của bạn</string>
     <string name="login">Đăng nhập</string>
     <string name="login_title">Đăng nhập tài khoản</string>
-    <string name="msg_login_error">Đăng nhập lỗi</string>
+    <string name="msg_login_error">Đăng nhập lỗi, kiểm tra lại email hoặc mật khẩu!!</string>
     <string name="register">Đăng ký</string>
     <string name="register_title">Đăng ký tài khoản</string>
     <string name="register_succesfully">Đăng ký tài khoản thành công</string>
