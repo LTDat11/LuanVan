@@ -128,7 +128,8 @@ class RegisterActivity : BaseActivity() {
                     val selectedRole = when (radioGroupRole?.checkedRadioButtonId) {
                         R.id.radio_customer -> "Customer"
                         R.id.radio_technician -> "Technician"
-                        else -> "Admin"
+                        R.id.radio_admin -> "Admin"
+                        else -> "Customer"
                     }
                     // Lấy url của avatardf.jpg trong thư mục avatar storage
                     val storage = FirebaseStorage.getInstance()

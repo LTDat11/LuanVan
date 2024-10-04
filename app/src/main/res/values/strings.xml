@@ -86,6 +86,7 @@
     <string name="select_role">Lựa chọn đối tượng</string>
     <string name="customer">Khách hàng</string>
     <string name="technician">Kỹ thuật viên</string>
+    <string name="admin">Quản trị viên</string>
     <string name="complete_profile_title">Điền thông tin cá nhân</string>
     <string name="name">Họ và tên</string>
     <string name="hint_name">Nhập họ và tên của bạn</string>
