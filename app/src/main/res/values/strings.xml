@@ -34,6 +34,7 @@
     <string name="msg_reset_password_successfully">Lấy lại mật khẩu thành công, vui lòng kiểm tra email của bạn.</string>
     <string name="msg_reset_password_error">Lỗi!! không thể lấy lại mật khẩu.</string>
     <string name="action_ok">Đồng ý</string>
+    <string name="label_select_location">Nhấn vào để thêm địa chỉ</string>
     <string name="reset_password">Gửi lại mật khẩu</string>
     <string name="tech_management">Quản lý kỹ thuật viên</string>
     <string name="cust_management">Quản lý khách hàng</string>
@@ -72,6 +73,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="hint_home_search">Bạn muốn tìm gì?</string>
     <string name="select_date">Chọn ngày cần tìm?</string>
+    <string name="label_address">Chọn địa chỉ</string>
     <string name="label_notes">Mô tả tình trạng</string>
     <string name="label_notes2">Dặn dò</string>
     <string name="label_select_device_brand">Chọn thương hiệu của thiết bị</string>
@@ -162,6 +164,7 @@
         <item>Sharp</item>
         <item>Khác</item>
     </string-array>
+    <string name="title_activity_maps">MapsActivity</string>
 
 
 </resources>

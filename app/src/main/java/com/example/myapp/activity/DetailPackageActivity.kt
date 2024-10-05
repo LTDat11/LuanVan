@@ -1,5 +1,6 @@
 package com.example.myapp.activity
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ArrayAdapter
@@ -36,8 +37,10 @@ class DetailPackageActivity : AppCompatActivity() {
         binding.tvAddOrder.setOnClickListener {
             val (notes, notes2, selectedBrand) = getInputData()
 
-            if (!isValidInput(notes, selectedBrand)) {
-                Toast.makeText(this, "Vui lòng nhập ghi chú và chọn thương hiệu", Toast.LENGTH_SHORT).show()
+            val location = binding.tvSelectLocation.text.toString()
+
+            if (!isValidInput(notes, selectedBrand, location)) {
+                Toast.makeText(this, "Vui lòng nhập mô tả, chọn thương hiệu và địa chỉ hợp lệ", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -57,12 +60,33 @@ class DetailPackageActivity : AppCompatActivity() {
                 selectedBrand = selectedBrand,
                 imgURLServicePackage = imageUrl,
                 namePackage = servicePackage.name,
-                price = servicePackage.price
+                price = servicePackage.price,
+                address = location
             )
 
             // Lưu Order vào Firestore
             addOrderToFirestore(order)
         }
+
+        binding.tvSelectLocation.setOnClickListener {
+            val intent = Intent(this, MapsActivity::class.java)
+            startActivityForResult(intent, REQUEST_CODE_SELECT_LOCATION)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_SELECT_LOCATION && resultCode == RESULT_OK) {
+            val selectedLocation = data?.getStringExtra("selected_location")
+            if (selectedLocation != null) {
+                // Điền địa chỉ đã chọn vào TextView
+                binding.tvSelectLocation.text = selectedLocation
+            }
+        }
+    }
+
+    companion object {
+        private const val REQUEST_CODE_SELECT_LOCATION = 1
     }
 
     private fun getInputData(): Triple<String, String, String> {
@@ -72,9 +96,10 @@ class DetailPackageActivity : AppCompatActivity() {
         return Triple(notes, notes2, selectedBrand)
     }
 
-    private fun isValidInput(notes: String, selectedBrand: String): Boolean {
-        return notes.isNotBlank() && selectedBrand != "Chọn thương hiệu"
+    private fun isValidInput(notes: String, selectedBrand: String, location: String): Boolean {
+        return notes.isNotBlank() && selectedBrand != "Chọn thương hiệu" && location != getString(R.string.label_select_location)
     }
+
 
     private fun addOrderToFirestore(order: Order) {
         val db = FirebaseFirestore.getInstance()
@@ -98,6 +123,7 @@ class DetailPackageActivity : AppCompatActivity() {
             edtNotes.setText("")
             edtNotes2.setText("")
             spinnerDeviceBrands.setSelection(0)
+            tvSelectLocation.text = getString(R.string.label_select_location)
         }
     }
 

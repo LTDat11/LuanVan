@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:map="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.MapsActivity">
+
+    <!-- SearchView for location search -->
+    <SearchView
+        android:id="@+id/sv_location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:queryHint="Tìm kiếm địa chỉ..."
+        android:iconifiedByDefault="false"
+        android:background="?android:attr/windowBackground"
+        android:layout_margin="8dp"/>
+
+    <!-- Google Map Fragment -->
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/sv_location"/>
+
+    <!-- Save Button -->
+    <TextView
+        android:id="@+id/btn_save_location"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:text="Lưu"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:background="@drawable/bg_button_enable_corner_16"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp" />
+
+</RelativeLayout>
