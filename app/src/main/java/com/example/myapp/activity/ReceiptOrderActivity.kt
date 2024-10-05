@@ -143,6 +143,7 @@ class ReceiptOrderActivity : AppCompatActivity() {
                             tvNamePackage.text = order?.namePackage
                             val id_technicain = order?.id_technician
                             tvPrice.text = order?.price.toString()
+                            tvAddr.text = order?.address
 
                             // lấy thông tin technician từ firestore
                             db.collection("Users").document(id_technicain!!)
