@@ -15,4 +15,14 @@
         tools:listitem="@layout/item_order"
         />
 
+    <TextView
+        android:id="@+id/tv_no_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Không có đơn hàng nào đang xử lý"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
 </FrameLayout>
