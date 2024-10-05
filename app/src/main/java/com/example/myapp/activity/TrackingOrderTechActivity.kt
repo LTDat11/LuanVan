@@ -137,6 +137,7 @@ class TrackingOrderTechActivity : AppCompatActivity() {
             tvUpdatedAtValue.text = order.updatedAt.toString()
             tvDescriptionValue.text = order.description
             tvNoteValue.text = order.notes2
+            tvAddressValue.text = order.address
             Glide.with(this@TrackingOrderTechActivity).load(imgURL).into(imgPackage)
         }
     }
