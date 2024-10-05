@@ -129,6 +129,7 @@ class TrackingOrderActivity : AppCompatActivity() {
             tvUpdatedAtValue.text = order.updatedAt.toString()
             tvDescriptionValue.text = order.description
             tvNoteValue.text = order.notes2?.takeIf { it.isNotEmpty() } ?: "Không có"
+            tvAddressValue.text = order.address
             tvPackagePrice.text = order.price.toString()
 
             //function get name of technician by id_technician and set text to tv_technician_name

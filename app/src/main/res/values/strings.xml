@@ -124,6 +124,7 @@
     <string name="label_bill">Vui lòng kiểm tra thông tin trước khi thanh toán!!</string>
     <string name="label_description">Mô tả tình trạng: </string>
     <string name="label_note">Ghi chú: </string>
+    <string name="label_addr">Địa chỉ giao hàng: </string>
     <string name="label_take_order">Thanh toán</string>
     <string name="label_tracking_order">Theo dõi đơn hàng</string>
     <string name="label_list_device">Danh sách thiết bị của</string>
