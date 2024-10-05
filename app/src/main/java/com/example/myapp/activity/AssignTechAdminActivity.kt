@@ -158,6 +158,7 @@ class AssignTechAdminActivity : AppCompatActivity() {
             }
             tvNameBrand.text = order?.selectedBrand
             tvCreatedAt.text = order?.createdAt.toString()
+            tvAddress.text = order?.address
             // fucntion get info User
             getInfoCustomer()
 
