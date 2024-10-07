@@ -1,9 +1,12 @@
 package com.example.myapp.activity
 
+import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.example.myapp.R
 import com.example.myapp.databinding.ActivityInfoProcessingAdminBinding
@@ -25,6 +28,29 @@ class InfoProcessingAdminActivity : AppCompatActivity() {
         getDataIntent()
         initToolbar()
         intitUI()
+        initListener()
+    }
+
+    private fun initListener() {
+        binding.apply {
+            layoutAddressGoogleMap.setOnClickListener{
+                // Lấy địa chỉ từ TextView
+                val address = binding.tvAddress.text.toString()
+
+                // Tạo Uri để mở Google Maps và chỉ định đường đi đến địa chỉ cụ thể
+                val uri = Uri.parse("google.navigation:q=$address")
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                intent.setPackage("com.google.android.apps.maps")
+
+                // Kiểm tra xem có ứng dụng Google Maps hay không trước khi khởi chạy
+                if (intent.resolveActivity(packageManager) != null) {
+                    startActivity(intent)
+                } else {
+                    // Xử lý trường hợp khi không tìm thấy ứng dụng Google Maps
+                    Toast.makeText(this@InfoProcessingAdminActivity, "Google Maps chưa được cài đặt trên thiết bị.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     private fun intitUI() {
@@ -40,6 +66,7 @@ class InfoProcessingAdminActivity : AppCompatActivity() {
             }
             tvNameBrand.text = order?.selectedBrand
             tvCreatedAt.text = order?.createdAt.toString()
+            tvAddress.text = order?.address
             getInfoCustomer()
 
             getInfoTechnicain(order?.id_technician)
