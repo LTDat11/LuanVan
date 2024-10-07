@@ -1,11 +1,14 @@
 package com.example.myapp.activity
 
+import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.widget.SearchView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -121,6 +124,24 @@ class AssignTechAdminActivity : AppCompatActivity() {
                         .addOnFailureListener {
 
                         }
+                }
+            }
+
+            layoutAddressGoogleMap.setOnClickListener{
+                // Lấy địa chỉ từ TextView
+                val address = binding.tvAddress.text.toString()
+
+                // Tạo Uri để mở Google Maps và chỉ định đường đi đến địa chỉ cụ thể
+                val uri = Uri.parse("google.navigation:q=$address")
+                val intent = Intent(Intent.ACTION_VIEW, uri)
+                intent.setPackage("com.google.android.apps.maps")
+
+                // Kiểm tra xem có ứng dụng Google Maps hay không trước khi khởi chạy
+                if (intent.resolveActivity(packageManager) != null) {
+                    startActivity(intent)
+                } else {
+                    // Xử lý trường hợp khi không tìm thấy ứng dụng Google Maps
+                    Toast.makeText(this@AssignTechAdminActivity, "Google Maps chưa được cài đặt trên thiết bị.", Toast.LENGTH_SHORT).show()
                 }
             }
 
