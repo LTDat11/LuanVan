@@ -275,7 +275,7 @@ class HomeAdminFragment : Fragment() {
             tvEmptyPackage.visibility = View.GONE
 
             val packageAdapter = ServicePackageAdminAdapter(packages)
-            recyclerViewPackages.layoutManager = LinearLayoutManager(requireContext())
+            recyclerViewPackages.layoutManager = LinearLayoutManager(this.context)
             recyclerViewPackages.adapter = packageAdapter
         } else {
             recyclerViewPackages.visibility = View.GONE
