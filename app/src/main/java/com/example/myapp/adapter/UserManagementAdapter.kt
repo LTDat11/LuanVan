@@ -8,7 +8,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.myapp.R
 import com.example.myapp.model.User
+import com.google.firebase.firestore.FirebaseFirestore
 import de.hdodenhof.circleimageview.CircleImageView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class UserManagementAdapter (private var technicianList: List<User>, private val onMoreClickListener: (User) -> Unit): RecyclerView.Adapter<UserManagementAdapter.UserManagementViewHolder>() {
 
@@ -17,9 +22,11 @@ class UserManagementAdapter (private var technicianList: List<User>, private val
         val tvTechnicianName: TextView = itemView.findViewById(R.id.tvTechnicianName)
         val tvTechnicianDescription: TextView = itemView.findViewById(R.id.tvTechnicianDiscription)
         val layoutTechnicianDiscription: View = itemView.findViewById(R.id.layoutTechnicianDiscription)
+        val layoutTechnicianJobCount : View = itemView.findViewById(R.id.layoutTechnicianJobCount)
         val tvTechnicianAddress: TextView = itemView.findViewById(R.id.tvTechnicianAddress)
         val tvTechnicianPhone: TextView = itemView.findViewById(R.id.tvTechnicianPhone)
         val tvTechnicianEmail: TextView = itemView.findViewById(R.id.tvTechnicianEmail)
+        val tvJobCount: TextView = itemView.findViewById(R.id.technicain_job_count)
         val btnMore: ImageButton = itemView.findViewById(R.id.btnMore)
     }
 
@@ -44,9 +51,41 @@ class UserManagementAdapter (private var technicianList: List<User>, private val
         // if user is admin and customer then hide layoutTechnicianDiscription
         // if user is technician then show layoutTechnicianDiscription
         holder.layoutTechnicianDiscription.visibility = if (technician.role == "Technician") View.VISIBLE else View.GONE
+        holder.layoutTechnicianJobCount.visibility = if (technician.role == "Technician") View.VISIBLE else View.GONE
+
+        // get job count of technician
+        getTechJobCount(technician.id, holder)
 
 //        holder.layoutTechnicianDiscription.visibility = if (technician.description.isNullOrEmpty()) View.GONE else View.VISIBLE
         holder.btnMore.setOnClickListener { onMoreClickListener(technician) }
+    }
+
+    private fun getTechJobCount(id: String, holder: UserManagementAdapter.UserManagementViewHolder) {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+
+                val db = FirebaseFirestore.getInstance()
+
+                db.collection("orders")
+                    .whereEqualTo("id_technician", id)
+                    .whereEqualTo("status", "processing")
+                    .addSnapshotListener { snapshot, e ->
+                        if (e != null) {
+                            // Xử lý lỗi
+                            holder.tvJobCount.text = "Không tìm thấy"
+                            return@addSnapshotListener
+                        }
+
+                        if (snapshot != null && !snapshot.isEmpty) {
+                            // Cập nhật số lượng đơn hàng của technician
+                            holder.tvJobCount.text = snapshot.size().toString()
+                        } else {
+                            holder.tvJobCount.text = "0"
+                        }
+                    }
+
+            }
+        }
     }
 
     override fun getItemCount(): Int {
