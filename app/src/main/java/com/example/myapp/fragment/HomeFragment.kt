@@ -129,7 +129,9 @@ class HomeFragment : Fragment() {
         } else {
             // Lọc các gói dịch vụ dựa trên tên hoặc các thuộc tính khác
             originalPackages.filter {
-                it.name.contains(text, ignoreCase = true)
+                it.name.contains(text, ignoreCase = true) ||
+                        it.description.contains(text, ignoreCase = true) ||
+                        it.price.contains(text, ignoreCase = true)
             }
         }
 
