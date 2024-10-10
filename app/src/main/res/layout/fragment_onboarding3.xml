@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp"
+    tools:context=".fragment.OnboardingFragment3">
+
+    <ImageView
+        android:layout_width="250dp"
+        android:layout_height="120dp"
+        android:src="@drawable/onboarding3"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Theo dõi đơn hàng tiện lợi"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/textColorHeading"
+        android:layout_marginTop="30dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dễ dàng quản lý và theo dõi các đơn hàng, hóa đơn bảo trì của bạn. Xem chi tiết trạng thái từng đơn hàng mọi lúc, mọi nơi chỉ với một vài thao tác."
+        android:textSize="18sp"
+        android:gravity="center"
+        android:textColor="@color/textColorHeading"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/btn_start"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_button_enable_corner_16"
+        android:text="Bắt đầu"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:padding="10dp"
+        android:gravity="center"
+        android:layout_marginTop="30dp"/>
+
+
+
+</LinearLayout>

@@ -161,19 +161,22 @@ class RegisterActivity : BaseActivity() {
                                         // Kiểm tra role tương ứng để chuyển hướng
                                         when (selectedRole) {
                                             "Customer" -> {
-                                                val intent = Intent(this, MainActivity::class.java)
+                                                //val intent = Intent(this, MainActivity::class.java)
+                                                val intent = Intent(this, OnboardingActivity::class.java)
                                                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
                                                 startActivity(intent)
                                             }
 
                                             "Technician" -> {
-                                                val intent = Intent(this, TechnicianActivity::class.java)
+                                                //val intent = Intent(this, TechnicianActivity::class.java)
+                                                val intent = Intent(this, OnboardingActivity::class.java)
                                                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
                                                 startActivity(intent)
                                             }
 
                                             else -> {
-                                                val intent = Intent(this, AdminActivity::class.java)
+                                                //val intent = Intent(this, AdminActivity::class.java)
+                                                val intent = Intent(this, OnboardingActivity::class.java)
                                                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
                                                 startActivity(intent)
                                             }

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.OnboardingActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/text_view_skip"
+        android:text="@string/skip"
+        android:textColor="@color/blue"
+        android:textSize="16sp"
+        android:layout_alignParentEnd="true"
+        android:padding="16dp"/>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager_on_boarding"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/text_view_skip"
+        android:layout_above="@+id/layout_bottom"/>
+    
+    <RelativeLayout
+        android:id="@+id/layout_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <me.relex.circleindicator.CircleIndicator3
+            android:id="@+id/circle_indicator"
+            android:layout_width="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_height="30dp"
+            app:ci_drawable="@drawable/bg_indicator_selected"
+            app:ci_drawable_unselected="@drawable/bg_indicator_unselected" />
+
+        <LinearLayout
+            android:id="@+id/layout_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_alignParentEnd="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/text_view_next"
+                android:text="@string/next"
+                android:textColor="@color/blue"
+                android:textSize="16sp"
+                android:padding="16dp"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_arrow_forward_24"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:layout_marginEnd="16dp"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>
