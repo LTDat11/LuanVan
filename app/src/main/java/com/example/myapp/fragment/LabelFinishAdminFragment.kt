@@ -1,12 +1,18 @@
 package com.example.myapp.fragment
 
+import android.app.Activity
 import android.app.DatePickerDialog
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,7 +33,9 @@ class LabelFinishAdminFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var orderAminAdapter: OrderAdminAdapter
     private lateinit var searchView: SearchView
+    private lateinit var imageButtonMicrophone: ImageButton
     private val orders = mutableListOf<Order>()
+    private val REQUEST_CODE_VOICE_RECOGNITION = 100
     private var filteredOrders = mutableListOf<Order>()  // Danh sách tạm thời lưu trữ kết quả lọc
     private lateinit var tvFilterDate: TextView
     private lateinit var tvNoData: TextView
@@ -40,6 +48,7 @@ class LabelFinishAdminFragment : Fragment() {
     ): View? {
         val mView = inflater.inflate(R.layout.fragment_label_finish_admin, container, false)
         tvNoData = mView.findViewById(R.id.tv_no_data)
+        imageButtonMicrophone = mView.findViewById(R.id.image_button_microphone)
         recyclerView = mView.findViewById(R.id.rcv_label_finish)
         recyclerView.layoutManager = LinearLayoutManager(context)
         orderAminAdapter = OrderAdminAdapter(filteredOrders)
@@ -62,6 +71,38 @@ class LabelFinishAdminFragment : Fragment() {
         tvFilterDate.text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(selectedDate)
         tvFilterDate.setOnClickListener {
             showDatePickerDialog()
+        }
+
+        imageButtonMicrophone.setOnClickListener {
+            openVoiceRecognizer()
+        }
+    }
+
+    private fun openVoiceRecognizer() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Nói điều gì đó...")
+        }
+
+        try {
+            startActivityForResult(intent, REQUEST_CODE_VOICE_RECOGNITION)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(context, "Không hỗ trợ nhận diện giọng nói.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_CODE_VOICE_RECOGNITION && resultCode == Activity.RESULT_OK) {
+            val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            results?.let {
+                if (it.isNotEmpty()) {
+                    // Điền kết quả vào SearchView
+                    searchView?.setQuery(it[0], false)
+                }
+            }
         }
     }
 
