@@ -1,11 +1,17 @@
 package com.example.myapp.fragment
 
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 class LabelPendingAdminFragment : Fragment() {
 
@@ -26,14 +33,17 @@ class LabelPendingAdminFragment : Fragment() {
     private lateinit var noDataTextView: TextView
     //search view for search order by name or id or status or package name
     private lateinit var searchView: SearchView
+    private lateinit var imageButtonMicrophone: ImageButton
 
     private val orders = mutableListOf<Order>()
+    private val REQUEST_CODE_VOICE_RECOGNITION = 100
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val mView = inflater.inflate(R.layout.fragment_label_pending_admin, container, false)
         noDataTextView = mView.findViewById(R.id.tv_no_data)
+        imageButtonMicrophone = mView.findViewById(R.id.image_button_microphone)
         recyclerView = mView.findViewById(R.id.rcv_label_pending)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
@@ -50,6 +60,41 @@ class LabelPendingAdminFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setUpSearchView()
+        initlisteners()
+    }
+
+    private fun initlisteners() {
+        imageButtonMicrophone.setOnClickListener {
+            openVoiceRecognizer()
+        }
+    }
+
+    private fun openVoiceRecognizer() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Nói điều gì đó...")
+        }
+
+        try {
+            startActivityForResult(intent, REQUEST_CODE_VOICE_RECOGNITION)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(context, "Không hỗ trợ nhận diện giọng nói.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_CODE_VOICE_RECOGNITION && resultCode == Activity.RESULT_OK) {
+            val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            results?.let {
+                if (it.isNotEmpty()) {
+                    // Điền kết quả vào SearchView
+                    searchView?.setQuery(it[0], false)
+                }
+            }
+        }
     }
 
     private fun setUpSearchView() {
