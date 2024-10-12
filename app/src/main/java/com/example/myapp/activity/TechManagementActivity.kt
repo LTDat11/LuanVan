@@ -1,8 +1,13 @@
 package com.example.myapp.activity
 
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import android.util.Log
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -19,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 class TechManagementActivity : AppCompatActivity() {
     lateinit var binding: ActivityTechManagementBinding
@@ -26,6 +32,7 @@ class TechManagementActivity : AppCompatActivity() {
     private lateinit var userManagementAdapter: UserManagementAdapter
     private var technicianList = mutableListOf<User>()
     private var registration: ListenerRegistration? = null
+    private val REQUEST_CODE_VOICE_RECOGNITION = 100
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityTechManagementBinding.inflate(layoutInflater)
@@ -35,6 +42,43 @@ class TechManagementActivity : AppCompatActivity() {
         initRecyclerView()
         loadTechnicians()
         setupSearchView()
+        initListeners()
+    }
+
+    private fun initListeners() {
+        binding.apply {
+            imageButtonMicrophone.setOnClickListener {
+                openVoiceRecognizer()
+            }
+        }
+    }
+
+    private fun openVoiceRecognizer() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Nói điều gì đó...")
+        }
+
+        try {
+            startActivityForResult(intent, REQUEST_CODE_VOICE_RECOGNITION)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, "Không hỗ trợ nhận diện giọng nói.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_CODE_VOICE_RECOGNITION && resultCode == Activity.RESULT_OK) {
+            val results = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            results?.let {
+                if (it.isNotEmpty()) {
+                    // Điền kết quả vào SearchView
+                    binding.searchView?.setQuery(it[0], false)
+                }
+            }
+        }
     }
 
     private fun setupSearchView() {
@@ -52,6 +96,15 @@ class TechManagementActivity : AppCompatActivity() {
                             it.email.contains(newText ?: return@filter false, ignoreCase = true)
                 }
                 userManagementAdapter.updateList(filteredList)
+
+                // Hiển thị hoặc ẩn TextView tv_no_data dựa vào danh sách đã lọc
+                if (filteredList.isEmpty()) {
+                    binding.tvNoData.visibility = View.VISIBLE
+                    binding.rcvViewManagement.visibility = View.GONE
+                } else {
+                    binding.tvNoData.visibility = View.GONE
+                    binding.rcvViewManagement.visibility = View.VISIBLE
+                }
                 return true
             }
         })

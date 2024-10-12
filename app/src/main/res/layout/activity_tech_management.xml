@@ -26,23 +26,40 @@
                 android:id="@+id/toolbar"
                 layout="@layout/layout_toolbar" />
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/materialCardView"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardUseCompatPadding="true"
-                android:layout_margin="10dp"
-                app:cardCornerRadius="8dp">
+                android:layout_height="wrap_content">
 
-                <androidx.appcompat.widget.SearchView
-                    android:id="@+id/search_view"
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/materialCardView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:iconifiedByDefault="false"
-                    android:queryHint="@string/hint_home_search"
-                    android:paddingBottom="5dp"/>
+                    app:cardUseCompatPadding="true"
+                    android:layout_margin="10dp"
+                    app:cardCornerRadius="8dp"
+                    android:layout_toStartOf="@+id/image_button_microphone">
 
-            </com.google.android.material.card.MaterialCardView>
+                    <androidx.appcompat.widget.SearchView
+                        android:id="@+id/search_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:iconifiedByDefault="false"
+                        android:queryHint="@string/hint_home_search"
+                        android:paddingBottom="5dp"/>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <ImageButton
+                    android:id="@+id/image_button_microphone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:paddingRight="10dp"
+                    android:background="@null"
+                    android:src="@drawable/baseline_mic_none_24" />
+
+            </RelativeLayout>
 
             <View
                 android:layout_width="match_parent"
@@ -55,6 +72,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Không có dữ liệu"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:id="@+id/tv_no_data" />
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
