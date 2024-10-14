@@ -144,21 +144,21 @@
             </LinearLayout>
 
             <!-- Thêm Button Chấp nhận -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="end">
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="horizontal"-->
+<!--                android:gravity="end">-->
 
-                <Button
-                    android:id="@+id/btn_accept"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Chấp nhận"
-                    android:textColor="@color/white"
-                    android:layout_marginEnd="10dp"
-                    android:backgroundTint="@color/green"/>
-            </LinearLayout>
+<!--                <Button-->
+<!--                    android:id="@+id/btn_accept"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="Chấp nhận"-->
+<!--                    android:textColor="@color/white"-->
+<!--                    android:layout_marginEnd="10dp"-->
+<!--                    android:backgroundTint="@color/green"/>-->
+<!--            </LinearLayout>-->
 
         </LinearLayout>
     </RelativeLayout>

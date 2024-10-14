@@ -115,8 +115,8 @@ class OrderFragment : Fragment() {
     private fun setupViewPager() {
         val statusList = listOf(
             OrderStatus("Chờ nhận đơn", LabelPendingAdminFragment()),
-            OrderStatus("Đang xử lý", LabelProcessingAdminFragment()),
-            OrderStatus("Chờ thanh toán", LabelCompleteAdminFragment()),
+            OrderStatus("Đang sửa chữa", LabelProcessingAdminFragment()),
+            OrderStatus("Đang giao hàng", LabelCompleteAdminFragment()),
             OrderStatus("Đã thanh toán", LabelFinishAdminFragment())
         )
 

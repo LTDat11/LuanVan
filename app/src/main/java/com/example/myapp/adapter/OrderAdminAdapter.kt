@@ -35,22 +35,22 @@ class OrderAdminAdapter(private val orders: List<Order>): RecyclerView.Adapter<O
 
         when (order.status) {
             "pending" -> {
-                holder.tvStatus.text = "Chờ xác nhận"
+                holder.tvStatus.text = "Chờ nhận đơn"
             }
             "processing" -> {
-                holder.tvStatus.text = "Đang xử lý"
+                holder.tvStatus.text = "Đang sửa chữa"
                 // hide button accept and hide
                 holder.layoutInstruction.visibility = View.GONE
-                holder.btnAcecept.visibility = View.GONE
+//                holder.btnAcecept.visibility = View.GONE
                 // set text status description title and status description
                 holder.tvStatusDescriptionTitle.text = "Nhân viên xử lý:"
                 getNameTech(order.id_technician, holder.tvStatusDescription)
             }
             "completed" -> {
-                holder.tvStatus.text = "Chờ thanh toán"
+                holder.tvStatus.text = "Đang giao hàng"
                 // hide button accept and hide
                 holder.layoutInstruction.visibility = View.GONE
-                holder.btnAcecept.visibility = View.GONE
+//                holder.btnAcecept.visibility = View.GONE
                 // set text status description title and status description
                 holder.tvStatusDescriptionTitle.text = "Nhân viên xử lý:"
                 getNameTech(order.id_technician, holder.tvStatusDescription)
@@ -59,7 +59,7 @@ class OrderAdminAdapter(private val orders: List<Order>): RecyclerView.Adapter<O
                 holder.tvStatus.text = "Đã thanh toán"
                 // hide button accept and hide
                 holder.layoutInstruction.visibility = View.GONE
-                holder.btnAcecept.visibility = View.GONE
+//                holder.btnAcecept.visibility = View.GONE
                 // set text status description title and status description
                 holder.tvStatusDescriptionTitle.text = "Nhân viên xử lý:"
                 getNameTech(order.id_technician, holder.tvStatusDescription)
@@ -101,13 +101,13 @@ class OrderAdminAdapter(private val orders: List<Order>): RecyclerView.Adapter<O
             }
         }
 
-        holder.btnAcecept.setOnClickListener {
-            val context = holder.itemView.context
-            val intent = Intent(context, AssignTechAdminActivity::class.java)
-            // truyền dữ liệu order qua màn hình tiếp theo
-            intent.putExtra("order", order)
-            context.startActivity(intent)
-        }
+//        holder.btnAcecept.setOnClickListener {
+//            val context = holder.itemView.context
+//            val intent = Intent(context, AssignTechAdminActivity::class.java)
+//            // truyền dữ liệu order qua màn hình tiếp theo
+//            intent.putExtra("order", order)
+//            context.startActivity(intent)
+//        }
 
     }
 
@@ -149,6 +149,6 @@ class OrderAdminAdapter(private val orders: List<Order>): RecyclerView.Adapter<O
         val tvStatus: TextView = view.findViewById(R.id.tv_status)
         val tvIntruction: TextView = view.findViewById(R.id.tv_instruction)
         val layoutInstruction: View = view.findViewById(R.id.layout_instruction)
-        val btnAcecept: Button = view.findViewById(R.id.btn_accept)
+//        val btnAcecept: Button = view.findViewById(R.id.btn_accept)
     }
 }

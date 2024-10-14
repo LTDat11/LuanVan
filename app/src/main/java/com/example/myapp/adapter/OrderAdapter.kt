@@ -36,11 +36,11 @@ class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<Order
                 holder.tvAction.text = "Theo dõi đơn hàng"
             }
             "processing" -> {
-                holder.tvStatus.text = "Đang xử lý"
+                holder.tvStatus.text = "Đang sửa chữa"
                 holder.tvAction.text = "Theo dõi đơn hàng"
             }
             "completed" -> {
-                holder.tvStatus.text = "Chờ thanh toán"
+                holder.tvStatus.text = "Đang giao hàng"
                 holder.tvAction.text = "Theo dõi đơn hàng"
             }
             "finish" -> {

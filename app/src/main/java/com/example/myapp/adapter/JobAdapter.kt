@@ -31,10 +31,10 @@ class JobAdapter(private val jobs: List<Order>) : RecyclerView.Adapter<JobAdapte
 
         when (job.status){
             "processing" -> {
-                holder.tvStatus.text = "Chờ xử lý"
+                holder.tvStatus.text = "Chờ sửa chữa"
             }
             "completed" -> {
-                holder.tvStatus.text = "Đã hoàn thành"
+                holder.tvStatus.text = "Đang giao hàng"
             }
             "finish" -> {
                 holder.tvStatus.text = "Đã thanh toán"
