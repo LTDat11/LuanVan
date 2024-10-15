@@ -41,6 +41,7 @@ class TrackingOrderTechActivity : AppCompatActivity() {
         initToolbar()
         fetchOrderData()
         fetchRepairs()
+        updateTotalPrice() // Cập nhật tổng giá trị ngay khi khởi tạo
         initListeners()
     }
 
@@ -100,8 +101,12 @@ class TrackingOrderTechActivity : AppCompatActivity() {
                 val adapter = RepairTechAdapter(repairs)
                 binding.recyclerViewRepairedItems.layoutManager = LinearLayoutManager(this)
                 binding.recyclerViewRepairedItems.adapter = adapter
+
+                // Cập nhật tổng giá trị khi danh sách thiết bị thay đổi
+                updateTotalPrice()
             } else {
                 Log.d("TrackingOrderTech", "Không có thiết bị sửa chữa nào.")
+                binding.tvTotalPriceValue.text = "0 VND"
             }
         }
     }
@@ -140,13 +145,10 @@ class TrackingOrderTechActivity : AppCompatActivity() {
             tvDescriptionValue.text = order.description
             tvNoteValue.text = order.notes2
             tvAddressValue.text = order.address
+            tvPackagePriceValue.text = order.price
             Glide.with(this@TrackingOrderTechActivity).load(imgURL).into(imgPackage)
         }
     }
-
-
-
-
 
     private fun initListeners() {
         binding.apply {
@@ -241,6 +243,7 @@ class TrackingOrderTechActivity : AppCompatActivity() {
                         documentReference.set(repairWithId)
                             .addOnSuccessListener {
                                 Toast.makeText(this, "Thêm thiết bị thành công", Toast.LENGTH_SHORT).show()
+                                updateTotalPrice()
                             }
                             .addOnFailureListener { e ->
                                 Log.e("TrackingOrderTech", "Lỗi khi cập nhật ID cho thiết bị", e)
@@ -260,6 +263,31 @@ class TrackingOrderTechActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    private fun updateTotalPrice() {
+        val db = FirebaseFirestore.getInstance()
+        val repairsRef = db.collection("orders").document(orderId).collection("repairs")
+
+        repairsRef.get().addOnSuccessListener { querySnapshot ->
+            var totalPrice = 0L
+
+            // Lấy giá từ tvPackagePriceValue và chuyển đổi thành số nguyên
+            val packagePriceString = binding.tvPackagePriceValue.text.toString().replace("[^\\d]".toRegex(), "")
+            val packagePrice = packagePriceString.toLongOrNull() ?: 0L
+            totalPrice += packagePrice
+
+            // Cộng thêm giá của các thiết bị sửa chữa
+            for (document in querySnapshot) {
+                val priceString = document.getString("price")?.replace("[^\\d]".toRegex(), "")
+                val price = priceString?.toLongOrNull() ?: 0L
+                totalPrice += price
+            }
+
+            val formattedTotalPrice = formatPrice(totalPrice.toString())
+            binding.tvTotalPriceValue.text = formattedTotalPrice
+        }.addOnFailureListener { exception ->
+            Log.e("TrackingOrderTech", "Lỗi khi tính tổng giá thiết bị", exception)
+        }
+    }
 
     private fun formatPrice(price: String): String {
         // Chuyển đổi chuỗi sang kiểu số nguyên

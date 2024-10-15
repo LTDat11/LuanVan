@@ -290,6 +290,69 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp" />
 
+            <LinearLayout
+                android:id="@+id/layout_price"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_total_price"
+                    android:text="Thanh toán"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:layout_marginTop="10dp"
+                    android:textColor="@color/textColorHeading"
+                    android:textSize="14sp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_package_price"
+                        android:textSize="12sp"/>
+
+                    <TextView
+                        android:id="@+id/tv_package_price_value"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_marginStart="8dp"
+                        android:text="@string/app_name"
+                        android:textSize="12sp"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_total_price"
+                        android:textSize="12sp"/>
+
+                    <TextView
+                        android:id="@+id/tv_total_price_value"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_marginStart="8dp"
+                        android:text="@string/app_name"
+                        android:textSize="12sp"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
 
 
         </LinearLayout>
