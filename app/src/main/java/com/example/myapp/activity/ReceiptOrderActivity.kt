@@ -64,7 +64,7 @@ class ReceiptOrderActivity : AppCompatActivity() {
                         .addOnSuccessListener {
                             val bill = it.toObjects(Bill::class.java)
                             tvDateTime.text = bill.get(0).createdAt.toString()
-                            tvTotal.text = bill.get(0).total.toString()
+                            tvTotal.text = bill.get(0).total.toString().replace(".", ",").replace("₫", "VND")
                             val id_paymentMethod = bill.get(0).id_paymentMethod.toString()
                             // lấy thông tin phương thức thanh toán từ firestore
                             db.collection("paymentMethods").document(id_paymentMethod)

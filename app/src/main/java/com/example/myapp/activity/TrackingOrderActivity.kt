@@ -287,7 +287,7 @@ class TrackingOrderActivity : AppCompatActivity() {
 
         // Định dạng số tiền theo đơn vị tiền tệ Việt Nam
         val numberFormat = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
-        val formattedTotal = numberFormat.format(totalAmount)
+        val formattedTotal = numberFormat.format(totalAmount).replace("₫", "VND").replace(".", ",")
 
         binding.tvTotalPrice.text = formattedTotal
     }
