@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.NotificationCompat
 import androidx.viewpager2.widget.ViewPager2
@@ -71,57 +72,59 @@ class TechnicianActivity : AppCompatActivity() {
     }
 
     private fun listenChange() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val isTechnician = checkUserRole()
-
-            if (isTechnician) {
-                val db = FirebaseFirestore.getInstance()
-                val auth = FirebaseAuth.getInstance()
-
-                withContext(Dispatchers.Main) {
-                    db.collection("orders")
-                        .whereEqualTo("id_technician", auth.currentUser?.uid)
-                        .whereEqualTo("status", "processing")
-                        .addSnapshotListener { snapshot, e ->
-                            if (e != null) {
-                                // Xử lý lỗi nếu cần
-                                return@addSnapshotListener
-                            }
-
-                            if (snapshot != null) {
-                                val count = snapshot.size()
-                                if (count > previousCount) {
-                                    sendNotification(
-                                        count,
-                                        "high_priority_channel_id",
-                                        "Đơn hàng được phân công",
-                                        "Bạn có $count đơn hàng được phân công."
-                                    )
-                                }
-
-                                // Cập nhật giá trị previousCount
-                                previousCount = count
-                            }
-                        }
-                }
-            }
-        }
+        // Kiểm tra vai trò kỹ thuật viên và lắng nghe thay đổi đơn hàng
+        checkUserRoleAndListenForTechnicianUpdates()
     }
 
-    // Hàm kiểm tra vai trò người dùng
-    private suspend fun checkUserRole(): Boolean {
-        val currentUser = FirebaseAuth.getInstance().currentUser ?: return false
+    private fun checkUserRoleAndListenForTechnicianUpdates() {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
         val db = FirebaseFirestore.getInstance()
 
-        return try {
-            val documentSnapshot = db.collection("Users").document(currentUser.uid).get().await()
-            val role = documentSnapshot.getString("role")
-            role == "Technician"  // Chỉ cho phép kỹ thuật viên lắng nghe đơn hàng
-        } catch (e: Exception) {
-            false
-        }
+        // Kiểm tra vai trò người dùng từ Firestore
+        db.collection("Users").document(currentUser.uid).get()
+            .addOnSuccessListener { documentSnapshot ->
+                val role = documentSnapshot.getString("role")
+                if (role == "Technician") {
+                    // Nếu vai trò là "Technician", bắt đầu lắng nghe thay đổi đơn hàng
+                    listenToTechnicianOrderUpdates(currentUser.uid)
+                } else {
+                    Log.d("ListenChange", "User is not a technician, no order updates will be listened to")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("ListenChangeError", "Error fetching user role", e)
+            }
     }
 
+    private fun listenToTechnicianOrderUpdates(technicianId: String) {
+        val db = FirebaseFirestore.getInstance()
+        var previousCount = 0  // Đảm bảo biến này được khai báo ở mức độ lớp nếu cần duy trì trạng thái trước đó
+
+        db.collection("orders")
+            .whereEqualTo("id_technician", technicianId)
+            .whereEqualTo("status", "processing")
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    Log.e("OrderUpdateError", "Error listening to order changes", e)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    val count = snapshot.size()
+                    if (count > previousCount) {
+                        sendNotification(
+                            count,
+                            "high_priority_channel_id",
+                            "Đơn hàng được phân công",
+                            "Bạn có $count đơn hàng được phân công."
+                        )
+                    }
+
+                    // Cập nhật giá trị previousCount
+                    previousCount = count
+                }
+            }
+    }
 
     private fun sendNotification(count: Int, channelId: String, title: String, message: String) {
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -144,7 +147,6 @@ class TechnicianActivity : AppCompatActivity() {
 
         notificationManager.notify(channelId.hashCode(), notificationBuilder.build())
     }
-
 
 
     @SuppressLint("MissingSuperCall")

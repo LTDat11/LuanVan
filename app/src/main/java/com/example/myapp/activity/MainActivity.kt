@@ -86,72 +86,75 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun listenChange() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val isCustomer = checkUserRole()
-
-            if (isCustomer) {
-                val db = FirebaseFirestore.getInstance()
-                val auth = FirebaseAuth.getInstance()
-
-                // Danh sách trạng thái cần lọc
-                val statuses = listOf("pending", "processing", "completed")
-
-                withContext(Dispatchers.Main) {
-                    db.collection("orders")
-                        .whereEqualTo("id_customer", auth.currentUser?.uid)
-                        .whereIn("status", statuses)  // Lọc đơn hàng theo trạng thái
-                        .addSnapshotListener { snapshot, e ->
-                            if (e != null) {
-                                // Xử lý lỗi nếu cần
-                                return@addSnapshotListener
-                            }
-
-                            if (snapshot != null) {
-                                // Đếm số lượng đơn hàng theo trạng thái
-                                var totalCount = 0
-                                var hasCompletedOrder = false
-
-                                for (doc in snapshot.documents) {
-                                    val status = doc.getString("status") ?: continue
-                                    if (statuses.contains(status)) {
-                                        totalCount++
-                                    }
-                                    if (status == "completed") {
-                                        hasCompletedOrder = true
-                                    }
-                                }
-
-                                // Cập nhật badge và gửi thông báo nếu có đơn hàng hoàn tất
-                                updateBadgeForBottomNav(totalCount)
-
-                                if (hasCompletedOrder) {
-                                    sendNotification(
-                                        "high_priority_channel_id",
-                                        "Đơn hàng hoàn tất sửa chữa",
-                                        "Bạn có đơn hàng đã sửa chữa xong. Vui lòng kiểm tra để thanh toán!"
-                                    )
-                                }
-                            }
-                        }
-                }
-            }
-        }
+        // Kiểm tra vai trò người dùng và bắt đầu lắng nghe nếu là khách hàng
+        checkUserRoleAndListenForCustomerUpdates()
     }
 
-
-    // Hàm kiểm tra vai trò người dùng
-    private suspend fun checkUserRole(): Boolean {
-        val currentUser = FirebaseAuth.getInstance().currentUser ?: return false
+    private fun checkUserRoleAndListenForCustomerUpdates() {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return
         val db = FirebaseFirestore.getInstance()
 
-        return try {
-            val documentSnapshot = db.collection("Users").document(currentUser.uid).get().await()
-            val role = documentSnapshot.getString("role")
-            role == "Customer"  // Chỉ cho phép khách hàng lắng nghe đơn hàng
-        } catch (e: Exception) {
-            false
-        }
+        // Kiểm tra vai trò người dùng từ Firestore
+        db.collection("Users").document(currentUser.uid).get()
+            .addOnSuccessListener { documentSnapshot ->
+                val role = documentSnapshot.getString("role")
+                if (role == "Customer") {
+                    listenToCustomerOrderUpdates(currentUser.uid)
+                } else {
+                    Log.d("ListenChange", "User is not a customer, no order updates will be listened to")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("ListenChangeError", "Error fetching user role", e)
+            }
     }
+
+    private fun listenToCustomerOrderUpdates(customerId: String) {
+        val db = FirebaseFirestore.getInstance()
+        val auth = FirebaseAuth.getInstance()
+
+        // Danh sách trạng thái cần lọc
+        val statuses = listOf("pending", "processing", "completed")
+
+        db.collection("orders")
+            .whereEqualTo("id_customer", customerId)
+            .whereIn("status", statuses)  // Lọc đơn hàng theo trạng thái
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    // Xử lý lỗi nếu cần
+                    Log.e("OrderUpdateError", "Error listening to order changes", e)
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    // Đếm số lượng đơn hàng theo trạng thái
+                    var totalCount = 0
+                    var hasCompletedOrder = false
+
+                    for (doc in snapshot.documents) {
+                        val status = doc.getString("status") ?: continue
+                        if (statuses.contains(status)) {
+                            totalCount++
+                        }
+                        if (status == "completed") {
+                            hasCompletedOrder = true
+                        }
+                    }
+
+                    // Cập nhật badge và gửi thông báo nếu có đơn hàng hoàn tất
+                    updateBadgeForBottomNav(totalCount)
+
+                    if (hasCompletedOrder) {
+                        sendNotification(
+                            "high_priority_channel_id",
+                            "Đơn hàng hoàn tất sửa chữa",
+                            "Bạn có đơn hàng đã sửa chữa xong. Vui lòng kiểm tra để thanh toán!"
+                        )
+                    }
+                }
+            }
+    }
+
 
 
     private fun updateBadgeForBottomNav(totalCount: Int) {

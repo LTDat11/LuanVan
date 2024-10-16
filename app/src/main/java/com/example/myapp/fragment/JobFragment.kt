@@ -62,7 +62,6 @@ class JobFragment : Fragment() {
 
                     updateBadgeForBottomNav(count)
 
-
                 }
             }
     }
@@ -70,10 +69,10 @@ class JobFragment : Fragment() {
 
     private fun updateBadgeForBottomNav(count: Int) {
         // Update badge for bottom navigation
-        val bottomNav = requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
-        val badge = bottomNav.getOrCreateBadge(R.id.nav_job)
-        badge.isVisible = count > 0
-        badge.number = count
+        val bottomNav = activity?.findViewById<BottomNavigationView>(R.id.bottom_navigation)
+        val badge = bottomNav?.getOrCreateBadge(R.id.nav_job)
+        badge?.isVisible = count > 0
+        badge?.number = count
     }
 
     private fun updateBadge(tabPosition: Int, count: Int) {
