@@ -1,15 +1,20 @@
 package com.example.myapp.activity
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.Intent
 import android.os.Bundle
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
 import android.util.Log
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.example.myapp.Api.CreateOrder
 import com.example.myapp.R
 import com.example.myapp.adapter.PaymentMethodAdapter
 import com.example.myapp.adapter.RepairAdapter
@@ -21,15 +26,19 @@ import com.example.myapp.model.Repair
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
-import com.google.firebase.firestore.ListenerRegistration
+import vn.zalopay.sdk.Environment
+import vn.zalopay.sdk.ZaloPayError
+import vn.zalopay.sdk.ZaloPaySDK
+import vn.zalopay.sdk.listeners.PayOrderListener
 import java.text.NumberFormat
 import java.util.Date
 import java.util.Locale
+
 
 class TrackingOrderActivity : AppCompatActivity() {
     lateinit var binding: ActivityTrackingOrderBinding
@@ -42,6 +51,14 @@ class TrackingOrderActivity : AppCompatActivity() {
         binding = ActivityTrackingOrderBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val policy = ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)
+
+        // ZaloPay SDK Init
+
+        // ZaloPay SDK Init
+        ZaloPaySDK.init(553, Environment.SANDBOX)
+
         getDataIntent()
         initToolbar()
         initUi()
@@ -50,8 +67,76 @@ class TrackingOrderActivity : AppCompatActivity() {
 
     private fun initListener() {
         binding.tvTakeOrder.setOnClickListener {
-            createBillAndUpdateOrder()
+            //createBillAndUpdateOrder()
+            if (selectedPaymentMethodId.isNullOrEmpty()) {
+                Toast.makeText(this, "Vui lòng chọn phương thức thanh toán", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            } else if (selectedPaymentMethodId == "3") {
+                payWithZaloPay()
+            } else {
+                createBillAndUpdateOrder()
+            }
         }
+    }
+
+    private fun payWithZaloPay() {
+        val totalPriceText = binding.tvTotalPrice.text.toString().replace(",", "").replace("VND", "").trim()
+        val total = totalPriceText.toDoubleOrNull() ?: 0.0
+        val totalString = String.format("%.0f", total)
+        val orderApi = CreateOrder()
+
+        try {
+            val data = orderApi.createOrder(totalString)
+            val code = data.getString("returncode")
+
+            if (code == "1") {
+                val token: String = data.getString("zptranstoken")
+                ZaloPaySDK.getInstance().payOrder(this, token, "demozpdk://app", object : PayOrderListener {
+                    override fun onPaymentSucceeded(transactionId: String, transToken: String, appTransID: String) {
+                        runOnUiThread {
+                            AlertDialog.Builder(this@TrackingOrderActivity)
+                                .setTitle("Payment Success")
+                                .setMessage("TransactionId: $transactionId - TransToken: $transToken")
+                                .setPositiveButton("OK") { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                .setNegativeButton("Cancel", null)
+                                .show()
+                        }
+                        createBillAndUpdateOrder()
+                    }
+
+                    override fun onPaymentCanceled(zpTransToken: String, appTransID: String) {
+                        AlertDialog.Builder(this@TrackingOrderActivity)
+                            .setTitle("Hủy thanh toán")
+                            .setMessage("Thanh toán đã bị hủy bởi người dùng")
+                            .setPositiveButton("OK") { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                            .show()
+                    }
+
+                    override fun onPaymentError(zaloPayError: ZaloPayError, zpTransToken: String, appTransID: String) {
+                        AlertDialog.Builder(this@TrackingOrderActivity)
+                            .setTitle("Lỗi thanh toán")
+                            .setMessage("ZaloPayErrorCode: ${zaloPayError.toString()} \nTransToken: $zpTransToken")
+                            .setPositiveButton("OK") { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                            .setNegativeButton("Cancel", null)
+                            .show()
+                    }
+                })
+
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        ZaloPaySDK.getInstance().onResult(intent)
     }
 
     private fun createBillAndUpdateOrder() {

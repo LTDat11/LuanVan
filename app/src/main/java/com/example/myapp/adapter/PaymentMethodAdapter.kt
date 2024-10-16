@@ -33,7 +33,7 @@ class PaymentMethodAdapter(
         when (paymentMethod.id) {
             "1" -> holder.imgPaymentMethod.setImageResource(R.drawable.ic_price)
             "2" -> holder.imgPaymentMethod.setImageResource(R.drawable.ic_credit)
-            "3" -> holder.imgPaymentMethod.setImageResource(R.drawable.ic_gopay)
+            "3" -> holder.imgPaymentMethod.setImageResource(R.drawable.ic_zalopay)
         }
 
         // Kiểm tra xem phương thức hiện tại có được chọn không và cập nhật icon trạng thái
