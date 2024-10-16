@@ -93,16 +93,16 @@ class TrackingOrderActivity : AppCompatActivity() {
                 val token: String = data.getString("zptranstoken")
                 ZaloPaySDK.getInstance().payOrder(this, token, "demozpdk://app", object : PayOrderListener {
                     override fun onPaymentSucceeded(transactionId: String, transToken: String, appTransID: String) {
-                        runOnUiThread {
-                            AlertDialog.Builder(this@TrackingOrderActivity)
-                                .setTitle("Payment Success")
-                                .setMessage("TransactionId: $transactionId - TransToken: $transToken")
-                                .setPositiveButton("OK") { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                                .setNegativeButton("Cancel", null)
-                                .show()
-                        }
+//                        runOnUiThread {
+//                            AlertDialog.Builder(this@TrackingOrderActivity)
+//                                .setTitle("Payment Success")
+//                                .setMessage("TransactionId: $transactionId - TransToken: $transToken")
+//                                .setPositiveButton("OK") { dialog, _ ->
+//                                    dialog.dismiss()
+//                                }
+//                                .setNegativeButton("Cancel", null)
+//                                .show()
+//                        }
                         createBillAndUpdateOrder()
                     }
 
