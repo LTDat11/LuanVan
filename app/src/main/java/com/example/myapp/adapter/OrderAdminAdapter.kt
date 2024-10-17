@@ -106,6 +106,9 @@ class OrderAdminAdapter(private val orders: List<Order>): RecyclerView.Adapter<O
                     intent.putExtra("order_id", order.id)
                     context.startActivity(intent)
                 }
+                "cancel" -> {
+                    // Xem lý do hủy
+                }
             }
         }
 

@@ -305,7 +305,12 @@ class TrackingOrderActivity : AppCompatActivity() {
                     dividerStep1.setBackgroundColor(ContextCompat.getColor(this@TrackingOrderActivity, R.color.green))
                     dividerStep2.setBackgroundColor(ContextCompat.getColor(this@TrackingOrderActivity, R.color.green))
                     tvTakeOrder.setBackgroundResource(R.drawable.bg_button_disable_corner_16)
-                    layoutBill.visibility = TextView.GONE
+                    loadInfoBill()
+                    btnCancelOrder.visibility = TextView.GONE
+                    layoutBill.visibility = TextView.VISIBLE
+                    rcvPaymentMethod.visibility = TextView.GONE
+                    tvTakeOrder.visibility = TextView.GONE
+                    tvWarning.visibility = TextView.GONE
                 }
                 "completed" -> {
                     imgStep1.setImageResource(R.drawable.ic_step_enable)
@@ -314,9 +319,10 @@ class TrackingOrderActivity : AppCompatActivity() {
                     dividerStep1.setBackgroundColor(ContextCompat.getColor(this@TrackingOrderActivity, R.color.green))
                     dividerStep2.setBackgroundColor(ContextCompat.getColor(this@TrackingOrderActivity, R.color.green))
                     tvTakeOrder.setBackgroundResource(R.drawable.bg_button_enable_corner_16)
-                    layoutBill.visibility = TextView.VISIBLE
                     loadInfoBill()
                     loadPaymentMethods()
+                    btnCancelOrder.visibility = TextView.GONE
+                    layoutBill.visibility = TextView.VISIBLE
                     tvTakeOrder.visibility = TextView.VISIBLE
                     tvWarning.visibility = TextView.VISIBLE
                 }
@@ -344,42 +350,45 @@ class TrackingOrderActivity : AppCompatActivity() {
 
     private fun loadInfoBill() {
         CoroutineScope(Dispatchers.IO).launch {
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
                 val db = FirebaseFirestore.getInstance()
                 val auth = FirebaseAuth.getInstance()
-                // lấy name user thông qua uid của user
+                // Lấy UID của user hiện tại
                 val uid = auth.currentUser?.uid ?: ""
                 val docRef = db.collection("Users").document(uid)
-                docRef.get().addOnSuccessListener { document ->
-                    if (document != null) {
-                        val name = document.getString("name")
-                        binding.apply {
-                            tvCustomerName.text = name
-                        }
+
+                // Lắng nghe thay đổi thông tin user bằng snapshotListener
+                docRef.addSnapshotListener { document, e ->
+                    if (e != null || document == null) return@addSnapshotListener
+                    val name = document.getString("name")
+                    binding.apply {
+                        tvCustomerName.text = name
                     }
                 }
 
-                // lấy thông tin các document trong subcolection repairs từ colecton orders theo order_id hiển thị lên recyclerview
+                // Lấy thông tin các document trong subcollection "repairs" của "orders" theo order_id
                 val docRefBill = db.collection("orders").document(orderId).collection("repairs")
-                docRefBill.get().addOnSuccessListener { documents ->
+                docRefBill.addSnapshotListener { documents, e ->
+                    if (e != null || documents == null) return@addSnapshotListener
                     val repairs = documents.toObjects(Repair::class.java)
                     val adapter = RepairAdapter(repairs)
-                    binding.recyclerViewRepairedItems.layoutManager = LinearLayoutManager(this@TrackingOrderActivity) // Đặt LayoutManager
+                    binding.recyclerViewRepairedItems.layoutManager = LinearLayoutManager(this@TrackingOrderActivity)
                     binding.recyclerViewRepairedItems.adapter = adapter
 
-                    // Lấy thông tin đơn hàng để tính tổng
+                    // Lắng nghe thông tin đơn hàng để tính tổng
                     val orderRef = db.collection("orders").document(orderId)
-                    orderRef.get().addOnSuccessListener { document ->
+                    orderRef.addSnapshotListener { document, e ->
+                        if (e != null || document == null) return@addSnapshotListener
                         val order = document.toObject(Order::class.java)
                         if (order != null) {
                             updateTotalPrice(order, repairs)
                         }
                     }
                 }
-
             }
         }
     }
+
 
     private fun formatPrice(price: String?): String {
         // Kiểm tra nếu giá không phải là null

@@ -79,7 +79,7 @@ class JobAdapter(private val jobs: List<Order>) : RecyclerView.Adapter<JobAdapte
                     context.startActivity(intent)
                 }
                 "cancel" -> {
-                    // Xem lý do hủy
+                    // Xem lý do hủy đơn
                 }
             }
         }

@@ -78,11 +78,8 @@ class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<Order
                 intent.putExtra("order_id", order.id)
                 context.startActivity(intent)
             } else if (order.status == "cancel") {
-                // Xử lý khi click vào button action
-//                val context = holder.itemView.context
-//                val intent = Intent(context, ReceiptOrderActivity::class.java)
-//                intent.putExtra("order_id", order.id)
-//                context.startActivity(intent)
+                // Xem lý do hủy đơn hàng
+
             } else {
                 // Xử lý khi click vào button action
                 val context = holder.itemView.context
