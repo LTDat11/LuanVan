@@ -153,11 +153,15 @@ class TrackingOrderTechActivity : AppCompatActivity() {
     private fun initListeners() {
         binding.apply {
             checkboxComplete.setOnCheckedChangeListener { _, isChecked ->
-                tvDone.visibility = if (isChecked) View.VISIBLE else View.GONE
+                layoutButton.visibility = if (isChecked) View.VISIBLE else View.GONE
             }
 
             tvDone.setOnClickListener {
                 updateStatus()
+            }
+
+            tvCancel.setOnClickListener {
+                showDialogReasonCancel()
             }
 
             fabAddDeviceRepairs.setOnClickListener {
@@ -165,22 +169,62 @@ class TrackingOrderTechActivity : AppCompatActivity() {
             }
 
             layoutAddressGoogleMap.setOnClickListener {
-                // Lấy địa chỉ từ TextView
-                val address = binding.tvAddressValue.text.toString()
+                openGoogleMap()
+            }
+        }
+    }
 
-                // Tạo Uri để mở Google Maps và chỉ định đường đi đến địa chỉ cụ thể
-                val uri = Uri.parse("google.navigation:q=$address")
-                val intent = Intent(Intent.ACTION_VIEW, uri)
-                intent.setPackage("com.google.android.apps.maps")
+    private fun showDialogReasonCancel() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_cancel_order, null)
+        val etReason = dialogView.findViewById<EditText>(R.id.et_reason)
 
-                // Kiểm tra xem có ứng dụng Google Maps hay không trước khi khởi chạy
-                if (intent.resolveActivity(packageManager) != null) {
-                    startActivity(intent)
+        val dialog = AlertDialog.Builder(this@TrackingOrderTechActivity)
+            .setTitle("Lý do hủy đơn hàng")
+            .setView(dialogView)
+            .setPositiveButton("OK") { _, _ ->
+                val reason = etReason.text.toString()
+
+                if (reason.isNotEmpty()) {
+                    cancelOrder(reason)
                 } else {
-                    // Xử lý trường hợp khi không tìm thấy ứng dụng Google Maps
-                    Toast.makeText(this@TrackingOrderTechActivity, "Google Maps chưa được cài đặt trên thiết bị.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Vui lòng nhập lý do hủy đơn hàng", Toast.LENGTH_SHORT).show()
                 }
             }
+            .setNegativeButton("Hủy", null)
+            .create()
+
+        dialog.show()
+    }
+
+    private fun cancelOrder(reason: String) {
+        val currentTime = java.util.Date()
+        val db = FirebaseFirestore.getInstance()
+        val orderRef = db.collection("orders").document(orderId)
+        // Cập nhật trạng thái đơn hàng
+        orderRef.update("status", "cancel", "updatedAt", currentTime, "cancelReason", reason)
+            .addOnSuccessListener {
+                finish()
+            }
+            .addOnFailureListener { e ->
+                Log.e("TrackingOrderTech", "Lỗi khi cập nhật trạng thái đơn hàng", e)
+            }
+    }
+
+    private fun openGoogleMap() {
+        // Lấy địa chỉ từ TextView
+        val address = binding.tvAddressValue.text.toString()
+
+        // Tạo Uri để mở Google Maps và chỉ định đường đi đến địa chỉ cụ thể
+        val uri = Uri.parse("google.navigation:q=$address")
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        intent.setPackage("com.google.android.apps.maps")
+
+        // Kiểm tra xem có ứng dụng Google Maps hay không trước khi khởi chạy
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            // Xử lý trường hợp khi không tìm thấy ứng dụng Google Maps
+            Toast.makeText(this@TrackingOrderTechActivity, "Google Maps chưa được cài đặt trên thiết bị.", Toast.LENGTH_SHORT).show()
         }
     }
 

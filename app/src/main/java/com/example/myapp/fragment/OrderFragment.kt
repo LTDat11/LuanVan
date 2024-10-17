@@ -26,7 +26,7 @@ class OrderFragment : Fragment() {
     private val viewedOrders = mutableMapOf<String, List<String>>()
 
     // Danh sách trạng thái đơn hàng dùng chung
-    private val statuses = listOf("pending", "processing", "completed", "finish")
+    private val statuses = listOf("pending", "processing", "completed", "finish", "cancel")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,7 +48,7 @@ class OrderFragment : Fragment() {
 
         // Lắng nghe cho tất cả các trạng thái đơn hàng
         statuses.forEachIndexed { index, status ->
-            if (status == "finish") {
+            if (status == "finish" || status == "cancel") {
                 // Lắng nghe cho trạng thái "finish" và kiểm tra đơn hàng của ngày hiện tại
                 db.collection("orders")
                     .whereEqualTo("status", status)

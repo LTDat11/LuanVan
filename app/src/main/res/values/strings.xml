@@ -53,6 +53,7 @@
     <string name="label_user_name">Email</string>
     <string name="label_process">Đang xử lý</string>
     <string name="label_done">Hoàn thành</string>
+    <string name="label_cancel">Hủy đơn</string>
     <string name="feedback">Phản hồi</string>
     <string name="view_feedback">Xem phản hồi</string>
     <string name="send_feedback">Gửi phản hồi</string>
