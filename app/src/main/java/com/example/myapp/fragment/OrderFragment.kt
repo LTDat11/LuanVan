@@ -48,10 +48,11 @@ class OrderFragment : Fragment() {
 
         // Lắng nghe cho tất cả các trạng thái đơn hàng
         statuses.forEachIndexed { index, status ->
+            // Kiểm tra nếu trạng thái là "finish" hoặc "cancel"
             if (status == "finish" || status == "cancel") {
-                // Lắng nghe cho trạng thái "finish" và kiểm tra đơn hàng của ngày hiện tại
+                // Lắng nghe thay đổi dữ liệu cho trạng thái "finish" hoặc "cancel"
                 db.collection("orders")
-                    .whereEqualTo("status", status)
+                    .whereIn("status", listOf("finish", "cancel"))
                     .addSnapshotListener { snapshot, e ->
                         if (e != null || snapshot == null) return@addSnapshotListener
 
@@ -74,7 +75,7 @@ class OrderFragment : Fragment() {
                         }
 
                         // Cập nhật badge với số lượng đơn hàng trong ngày hiện tại
-                        updateBadge(index, ordersToday.size) // Cập nhật badge cho "finish"
+                        updateBadge(index, ordersToday.size) // Cập nhật badge cho cả "finish" và "cancel"
                     }
             } else {
                 // Lắng nghe các trạng thái khác mà không cần lọc ngày
