@@ -297,6 +297,8 @@ class TrackingOrderActivity : AppCompatActivity() {
                     tvTakeOrder.setBackgroundResource(R.drawable.bg_button_disable_corner_16)
                     btnCancelOrder.visibility = TextView.VISIBLE
                     layoutBill.visibility = TextView.GONE
+                    tvTakeOrder.visibility = TextView.GONE
+                    tvWarning.visibility = TextView.GONE
                 }
                 "processing" -> {
                     imgStep1.setImageResource(R.drawable.ic_step_enable)
