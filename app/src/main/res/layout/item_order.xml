@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:paddingTop="14dp">
+    android:paddingTop="10dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -54,7 +54,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp">
+                android:layout_marginTop="8dp">
                 <TextView
                     android:id="@+id/tv_package_name"
                     android:layout_width="match_parent"
@@ -65,58 +65,58 @@
             </RelativeLayout>
 
             <!-- Ngày tạo và ngày cập nhật -->
-<!--            <LinearLayout-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_marginTop="10dp"-->
-<!--                android:orientation="horizontal">-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:orientation="horizontal">
 
-<!--                <TextView-->
-<!--                    android:id="@+id/tv_created_at"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:text="@string/label_created_at"-->
-<!--                    android:textSize="12sp"-->
-<!--                    android:textColor="@color/textColorHeading"/>-->
+                <TextView
+                    android:id="@+id/tv_created_at"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_created_at"
+                    android:textSize="12sp"
+                    android:textColor="@color/textColorHeading"/>
 
-<!--                <TextView-->
-<!--                    android:id="@+id/tv_created_at_value"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginStart="8dp"-->
-<!--                    android:text="@string/app_name"-->
-<!--                    android:textSize="12sp"-->
-<!--                    android:textColor="@color/textColorHeading"/>-->
-<!--            </LinearLayout>-->
+                <TextView
+                    android:id="@+id/tv_created_at_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/app_name"
+                    android:textSize="12sp"
+                    android:textColor="@color/textColorHeading"/>
+            </LinearLayout>
 
-<!--            <LinearLayout-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_marginTop="4dp"-->
-<!--                android:orientation="horizontal">-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
 
-<!--                <TextView-->
-<!--                    android:id="@+id/tv_updated_at"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:text="@string/label_updated_at"-->
-<!--                    android:textSize="12sp"-->
-<!--                    android:textColor="@color/textColorHeading"/>-->
+                <TextView
+                    android:id="@+id/tv_updated_at"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/label_updated_at"
+                    android:textSize="12sp"
+                    android:textColor="@color/textColorHeading"/>
 
-<!--                <TextView-->
-<!--                    android:id="@+id/tv_updated_at_value"-->
-<!--                    android:layout_width="wrap_content"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:layout_marginStart="8dp"-->
-<!--                    android:text="@string/app_name"-->
-<!--                    android:textSize="12sp"-->
-<!--                    android:textColor="@color/textColorHeading"/>-->
-<!--            </LinearLayout>-->
+                <TextView
+                    android:id="@+id/tv_updated_at_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/app_name"
+                    android:textSize="12sp"
+                    android:textColor="@color/textColorHeading"/>
+            </LinearLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp">
+                android:layout_marginTop="5dp">
 
                 <TextView
                     android:id="@+id/tv_status"
@@ -163,6 +163,6 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="14dp"
+        android:layout_marginTop="8dp"
         android:background="@color/bgFilter" />
 </LinearLayout>

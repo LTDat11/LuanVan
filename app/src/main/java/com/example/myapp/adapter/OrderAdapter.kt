@@ -26,6 +26,8 @@ class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<Order
         val order = orders[position]
         holder.tvOrderId.text = order.id
         holder.tvPackageName.text = order.namePackage
+        holder.creatAt.text = order.createdAt.toString()
+        holder.updateAt.text = order.updatedAt.toString()
         holder.tvTotal.text = order.price.toString()
 //        holder.tvAction.text = "Theo dõi đơn hàng"
         Glide.with(holder.itemView.context).load(order.imgURLServicePackage).into(holder.img_package) // Hiển thị ảnh nếu cần
@@ -36,7 +38,7 @@ class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<Order
                 holder.tvAction.text = "Theo dõi đơn hàng"
             }
             "processing" -> {
-                holder.tvStatus.text = "Đang sửa chữa"
+                holder.tvStatus.text = "Đã nhận đơn"
                 holder.tvAction.text = "Theo dõi đơn hàng"
             }
             "completed" -> {
@@ -58,11 +60,17 @@ class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<Order
                         holder.tvTotal.text = total.toString()
                     }
             }
+            "cancel" -> {
+                holder.tvStatus.text = "Đã hủy"
+                holder.tvAction.text = "Xem lý do"
+                holder.tvStatus.setBackgroundResource(R.drawable.bg_white_corner_6_border_red)
+                holder.tvStatus.setTextColor(holder.itemView.context.resources.getColor(R.color.red))
+            }
             else -> holder.tvStatus.text = "Không xác định"
         }
 
         holder.layoutAction.setOnClickListener {
-            // kiểm tra tên của layoutAction
+            // kiểm tra trạng thái của layoutAction
             if (order.status == "finish") {
                 // Xử lý khi click vào button action
                 val context = holder.itemView.context
@@ -86,6 +94,8 @@ class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<Order
     class OrderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvOrderId: TextView = itemView.findViewById(R.id.tv_order_id)
         val tvPackageName: TextView = itemView.findViewById(R.id.tv_package_name)
+        val creatAt : TextView = itemView.findViewById(R.id.tv_created_at_value)
+        val updateAt : TextView = itemView.findViewById(R.id.tv_updated_at_value)
         val tvTotal: TextView = itemView.findViewById(R.id.tv_total)
         val tvStatus: TextView = itemView.findViewById(R.id.tv_status)
         val tvAction: TextView = itemView.findViewById(R.id.tv_action)

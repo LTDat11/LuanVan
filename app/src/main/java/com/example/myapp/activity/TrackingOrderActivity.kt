@@ -77,6 +77,39 @@ class TrackingOrderActivity : AppCompatActivity() {
                 createBillAndUpdateOrder()
             }
         }
+
+        binding.btnCancelOrder.setOnClickListener {
+            showDialogCancelOrder()
+        }
+    }
+
+    private fun showDialogCancelOrder() {
+        AlertDialog.Builder(this)
+            .setTitle("Hủy đơn hàng")
+            .setMessage("Bạn có chắc chắn muốn hủy đơn hàng này?")
+            .setPositiveButton("Có") { dialog, _ ->
+                cancelOrder()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Không", null)
+            .show()
+    }
+
+    private fun cancelOrder() {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+
+                // delete order with orderId
+                val db = FirebaseFirestore.getInstance()
+                db.collection("orders").document(orderId).delete().addOnSuccessListener {
+                    Log.d("TrackingOrderActivity", "Order deleted successfully")
+                    finish()
+                }.addOnFailureListener { e ->
+                    Log.e("TrackingOrderActivity", "Error deleting order", e)
+                }
+
+            }
+        }
     }
 
     private fun payWithZaloPay() {
@@ -163,9 +196,9 @@ class TrackingOrderActivity : AppCompatActivity() {
             // Lưu Bill vào subcollection bills
             val billRef = db.collection("orders").document(orderId).collection("bills").document(bill.id!!)
             billRef.set(bill).addOnSuccessListener {
-                // Cập nhật trạng thái đơn hàng thành 'finish'
+                // Cập nhật trạng thái đơn hàng thành 'finish' và cập nhật updatedAt
                 val orderRef = db.collection("orders").document(orderId)
-                orderRef.update("status", "finish").addOnSuccessListener {
+                orderRef.update("status", "finish","updatedAt",Date()).addOnSuccessListener {
                     Log.d("TrackingOrderActivity", "Order status updated to 'finish'")
                     binding.layoutBottom.visibility = LinearLayout.GONE
                     finish()
@@ -262,6 +295,7 @@ class TrackingOrderActivity : AppCompatActivity() {
                     dividerStep1.setBackgroundColor(ContextCompat.getColor(this@TrackingOrderActivity, R.color.green))
                     dividerStep2.setBackgroundColor(ContextCompat.getColor(this@TrackingOrderActivity, R.color.colorAccent))
                     tvTakeOrder.setBackgroundResource(R.drawable.bg_button_disable_corner_16)
+                    btnCancelOrder.visibility = TextView.VISIBLE
                     layoutBill.visibility = TextView.GONE
                 }
                 "processing" -> {

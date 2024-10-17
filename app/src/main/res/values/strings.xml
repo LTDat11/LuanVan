@@ -121,7 +121,8 @@
     <string name="label_address_customer">Địa chỉ khách hàng:</string>
     <string name="label_waiting_order">Đang chờ nhận đơn</string>
     <string name="label_takes_order">Đã nhận đơn và phân công kỹ thuật viên</string>
-    <string name="label_order_complete">Đơn hàng của bạn đã hoàn tất</string>
+    <string name="label_order_complete">Đơn hàng của bạn đã hoàn tất và đang giao</string>
+    <string name="cancel_order">Hủy đơn</string>
     <string name="label_receipt_order">Hóa đơn</string>
     <string name="label_bill">Vui lòng kiểm tra thông tin trước khi thanh toán!!</string>
     <string name="label_description">Mô tả tình trạng: </string>

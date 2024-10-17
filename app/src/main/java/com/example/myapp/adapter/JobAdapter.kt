@@ -25,6 +25,8 @@ class JobAdapter(private val jobs: List<Order>) : RecyclerView.Adapter<JobAdapte
         val job = jobs[position]
         holder.tvOrderId.text = job.id
         holder.tvPackageName.text = job.namePackage
+        holder.creatAt.text = job.createdAt.toString()
+        holder.updateAt.text = job.updatedAt.toString()
         holder.tvTotal.visibility = View.GONE
         holder.tvAction.text = "Thông tin đơn hàng"
         Glide.with(holder.itemView.context).load(job.imgURLServicePackage).into(holder.img_package)
@@ -57,6 +59,8 @@ class JobAdapter(private val jobs: List<Order>) : RecyclerView.Adapter<JobAdapte
         val tvOrderId: TextView = itemView.findViewById(R.id.tv_order_id)
         val tvPackageName: TextView = itemView.findViewById(R.id.tv_package_name)
         val tvTotal: TextView = itemView.findViewById(R.id.tv_total)
+        val creatAt : TextView = itemView.findViewById(R.id.tv_created_at_value)
+        val updateAt : TextView = itemView.findViewById(R.id.tv_updated_at_value)
         val tvStatus: TextView = itemView.findViewById(R.id.tv_status)
         val tvAction: TextView = itemView.findViewById(R.id.tv_action)
         val img_package: ImageView = itemView.findViewById(R.id.img_package)

@@ -312,6 +312,22 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"/>
 
+            <TextView
+                android:id="@+id/btn_cancel_order"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/cancel_order"
+                android:textColor="@color/white"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:textSize="14sp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:textAlignment="center"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_button_delete_corner_16"/>
+
             <!-- Thay thế LinearLayout chứa danh sách thiết bị bằng RecyclerView -->
             <LinearLayout
                 android:id="@+id/layout_bill"

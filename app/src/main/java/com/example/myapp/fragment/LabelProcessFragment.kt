@@ -53,7 +53,8 @@ class LabelProcessFragment : Fragment() {
                     orders.clear()
                     for (document in snapshot.documents) {
                         val order = document.toObject(Order::class.java)
-                        if (order != null && order.status != "finish") { // Kiểm tra trạng thái
+                        // Kiểm tra trạng thái đơn hàng finish hoặc cancel
+                        if (order != null && order.status != "finish" && order.status != "cancel") {
                             orders.add(order)
                         }
                     }
