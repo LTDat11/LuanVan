@@ -189,7 +189,7 @@ class LabelDoneTechFragment : Fragment() {
                     jobs.clear()
                     for (document in snapshot.documents) {
                         val order = document.toObject(Order::class.java)
-                        if (order != null && (order.status == "completed" || order.status == "finish")) { // Kiểm tra trạng thái
+                        if (order != null && (order.status == "completed" || order.status == "finish" || order.status == "cancel")) { // Kiểm tra trạng thái
                             jobs.add(order)
                         }
                     }

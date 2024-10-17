@@ -184,7 +184,9 @@ class LabelFinishAdminFragment : Fragment() {
                 val db = FirebaseFirestore.getInstance()
 
                 db.collection("orders")
-                    .whereEqualTo("status", "finish")
+//                    .whereEqualTo("status", "finish")
+                    .whereIn("status", listOf("finish", "cancel"))
+                    .orderBy("updatedAt")
                     .addSnapshotListener { snapshot, e ->
                         if (e != null) {
                             // Xử lý lỗi nếu cần

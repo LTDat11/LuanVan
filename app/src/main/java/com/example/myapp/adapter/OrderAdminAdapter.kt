@@ -64,6 +64,14 @@ class OrderAdminAdapter(private val orders: List<Order>): RecyclerView.Adapter<O
                 holder.tvStatusDescriptionTitle.text = "Nhân viên xử lý:"
                 getNameTech(order.id_technician, holder.tvStatusDescription)
             }
+            "cancel" -> {
+                holder.tvStatus.text = "Đã hủy"
+                holder.tvStatus.setTextColor(holder.itemView.resources.getColor(R.color.red))
+                holder.tvStatus.setBackgroundResource(R.drawable.bg_white_corner_6_border_red)
+                holder.layoutInstruction.visibility = View.GONE
+                holder.tvStatusDescriptionTitle.text = "Nhân viên xử lý:"
+                getNameTech(order.id_technician, holder.tvStatusDescription)
+            }
         }
 
         holder.itemView.setOnClickListener {

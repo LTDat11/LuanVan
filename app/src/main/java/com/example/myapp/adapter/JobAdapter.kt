@@ -41,15 +41,47 @@ class JobAdapter(private val jobs: List<Order>) : RecyclerView.Adapter<JobAdapte
             "finish" -> {
                 holder.tvStatus.text = "Đã thanh toán"
             }
+            "cancel" -> {
+                holder.tvStatus.text = "Đã hủy"
+                holder.tvStatus.setBackgroundResource(R.drawable.bg_white_corner_6_border_red)
+                holder.tvStatus.setTextColor(holder.itemView.resources.getColor(R.color.red))
+                holder.tvAction.text = "Xem lý do"
+            }
+            else -> {
+                holder.tvStatus.text = "Không xác định"
+            }
         }
 
         holder.layoutAction.setOnClickListener {
-            // Xử lý khi click vào button action
-            val context = holder.itemView.context
-            val intent = Intent(context, TrackingOrderTechActivity::class.java)
-            intent.putExtra("order_id", job.id)
-            intent.putExtra("imgURL", job.imgURLServicePackage)
-            context.startActivity(intent)
+            when (job.status){
+                "processing" -> {
+                    // Xử lý khi click vào button action
+                    val context = holder.itemView.context
+                    val intent = Intent(context, TrackingOrderTechActivity::class.java)
+                    intent.putExtra("order_id", job.id)
+                    intent.putExtra("imgURL", job.imgURLServicePackage)
+                    context.startActivity(intent)
+                }
+                "completed" -> {
+                    // Xử lý khi click vào button action
+                    val context = holder.itemView.context
+                    val intent = Intent(context, TrackingOrderTechActivity::class.java)
+                    intent.putExtra("order_id", job.id)
+                    intent.putExtra("imgURL", job.imgURLServicePackage)
+                    context.startActivity(intent)
+                }
+                "finish" -> {
+                    // Xử lý khi click vào button action
+                    val context = holder.itemView.context
+                    val intent = Intent(context, TrackingOrderTechActivity::class.java)
+                    intent.putExtra("order_id", job.id)
+                    intent.putExtra("imgURL", job.imgURLServicePackage)
+                    context.startActivity(intent)
+                }
+                "cancel" -> {
+                    // Xem lý do hủy
+                }
+            }
         }
     }
 

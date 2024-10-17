@@ -117,7 +117,7 @@ class OrderFragment : Fragment() {
             OrderStatus("Chờ nhận đơn", LabelPendingAdminFragment()),
             OrderStatus("Đang sửa chữa", LabelProcessingAdminFragment()),
             OrderStatus("Đang giao hàng", LabelCompleteAdminFragment()),
-            OrderStatus("Đã thanh toán", LabelFinishAdminFragment())
+            OrderStatus("Đã hoàn thành", LabelFinishAdminFragment())
         )
 
         val adapter = OderStatusPagerAdapter(requireActivity(), statusList)
