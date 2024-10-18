@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.myapp.R
+import com.example.myapp.activity.CancelReasonActivity
 import com.example.myapp.activity.ReceiptOrderActivity
 import com.example.myapp.activity.TrackingOrderActivity
 import com.example.myapp.activity.TrackingOrderTechActivity
@@ -42,7 +43,7 @@ class JobAdapter(private val jobs: List<Order>) : RecyclerView.Adapter<JobAdapte
                 holder.tvStatus.text = "Đã thanh toán"
             }
             "cancel" -> {
-                holder.tvStatus.text = "Đã hủy"
+                holder.tvStatus.text = "Đã hủy đơn"
                 holder.tvStatus.setBackgroundResource(R.drawable.bg_white_corner_6_border_red)
                 holder.tvStatus.setTextColor(holder.itemView.resources.getColor(R.color.red))
                 holder.tvAction.text = "Xem lý do"
@@ -79,7 +80,10 @@ class JobAdapter(private val jobs: List<Order>) : RecyclerView.Adapter<JobAdapte
                     context.startActivity(intent)
                 }
                 "cancel" -> {
-                    // Xem lý do hủy đơn
+                    val context = holder.itemView.context
+                    val intent = Intent(context, CancelReasonActivity::class.java)
+                    intent.putExtra("order", job)
+                    context.startActivity(intent)
                 }
             }
         }

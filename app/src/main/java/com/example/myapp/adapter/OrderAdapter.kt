@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.myapp.R
+import com.example.myapp.activity.CancelReasonActivity
 import com.example.myapp.activity.ReceiptOrderActivity
 import com.example.myapp.activity.TrackingOrderActivity
 import com.example.myapp.model.Order
@@ -61,7 +62,7 @@ class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<Order
                     }
             }
             "cancel" -> {
-                holder.tvStatus.text = "Đã hủy"
+                holder.tvStatus.text = "Đã hủy đơn"
                 holder.tvAction.text = "Xem lý do"
                 holder.tvStatus.setBackgroundResource(R.drawable.bg_white_corner_6_border_red)
                 holder.tvStatus.setTextColor(holder.itemView.context.resources.getColor(R.color.red))
@@ -79,7 +80,10 @@ class OrderAdapter(private val orders: List<Order>) : RecyclerView.Adapter<Order
                 context.startActivity(intent)
             } else if (order.status == "cancel") {
                 // Xem lý do hủy đơn hàng
-
+                val context = holder.itemView.context
+                val intent = Intent(context, CancelReasonActivity::class.java)
+                intent.putExtra("order", order)
+                context.startActivity(intent)
             } else {
                 // Xử lý khi click vào button action
                 val context = holder.itemView.context

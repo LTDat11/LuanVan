@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapp.R
 import com.example.myapp.activity.AssignTechAdminActivity
+import com.example.myapp.activity.CancelReasonActivity
 import com.example.myapp.activity.InfoProcessingAdminActivity
 import com.example.myapp.activity.ReceiptOrderActivity
 import com.example.myapp.activity.TrackingOrderTechActivity
@@ -65,7 +66,7 @@ class OrderAdminAdapter(private val orders: List<Order>): RecyclerView.Adapter<O
                 getNameTech(order.id_technician, holder.tvStatusDescription)
             }
             "cancel" -> {
-                holder.tvStatus.text = "Đã hủy"
+                holder.tvStatus.text = "Đã hủy đơn"
                 holder.tvStatus.setTextColor(holder.itemView.resources.getColor(R.color.red))
                 holder.tvStatus.setBackgroundResource(R.drawable.bg_white_corner_6_border_red)
                 holder.layoutInstruction.visibility = View.GONE
@@ -107,7 +108,11 @@ class OrderAdminAdapter(private val orders: List<Order>): RecyclerView.Adapter<O
                     context.startActivity(intent)
                 }
                 "cancel" -> {
-                    // Xem lý do hủy
+                    val context = holder.itemView.context
+                    val intent = Intent(context, CancelReasonActivity::class.java)
+                    // truyền dữ liệu order
+                    intent.putExtra("order", order)
+                    context.startActivity(intent)
                 }
             }
         }
