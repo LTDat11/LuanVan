@@ -13,11 +13,17 @@ import android.widget.LinearLayout
 import android.widget.RadioGroup
 import androidx.core.content.ContextCompat
 import com.example.myapp.R
+import com.example.myapp.model.ApiResponse
+import com.example.myapp.model.RetrofitInstance
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.myapp.model.User
+import com.example.myapp.model.UserRequest
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class RegisterActivity : BaseActivity() {
 
@@ -156,8 +162,9 @@ class RegisterActivity : BaseActivity() {
                                     .set(user)
                                     .addOnSuccessListener {
                                         // Thêm UID vào collection tương ứng
-                                        addUserToRoleSpecificCollection(userId, selectedRole)
-
+                                        //addUserToRoleSpecificCollection(userId, selectedRole)
+                                        // Gọi API để thêm custom claims
+                                        setCustomClaims(userId)
                                         // Kiểm tra role tương ứng để chuyển hướng
                                         when (selectedRole) {
                                             "Customer" -> {
@@ -198,6 +205,24 @@ class RegisterActivity : BaseActivity() {
                 showProgressDialog(false)
                 showToastMessage("Registration failed: ${exception.message}")
             }
+    }
+
+    private fun setCustomClaims(uid: String) {
+        val request = UserRequest(uid)
+        // Gọi API set custom claims
+        RetrofitInstance.api.setCustomClaims(request).enqueue(object : Callback<ApiResponse> {
+            override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+                if (response.isSuccessful) {
+                    Log.d("CustomClaims", "Custom claims set successfully")
+                } else {
+                    Log.e("CustomClaims", "Failed to set custom claims: ${response.errorBody()}")
+                }
+            }
+
+            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                Log.e("CustomClaims", "Error: ${t.message}")
+            }
+        })
     }
 
     // Thêm UID vào collection tương ứng
