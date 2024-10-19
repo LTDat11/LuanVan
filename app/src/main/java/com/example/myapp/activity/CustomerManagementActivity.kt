@@ -183,7 +183,7 @@ class CustomerManagementActivity : AppCompatActivity() {
                 0 -> {
                     // Phân quyền admin
                     showGrantAdminConfirmationDialog(customer)
-                } 
+                }
                 else -> {
                     dialog.dismiss()
                 }
