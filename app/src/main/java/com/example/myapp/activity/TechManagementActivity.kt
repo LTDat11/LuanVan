@@ -23,6 +23,8 @@ import com.example.myapp.model.User
 import com.example.myapp.model.UserRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -280,9 +282,20 @@ class TechManagementActivity : AppCompatActivity() {
 
     private fun deleteCustomerFromFirestore(uid: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            withContext(Dispatchers.Main){
-
+            withContext(Dispatchers.Main) {
                 val db = FirebaseFirestore.getInstance()
+                val storageRef = FirebaseStorage.getInstance().reference.child("avatar/$uid.jpg")
+
+                // Xóa ảnh avatar từ Firebase Storage
+                storageRef.delete().addOnSuccessListener {
+                    Log.d("deleteAvatar", "Avatar successfully deleted!")
+                }.addOnFailureListener { exception ->
+                    if (exception is StorageException && exception.errorCode == StorageException.ERROR_OBJECT_NOT_FOUND) {
+                        Log.d("deleteAvatar", "Avatar not found, nothing to delete.")
+                    } else {
+                        Log.w("deleteAvatar", "Error deleting avatar", exception)
+                    }
+                }
 
                 // Xóa tài khoản khách hàng khỏi Firestore
                 db.collection("Users").document(uid)
@@ -293,7 +306,6 @@ class TechManagementActivity : AppCompatActivity() {
                     .addOnFailureListener { e ->
                         Log.w("deleteUser", "Error deleting document", e)
                     }
-
             }
         }
     }
