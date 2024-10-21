@@ -17,13 +17,19 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myapp.R
 import com.example.myapp.adapter.UserManagementAdapter
 import com.example.myapp.databinding.ActivityTechManagementBinding
+import com.example.myapp.model.ApiResponse
+import com.example.myapp.model.RetrofitInstance
 import com.example.myapp.model.User
+import com.example.myapp.model.UserRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.Locale
 
 class TechManagementActivity : AppCompatActivity() {
@@ -125,13 +131,37 @@ class TechManagementActivity : AppCompatActivity() {
         builder.setTitle("Chọn hành động")
 
         // Tạo danh sách các lựa chọn trong dialog
-        val options = arrayOf("Phân quyền admin")
+        val options = arrayOf("Phân quyền admin","Khóa tài khoản", "Xóa tài khoản","Mở khóa tài khoản")
 
         // Set hành động khi nhấn vào các lựa chọn
         builder.setItems(options) { dialog, which ->
             when (which) {
                 0 -> {
                     showGrantAdminConfirmationDialog(technician)
+                }
+                1 -> {
+                    checkStatus(technician.id) { isDisabled ->
+                        if (isDisabled) {
+                            Toast.makeText(this, "Không thể khóa tài khoản đang bị khóa", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // Khóa tài khoản
+                            showDisableUserConfirmationDialog(technician)
+                        }
+                    }
+                }
+                2 -> {
+                    // Xóa tài khoản
+                    showDeleteUserConfirmationDialog(technician)
+                }
+                3 -> {
+                    checkStatus(technician.id) { isDisabled ->
+                        if (!isDisabled) {
+                            Toast.makeText(this, "Không thể mở khóa tài khoản đang hoạt động", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // Mở khóa tài khoản
+                            showEnableUserConfirmationDialog(technician)
+                        }
+                    }
                 }
                 else -> {
                     dialog.dismiss()
@@ -141,6 +171,175 @@ class TechManagementActivity : AppCompatActivity() {
 
         // Hiển thị dialog
         builder.create().show()
+    }
+
+    private fun checkStatus(uid: String, callback: (Boolean) -> Unit) {
+        val request = UserRequest(uid)
+        RetrofitInstance.api.checkUserStatus(request).enqueue(object : Callback<ApiResponse> {
+            override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+                if (response.isSuccessful) {
+                    val isDisabled = response.body()?.isDisabled ?: false
+                    callback(isDisabled)
+                } else {
+                    Log.d("checkUserStatus", "Không tìm thấy tài khoản")
+                    callback(false) // Mặc định tài khoản không bị khóa nếu không tìm thấy
+                }
+            }
+
+            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                Log.d("checkUserStatus", "Lỗi: ${t.message}")
+                callback(false) // Xử lý lỗi mặc định tài khoản không bị khóa
+            }
+        })
+    }
+
+    private fun showEnableUserConfirmationDialog(technician: User) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Xác nhận mở khóa tài khoản")
+        builder.setMessage("Bạn có chắc chắn muốn mở khóa tài khoản của kỹ thuật viên ${technician.name}?")
+
+        // Set hành động khi nhấn vào nút "Xác nhận"
+        builder.setPositiveButton("Xác nhận") { dialog, _ ->
+            enableUser(technician.id)  // Gọi hàm mở khóa tài khoản
+            dialog.dismiss()
+        }
+
+        // Set hành động khi nhấn vào nút "Hủy"
+        builder.setNegativeButton("Hủy") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        // Hiển thị dialog
+        builder.create().show()
+    }
+
+    fun enableUser(uid: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+
+            val request = UserRequest(uid)
+            RetrofitInstance.api.enableUser(request).enqueue(object : Callback<ApiResponse> {
+                override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+                    if (response.isSuccessful) {
+                        Log.d("enableUser","enableUser: ${response.body()?.message}")
+                        Toast.makeText(this@TechManagementActivity, "Đã mở khóa tài khoản", Toast.LENGTH_SHORT).show()
+                        // Cập nhật lại recyclerView
+                        userManagementAdapter.notifyDataSetChanged()
+                    } else {
+                        Log.d("enableUser","enableUser: ${response.errorBody()}")
+                    }
+                }
+
+                override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                    Log.d("enableUser","enableUser: ${t.message}")
+                }
+            })
+
+        }
+    }
+
+    private fun showDeleteUserConfirmationDialog(technician: User) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Xác nhận xóa tài khoản")
+        builder.setMessage("Bạn có chắc chắn muốn xóa tài khoản của k thuật viên ${technician.name}?")
+
+        // Set hành động khi nhấn vào nút "Xác nhận"
+        builder.setPositiveButton("Xác nhận") { dialog, _ ->
+            deleteUser(technician.id)  // Gọi hàm xóa tài khoản
+            dialog.dismiss()
+        }
+
+        // Set hành động khi nhấn vào nút "Hủy"
+        builder.setNegativeButton("Hủy") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        // Hiển thị dialog
+        builder.create().show()
+    }
+
+    fun deleteUser(uid: String) {
+        RetrofitInstance.api.deleteUser(uid).enqueue(object : Callback<ApiResponse> {
+            override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+                if (response.isSuccessful) {
+                    deleteCustomerFromFirestore(uid)
+                    Log.d("deleteUser", "deleteUser: ${response.body()?.message}")
+                    Toast.makeText(this@TechManagementActivity, "Đã xóa tài khoản", Toast.LENGTH_SHORT).show()
+                    // Cập nhật lại recyclerView
+                    userManagementAdapter.notifyDataSetChanged()
+                } else {
+                    Log.d("deleteUser", "deleteUser: ${response.errorBody()?.string()}") // In ra nội dung lỗi
+                    Log.d("deleteUser", "Response Code: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                Log.d("deleteUser", "deleteUser: ${t.message}")
+            }
+        })
+    }
+
+    private fun deleteCustomerFromFirestore(uid: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+
+                val db = FirebaseFirestore.getInstance()
+
+                // Xóa tài khoản khách hàng khỏi Firestore
+                db.collection("Users").document(uid)
+                    .delete()
+                    .addOnSuccessListener {
+                        Log.d("deleteUser", "DocumentSnapshot successfully deleted!")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.w("deleteUser", "Error deleting document", e)
+                    }
+
+            }
+        }
+    }
+
+    private fun showDisableUserConfirmationDialog(technician: User) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Xác nhận khóa tài khoản")
+        builder.setMessage("Bạn có chắc chắn muốn khóa tài khoản của khách hàng ${technician.name}?")
+
+        // Set hành động khi nhấn vào nút "Xác nhận"
+        builder.setPositiveButton("Xác nhận") { dialog, _ ->
+            disableUser(technician.id)  // Gọi hàm khóa tài khoản
+            dialog.dismiss()
+        }
+
+        // Set hành động khi nhấn vào nút "Hủy"
+        builder.setNegativeButton("Hủy") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        // Hiển thị dialog
+        builder.create().show()
+    }
+
+    fun disableUser(uid: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+
+            val request = UserRequest(uid)
+            RetrofitInstance.api.disableUser(request).enqueue(object : Callback<ApiResponse> {
+                override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+                    if (response.isSuccessful) {
+                        Log.d("disableUser","disableUser: ${response.body()?.message}")
+                        Toast.makeText(this@TechManagementActivity, "Đã khóa tài khoản", Toast.LENGTH_SHORT).show()
+                        // Cập nhật lại recyclerView
+                        userManagementAdapter.notifyDataSetChanged()
+                    } else {
+                        Log.d("disableUser","disableUser: ${response.errorBody()}")
+                    }
+                }
+
+                override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                    Log.d("disableUser","disableUser: ${t.message}")
+                }
+            })
+
+        }
     }
 
     private fun showGrantAdminConfirmationDialog(technician: User) {

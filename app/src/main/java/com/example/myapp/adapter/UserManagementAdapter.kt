@@ -80,7 +80,7 @@ class UserManagementAdapter (private var technicianList: List<User>, private val
                             holder.tvStatusAccount.text = "Đã khóa"
                             holder.tvStatusAccount.setTextColor(holder.itemView.context.resources.getColor(R.color.red))
                         } else {
-                            holder.tvStatusAccount.text = "Đang hoạt động"
+                            holder.tvStatusAccount.text = "Hoạt động"
                             holder.tvStatusAccount.setTextColor(holder.itemView.context.resources.getColor(R.color.green))
                         }
                     }else{
