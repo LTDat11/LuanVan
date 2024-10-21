@@ -4,7 +4,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
-    private const val BASE_URL = "https://backend-firebase.onrender.com"
+    //private const val BASE_URL = "https://backend-firebase.onrender.com"
+    private const val BASE_URL = "https://backend-rho-rust.vercel.app"
 
     val api: UserApiService by lazy {
         Retrofit.Builder()

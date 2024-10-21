@@ -191,16 +191,28 @@ class CustomerManagementActivity : AppCompatActivity() {
                     showGrantAdminConfirmationDialog(customer)
                 }
                 1 -> {
-                    // Khóa tài khoản
-                    showDisableUserConfirmationDialog(customer)
+                    checkStatus(customer.id) { isDisabled ->
+                        if (isDisabled) {
+                            Toast.makeText(this, "Không thể khóa tài khoản đang bị khóa", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // Khóa tài khoản
+                            showDisableUserConfirmationDialog(customer)
+                        }
+                    }
                 }
                 2 -> {
                     // Xóa tài khoản
                     showDeleteUserConfirmationDialog(customer)
                 }
                 3 -> {
-                    // Mở khóa tài khoản
-                    showEnableUserConfirmationDialog(customer)
+                    checkStatus(customer.id) { isDisabled ->
+                        if (!isDisabled) {
+                            Toast.makeText(this, "Không thể mở khóa tài khoản đang hoạt động", Toast.LENGTH_SHORT).show()
+                        } else {
+                            // Mở khóa tài khoản
+                            showEnableUserConfirmationDialog(customer)
+                        }
+                    }
                 }
                 else -> {
                     dialog.dismiss()
@@ -210,6 +222,26 @@ class CustomerManagementActivity : AppCompatActivity() {
 
         // Hiển thị dialog
         builder.create().show()
+    }
+
+    private fun checkStatus(uid: String, callback: (Boolean) -> Unit) {
+        val request = UserRequest(uid)
+        RetrofitInstance.api.checkUserStatus(request).enqueue(object : Callback<ApiResponse> {
+            override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+                if (response.isSuccessful) {
+                    val isDisabled = response.body()?.isDisabled ?: false
+                    callback(isDisabled)
+                } else {
+                    Log.d("checkUserStatus", "Không tìm thấy tài khoản")
+                    callback(false) // Mặc định tài khoản không bị khóa nếu không tìm thấy
+                }
+            }
+
+            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                Log.d("checkUserStatus", "Lỗi: ${t.message}")
+                callback(false) // Xử lý lỗi mặc định tài khoản không bị khóa
+            }
+        })
     }
 
     private fun showEnableUserConfirmationDialog(customer: User) {
@@ -241,6 +273,8 @@ class CustomerManagementActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         Log.d("enableUser","enableUser: ${response.body()?.message}")
                         Toast.makeText(this@CustomerManagementActivity, "Đã mở khóa tài khoản", Toast.LENGTH_SHORT).show()
+                        // Cập nhật lại recyclerView
+                        userManagementAdapter.notifyDataSetChanged()
                     } else {
                         Log.d("enableUser","enableUser: ${response.errorBody()}")
                     }
@@ -261,7 +295,6 @@ class CustomerManagementActivity : AppCompatActivity() {
 
         // Set hành động khi nhấn vào nút "Xác nhận"
         builder.setPositiveButton("Xác nhận") { dialog, _ ->
-            disableUser(customer.id)  // Gọi hàm khóa tài khoản
             deleteUser(customer.id)  // Gọi hàm xóa tài khoản
             dialog.dismiss()
         }
@@ -282,6 +315,8 @@ class CustomerManagementActivity : AppCompatActivity() {
                     deleteCustomerFromFirestore(uid)
                     Log.d("deleteUser", "deleteUser: ${response.body()?.message}")
                     Toast.makeText(this@CustomerManagementActivity, "Đã xóa tài khoản", Toast.LENGTH_SHORT).show()
+                    // Cập nhật lại recyclerView
+                    userManagementAdapter.notifyDataSetChanged()
                 } else {
                     Log.d("deleteUser", "deleteUser: ${response.errorBody()?.string()}") // In ra nội dung lỗi
                     Log.d("deleteUser", "Response Code: ${response.code()}")
@@ -343,6 +378,8 @@ class CustomerManagementActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         Log.d("disableUser","disableUser: ${response.body()?.message}")
                         Toast.makeText(this@CustomerManagementActivity, "Đã khóa tài khoản", Toast.LENGTH_SHORT).show()
+                        // Cập nhật lại recyclerView
+                        userManagementAdapter.notifyDataSetChanged()
                     } else {
                         Log.d("disableUser","disableUser: ${response.errorBody()}")
                     }

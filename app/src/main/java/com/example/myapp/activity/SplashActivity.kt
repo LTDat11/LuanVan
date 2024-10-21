@@ -21,6 +21,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Call
@@ -152,31 +154,41 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun checkUserStatusFromServer(uid: String) {
-        val request = UserRequest(uid)
+        CoroutineScope(Dispatchers.IO).launch {
 
-        //thiết lập Retrofit để gọi API
-        RetrofitInstance.api.checkUserStatus(request).enqueue(object : Callback<ApiResponse> {
-            override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
-                if (response.isSuccessful) {
-                    val isDisabled = response.body()?.isDisabled ?: false
-                    if (isDisabled) {
-                        // Nếu người dùng bị khóa, thực hiện logout
+            val request = UserRequest(uid)
+
+            //thiết lập Retrofit để gọi API
+            RetrofitInstance.api.checkUserStatus(request).enqueue(object : Callback<ApiResponse> {
+                override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+                    if (response.isSuccessful) {
+                        val isDisabled = response.body()?.isDisabled ?: false
+                        if (isDisabled) {
+                            // Nếu người dùng bị khóa, thực hiện logout
+                            FirebaseAuth.getInstance().signOut()
+                            Toast.makeText(this@SplashActivity, "Tài khoản của bạn đã bị khóa.", Toast.LENGTH_LONG).show()
+                            goToLoginActivity() // Quay lại trang đăng nhập
+                        } else {
+                            // Tiếp tục lấy thông tin người dùng
+                            getUserInfo(uid)
+                        }
+                    } else if (response.code() == 404) {
+                        // Nếu không tìm thấy người dùng, thực hiện logout
                         FirebaseAuth.getInstance().signOut()
-                        Toast.makeText(this@SplashActivity, "Tài khoản của bạn đã bị khóa.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@SplashActivity, "Tài khoản của bạn đã bị xóa.", Toast.LENGTH_LONG).show()
                         goToLoginActivity() // Quay lại trang đăng nhập
-                    } else {
-                        // Tiếp tục lấy thông tin người dùng
-                        getUserInfo(uid)
                     }
-                } else {
-                    Log.d("checkUserStatus", "Lỗi: ${response.errorBody()}")
+                    else {
+                        Log.d("checkUserStatus", "Lỗi: ${response.errorBody()}")
+                    }
                 }
-            }
 
-            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
-                Log.d("checkUserStatus", "Lỗi: ${t.message}")
-            }
-        })
+                override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                    Log.d("checkUserStatus", "Lỗi: ${t.message}")
+                }
+            })
+
+        }
     }
 
     private fun getUserInfo(uid: String) {

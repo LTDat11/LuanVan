@@ -1,5 +1,6 @@
 package com.example.myapp.adapter
 
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
@@ -7,13 +8,19 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.myapp.R
+import com.example.myapp.model.ApiResponse
+import com.example.myapp.model.RetrofitInstance
 import com.example.myapp.model.User
+import com.example.myapp.model.UserRequest
 import com.google.firebase.firestore.FirebaseFirestore
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class UserManagementAdapter (private var technicianList: List<User>, private val onMoreClickListener: (User) -> Unit): RecyclerView.Adapter<UserManagementAdapter.UserManagementViewHolder>() {
 
@@ -27,6 +34,7 @@ class UserManagementAdapter (private var technicianList: List<User>, private val
         val tvTechnicianPhone: TextView = itemView.findViewById(R.id.tvTechnicianPhone)
         val tvTechnicianEmail: TextView = itemView.findViewById(R.id.tvTechnicianEmail)
         val tvJobCount: TextView = itemView.findViewById(R.id.technicain_job_count)
+        val tvStatusAccount : TextView = itemView.findViewById(R.id.tvStatusAccount)
         val btnMore: ImageButton = itemView.findViewById(R.id.btnMore)
     }
 
@@ -46,6 +54,7 @@ class UserManagementAdapter (private var technicianList: List<User>, private val
             .load(technician.imageURL)
             .placeholder(R.drawable.ic_launcher_foreground)
             .into(holder.imgTechnician)
+        callAPI(technician, holder)
 
         // check role of  user and show/hide layout based on role of user
         // if user is admin and customer then hide layoutTechnicianDiscription
@@ -58,6 +67,32 @@ class UserManagementAdapter (private var technicianList: List<User>, private val
 
 //        holder.layoutTechnicianDiscription.visibility = if (technician.description.isNullOrEmpty()) View.GONE else View.VISIBLE
         holder.btnMore.setOnClickListener { onMoreClickListener(technician) }
+    }
+
+    private fun callAPI(technician: User, holder: UserManagementAdapter.UserManagementViewHolder) {
+        CoroutineScope(Dispatchers.IO).launch {
+           val request = UserRequest(technician.id)
+            RetrofitInstance.api.checkUserStatus(request).enqueue(object : Callback<ApiResponse>{
+                override fun onResponse(call: Call<ApiResponse>, response: Response<ApiResponse>) {
+                    if (response.isSuccessful) {
+                        val isDisabled = response.body()?.isDisabled ?: false
+                        if (isDisabled) {
+                            holder.tvStatusAccount.text = "Đã khóa"
+                            holder.tvStatusAccount.setTextColor(holder.itemView.context.resources.getColor(R.color.red))
+                        } else {
+                            holder.tvStatusAccount.text = "Đang hoạt động"
+                            holder.tvStatusAccount.setTextColor(holder.itemView.context.resources.getColor(R.color.green))
+                        }
+                    }else{
+                        holder.tvStatusAccount.text = "Không tìm thấy"
+                    }
+                }
+
+                override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                    Log.d("checkUserStatus", "Lỗi: ${t.message}")
+                }
+            })
+        }
     }
 
     private fun getTechJobCount(id: String, holder: UserManagementAdapter.UserManagementViewHolder) {
