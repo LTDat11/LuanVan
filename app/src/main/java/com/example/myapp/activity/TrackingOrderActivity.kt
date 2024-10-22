@@ -116,10 +116,13 @@ class TrackingOrderActivity : AppCompatActivity() {
         val totalPriceText = binding.tvTotalPrice.text.toString().replace(",", "").replace("VND", "").trim()
         val total = totalPriceText.toDoubleOrNull() ?: 0.0
         val totalString = String.format("%.0f", total)
+        // Lấy tên gói dịch vụ và mô tả
+        val packageName = binding.tvPackageName.text.toString()
+        val description = binding.tvDescriptionValue.text.toString()
         val orderApi = CreateOrder()
 
         try {
-            val data = orderApi.createOrder(totalString)
+            val data = orderApi.createOrder(totalString, packageName, description)
             val code = data.getString("returncode")
 
             if (code == "1") {
