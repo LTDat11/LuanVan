@@ -22,6 +22,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -175,30 +179,36 @@ class LoginActivity : BaseActivity()  {
     }
 
     private fun checkEmail(email: String, password: String){
-        val request = CheckEmailRequest(email)
-        showProgressDialog(true)
-        RetrofitInstance.api.checkEmail(request).enqueue(object : Callback<CheckEmailResponse> {
-            override fun onResponse(call: Call<CheckEmailResponse>, response: Response<CheckEmailResponse>) {
-                if (response.isSuccessful) {
-                    val checkEmailResponse = response.body()
-                    if (checkEmailResponse != null){
-                        if (checkEmailResponse.registered){
-                            loginUserFirebase(email, password)
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+
+                val request = CheckEmailRequest(email)
+                showProgressDialog(true)
+                RetrofitInstance.api.checkEmail(request).enqueue(object : Callback<CheckEmailResponse> {
+                    override fun onResponse(call: Call<CheckEmailResponse>, response: Response<CheckEmailResponse>) {
+                        if (response.isSuccessful) {
+                            val checkEmailResponse = response.body()
+                            if (checkEmailResponse != null){
+                                if (checkEmailResponse.registered){
+                                    loginUserFirebase(email, password)
+                                } else {
+                                    showProgressDialog(false)
+                                    showToastMessage("Email chưa được người dùng đăng ký!")
+                                }
+                            }
                         } else {
                             showProgressDialog(false)
-                            showToastMessage("Email chưa được người dùng đăng ký!")
+                            showToastMessage("Lỗi từ server: ${response.errorBody()?.string()}")
                         }
                     }
-                } else {
-                    showProgressDialog(false)
-                    showToastMessage("Lỗi từ server: ${response.errorBody()?.string()}")
-                }
-            }
 
-            override fun onFailure(call: Call<CheckEmailResponse>, t: Throwable) {
-                showProgressDialog(false)
-                Log.e("CheckEmail", "Error: ${t.message}")
+                    override fun onFailure(call: Call<CheckEmailResponse>, t: Throwable) {
+                        showProgressDialog(false)
+                        Log.e("CheckEmail", "Error: ${t.message}")
+                    }
+                })
+
             }
-        })
+        }
     }
 }

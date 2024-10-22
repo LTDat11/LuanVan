@@ -23,6 +23,10 @@ import com.example.myapp.model.User
 import com.example.myapp.model.UserRequest
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -210,31 +214,38 @@ class RegisterActivity : BaseActivity() {
     }
 
     private fun checkEmail(email: String, password: String){
-        val request = CheckEmailRequest(email)
-        showProgressDialog(true)
-        RetrofitInstance.api.checkEmail(request).enqueue(object : Callback<CheckEmailResponse> {
-            override fun onResponse(call: Call<CheckEmailResponse>, response: Response<CheckEmailResponse>) {
-                if (response.isSuccessful) {
-                    val checkEmailResponse = response.body()
-                    if (checkEmailResponse != null){
-                        if (checkEmailResponse.registered){
-                            showProgressDialog(false)
-                            showToastMessage("Email đã được sử dụng!, vui lòng chọn email khác")
+        CoroutineScope(Dispatchers.IO).launch {
+            withContext(Dispatchers.Main){
+
+                val request = CheckEmailRequest(email)
+                showProgressDialog(true)
+                RetrofitInstance.api.checkEmail(request).enqueue(object : Callback<CheckEmailResponse> {
+                    override fun onResponse(call: Call<CheckEmailResponse>, response: Response<CheckEmailResponse>) {
+                        if (response.isSuccessful) {
+                            val checkEmailResponse = response.body()
+                            if (checkEmailResponse != null){
+                                if (checkEmailResponse.registered){
+                                    showProgressDialog(false)
+                                    showToastMessage("Email đã được sử dụng!, vui lòng chọn email khác")
+                                } else {
+                                    registerUserFirebase(email, password)
+                                }
+                            }
                         } else {
-                            registerUserFirebase(email, password)
+                            showProgressDialog(false)
+                            showToastMessage("Lỗi từ server: ${response.errorBody()?.string()}")
                         }
                     }
-                } else {
-                    showProgressDialog(false)
-                    showToastMessage("Lỗi từ server: ${response.errorBody()?.string()}")
-                }
-            }
 
-            override fun onFailure(call: Call<CheckEmailResponse>, t: Throwable) {
-                showProgressDialog(false)
-                Log.e("CheckEmail", "Error: ${t.message}")
+                    override fun onFailure(call: Call<CheckEmailResponse>, t: Throwable) {
+                        showProgressDialog(false)
+                        Log.e("CheckEmail", "Error: ${t.message}")
+                    }
+                })
+
             }
-        })
+        }
+
     }
 
     private fun setCustomClaims(uid: String) {
