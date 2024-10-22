@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
@@ -12,12 +13,18 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.example.myapp.R
+import com.example.myapp.model.CheckEmailRequest
+import com.example.myapp.model.CheckEmailResponse
+import com.example.myapp.model.RetrofitInstance
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class LoginActivity : BaseActivity()  {
 
@@ -115,16 +122,15 @@ class LoginActivity : BaseActivity()  {
             strEmail.isEmpty() -> showToastMessage(getString(R.string.msg_email_require))
             strPassword.isEmpty() -> showToastMessage(getString(R.string.msg_password_require))
             !Patterns.EMAIL_ADDRESS.matcher(strEmail).matches() -> showToastMessage(getString(R.string.msg_email_invalid))
-            else -> loginUserFirebase(strEmail, strPassword)
+            else -> checkEmail(strEmail, strPassword)
         }
     }
 
     private fun loginUserFirebase(email: String, password: String) {
-        showProgressDialog(true)
+
         val firebaseAuth = FirebaseAuth.getInstance()
         firebaseAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task: Task<AuthResult?> ->
-                showProgressDialog(false)
                 if (task.isSuccessful) {
                     val user = firebaseAuth.currentUser
                     if (user != null) {
@@ -135,31 +141,64 @@ class LoginActivity : BaseActivity()  {
                                 if (document != null) {
                                     val role = document.getString("role")
                                     if (role == "Customer") {
+                                            showProgressDialog(false)
                                             val intent = Intent(this, MainActivity::class.java)
                                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
                                             startActivity(intent)
                                     } else if (role == "Technician") {
+                                            showProgressDialog(false)
                                             val intent = Intent(this, TechnicianActivity::class.java)
                                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
                                             startActivity(intent)
                                     }
                                     else {
+                                        showProgressDialog(false)
                                         val intent = Intent(this, AdminActivity::class.java)
                                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
                                         startActivity(intent)
                                     }
                                 } else {
-                                    showToastMessage(getString(R.string.msg_login_error))
-
+                                    showProgressDialog(false)
+                                    showToastMessage("Lỗi xác thực người dùng!")
                                 }
                             }
                             .addOnFailureListener { e ->
-                                showToastMessage(getString(R.string.msg_login_error))
+                                showProgressDialog(false)
+                                showToastMessage("Lỗi xác thực người dùng: ${e.message}")
                             }
                     }
                 } else {
-                    showToastMessage(getString(R.string.msg_login_error))
+                    showProgressDialog(false)
+                    showToastMessage("Sai mật khẩu vui lòng kiểm tra lại!")
                 }
             }
+    }
+
+    private fun checkEmail(email: String, password: String){
+        val request = CheckEmailRequest(email)
+        showProgressDialog(true)
+        RetrofitInstance.api.checkEmail(request).enqueue(object : Callback<CheckEmailResponse> {
+            override fun onResponse(call: Call<CheckEmailResponse>, response: Response<CheckEmailResponse>) {
+                if (response.isSuccessful) {
+                    val checkEmailResponse = response.body()
+                    if (checkEmailResponse != null){
+                        if (checkEmailResponse.registered){
+                            loginUserFirebase(email, password)
+                        } else {
+                            showProgressDialog(false)
+                            showToastMessage("Email chưa được người dùng đăng ký!")
+                        }
+                    }
+                } else {
+                    showProgressDialog(false)
+                    showToastMessage("Lỗi từ server: ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(call: Call<CheckEmailResponse>, t: Throwable) {
+                showProgressDialog(false)
+                Log.e("CheckEmail", "Error: ${t.message}")
+            }
+        })
     }
 }
