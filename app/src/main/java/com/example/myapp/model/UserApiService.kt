@@ -22,4 +22,7 @@ interface UserApiService {
     @POST("/set-custom-claims")
     fun setCustomClaims(@Body request: UserRequest): Call<ApiResponse>
 
+    @POST("check-email")
+    fun checkEmail(@Body request: CheckEmailRequest): Call<CheckEmailResponse>
+
 }

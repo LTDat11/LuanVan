@@ -14,6 +14,8 @@ import android.widget.RadioGroup
 import androidx.core.content.ContextCompat
 import com.example.myapp.R
 import com.example.myapp.model.ApiResponse
+import com.example.myapp.model.CheckEmailRequest
+import com.example.myapp.model.CheckEmailResponse
 import com.example.myapp.model.RetrofitInstance
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -114,13 +116,12 @@ class RegisterActivity : BaseActivity() {
             strEmail.isEmpty() -> showToastMessage(getString(R.string.msg_email_require))
             strPassword.isEmpty() -> showToastMessage(getString(R.string.msg_password_require))
             !Patterns.EMAIL_ADDRESS.matcher(strEmail).matches() -> showToastMessage(getString(R.string.msg_email_invalid))
-            else -> registerUserFirebase(strEmail, strPassword)
+            else -> checkEmail(strEmail, strPassword)
         }
     }
 
 //   Register with firebase auth
     private fun registerUserFirebase(email: String, password: String) {
-        showProgressDialog(true)
         val auth = FirebaseAuth.getInstance()
         auth.createUserWithEmailAndPassword(email,password)
             .addOnCompleteListener { task ->
@@ -203,8 +204,37 @@ class RegisterActivity : BaseActivity() {
             }
             .addOnFailureListener { exception ->
                 showProgressDialog(false)
-                showToastMessage("Registration failed: ${exception.message}")
+//                showToastMessage("Registration failed: ${exception.message}")
+                Log.e("Registration", "Registration failed: ${exception.message}", exception)
             }
+    }
+
+    private fun checkEmail(email: String, password: String){
+        val request = CheckEmailRequest(email)
+        showProgressDialog(true)
+        RetrofitInstance.api.checkEmail(request).enqueue(object : Callback<CheckEmailResponse> {
+            override fun onResponse(call: Call<CheckEmailResponse>, response: Response<CheckEmailResponse>) {
+                if (response.isSuccessful) {
+                    val checkEmailResponse = response.body()
+                    if (checkEmailResponse != null){
+                        if (checkEmailResponse.registered){
+                            showProgressDialog(false)
+                            showToastMessage("Email đã được sử dụng!, vui lòng chọn email khác")
+                        } else {
+                            registerUserFirebase(email, password)
+                        }
+                    }
+                } else {
+                    showProgressDialog(false)
+                    showToastMessage("Lỗi từ server: ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(call: Call<CheckEmailResponse>, t: Throwable) {
+                showProgressDialog(false)
+                Log.e("CheckEmail", "Error: ${t.message}")
+            }
+        })
     }
 
     private fun setCustomClaims(uid: String) {
