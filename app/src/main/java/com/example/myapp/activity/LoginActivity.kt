@@ -20,8 +20,10 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -131,7 +133,6 @@ class LoginActivity : BaseActivity()  {
     }
 
     private fun loginUserFirebase(email: String, password: String) {
-
         val firebaseAuth = FirebaseAuth.getInstance()
         firebaseAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task: Task<AuthResult?> ->
@@ -144,22 +145,33 @@ class LoginActivity : BaseActivity()  {
                             .addOnSuccessListener { document ->
                                 if (document != null) {
                                     val role = document.getString("role")
-                                    if (role == "Customer") {
-                                            showProgressDialog(false)
-                                            val intent = Intent(this, MainActivity::class.java)
-                                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-                                            startActivity(intent)
-                                    } else if (role == "Technician") {
-                                            showProgressDialog(false)
-                                            val intent = Intent(this, TechnicianActivity::class.java)
-                                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-                                            startActivity(intent)
-                                    }
-                                    else {
+                                    if (role != null) {
+                                        // Cập nhật FCM Token sau khi đăng nhập
+                                        updateFCMToken(uid, role)
+
+                                        when (role) {
+                                            "Customer" -> {
+                                                showProgressDialog(false)
+                                                val intent = Intent(this, MainActivity::class.java)
+                                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                                startActivity(intent)
+                                            }
+                                            "Technician" -> {
+                                                showProgressDialog(false)
+                                                val intent = Intent(this, TechnicianActivity::class.java)
+                                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                                startActivity(intent)
+                                            }
+                                            else -> {
+                                                showProgressDialog(false)
+                                                val intent = Intent(this, AdminActivity::class.java)
+                                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
+                                                startActivity(intent)
+                                            }
+                                        }
+                                    } else {
                                         showProgressDialog(false)
-                                        val intent = Intent(this, AdminActivity::class.java)
-                                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK // Clear the back stack
-                                        startActivity(intent)
+                                        showToastMessage("Role không hợp lệ!")
                                     }
                                 } else {
                                     showProgressDialog(false)
@@ -177,6 +189,44 @@ class LoginActivity : BaseActivity()  {
                 }
             }
     }
+
+    private fun updateFCMToken(userId: String, role: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+
+            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                if (task.isSuccessful && task.result != null) {
+                    val fcmToken = task.result
+
+                    // Chuẩn bị dữ liệu để lưu vào Firestore
+                    val userData = mapOf(
+                        "fcmToken" to fcmToken
+                    )
+
+                    val collectionName = when (role) {
+                        "Customer" -> "Customers"
+                        "Technician" -> "Technicians"
+                        "Admin" -> "Admins"
+                        else -> null
+                    }
+
+                    collectionName?.let {
+                        db.collection(it).document(userId)
+                            .set(userData, SetOptions.merge())
+                            .addOnSuccessListener {
+                                Log.d("FCM Token", "FCM Token updated successfully for user: $userId")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("FCM Token", "Failed to update FCM Token: ${e.message}")
+                            }
+                    } ?: Log.e("FCM Token", "Invalid role provided for user: $userId")
+                } else {
+                    Log.e("FCM Token", "Failed to retrieve FCM Token: ${task.exception?.message}")
+                }
+            }
+
+        }
+    }
+
 
     private fun checkEmail(email: String, password: String){
         CoroutineScope(Dispatchers.IO).launch {

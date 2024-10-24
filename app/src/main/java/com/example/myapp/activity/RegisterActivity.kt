@@ -21,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.myapp.model.User
 import com.example.myapp.model.UserRequest
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.CoroutineScope
@@ -167,7 +168,7 @@ class RegisterActivity : BaseActivity() {
                                     .set(user)
                                     .addOnSuccessListener {
                                         // Thêm UID vào collection tương ứng
-                                        //addUserToRoleSpecificCollection(userId, selectedRole)
+                                        addUserToRoleSpecificCollection(userId, selectedRole)
                                         // Gọi API để thêm custom claims
                                         setCustomClaims(userId)
                                         // Kiểm tra role tương ứng để chuyển hướng
@@ -270,9 +271,8 @@ class RegisterActivity : BaseActivity() {
     private fun addUserToRoleSpecificCollection(userId: String, role: String) {
         val db = FirebaseFirestore.getInstance()
 
-        // Lấy FCM Token
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
+            if (task.isSuccessful && task.result != null) {
                 val fcmToken = task.result
 
                 // Chuẩn bị dữ liệu để lưu vào Firestore
@@ -281,33 +281,30 @@ class RegisterActivity : BaseActivity() {
                     "fcmToken" to fcmToken
                 )
 
-                when (role) {
-                    "Customer" -> {
-                        db.collection("Customers").document(userId)
-                            .set(userData)
-                            .addOnSuccessListener {
-                                // UID và FCM Token đã được thêm vào collection "Customers"
-                            }
-                            .addOnFailureListener { e ->
-                                showToastMessage("Failed to add to Customers collection: ${e.message}")
-                            }
-                    }
-                    "Technician" -> {
-                        db.collection("Technicians").document(userId)
-                            .set(userData)
-                            .addOnSuccessListener {
-                                // UID và FCM Token đã được thêm vào collection "Technicians"
-                            }
-                            .addOnFailureListener { e ->
-                                showToastMessage("Failed to add to Technicians collection: ${e.message}")
-                            }
-                    }
+                val collectionName = when (role) {
+                    "Customer" -> "Customers"
+                    "Technician" -> "Technicians"
+                    "Admin" -> "Admins"
+                    else -> null
                 }
+
+                collectionName?.let {
+                    db.collection(it).document(userId)
+                        .set(userData, SetOptions.merge())
+                        .addOnSuccessListener {
+                            // UID và FCM Token đã được thêm vào collection
+                        }
+                        .addOnFailureListener { e ->
+                            showToastMessage("Lỗi khi add to $it collection: ${e.message}")
+                        }
+                } ?: showToastMessage("Vai trò không hợp lệ.")
+
             } else {
-                showToastMessage("Failed to retrieve FCM Token: ${task.exception?.message}")
+                showToastMessage("Lỗi: ${task.exception?.message}")
             }
         }
     }
+
 
 
 }

@@ -25,4 +25,7 @@ interface UserApiService {
     @POST("check-email")
     fun checkEmail(@Body request: CheckEmailRequest): Call<CheckEmailResponse>
 
+    @POST("/send-notification")
+    fun sendNotification(@Body request: NotificationRequest): Call<Void>
+
 }

@@ -36,7 +36,7 @@ class SplashActivity : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
 
         // Tạo kênh thông báo
-        createNotificationChannel()
+        //createNotificationChannel()
 
         lifecycleScope.launch {
             delay(2000) // Delay 2 seconds
