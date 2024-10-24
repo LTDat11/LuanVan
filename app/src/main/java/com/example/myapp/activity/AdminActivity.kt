@@ -120,7 +120,7 @@ class AdminActivity : AppCompatActivity() {
 
     private fun listenChange() {
         CoroutineScope(Dispatchers.IO).launch {
-            val isAdmin = checkUserRole()
+//            val isAdmin = checkUserRole()
 
             withContext(Dispatchers.Main) {
                 val db = FirebaseFirestore.getInstance()
@@ -134,14 +134,14 @@ class AdminActivity : AppCompatActivity() {
                         if (snapshot != null) {
                             val count = snapshot.size()
 
-                            if (isAdmin && count > previousCount) {
-                                sendNotification(
-                                    count,
-                                    "high_priority_channel_id",
-                                    "Đơn hàng mới",
-                                    "Bạn có $count đơn hàng mới đang chờ xác nhận."
-                                )
-                            }
+//                            if (isAdmin && count > previousCount) {
+//                                sendNotification(
+//                                    count,
+//                                    "high_priority_channel_id",
+//                                    "Đơn hàng mới",
+//                                    "Bạn có $count đơn hàng mới đang chờ xác nhận."
+//                                )
+//                            }
 
                             updateBadgeForBottomNav(count)
                             previousCount = count

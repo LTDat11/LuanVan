@@ -98,7 +98,7 @@ class TechnicianActivity : AppCompatActivity() {
 
     private fun listenToTechnicianOrderUpdates(technicianId: String) {
         val db = FirebaseFirestore.getInstance()
-        var previousCount = 0  // Đảm bảo biến này được khai báo ở mức độ lớp nếu cần duy trì trạng thái trước đó
+//        var previousCount = 0  // Đảm bảo biến này được khai báo ở mức độ lớp nếu cần duy trì trạng thái trước đó
 
         db.collection("orders")
             .whereEqualTo("id_technician", technicianId)
@@ -111,14 +111,14 @@ class TechnicianActivity : AppCompatActivity() {
 
                 if (snapshot != null) {
                     val count = snapshot.size()
-                    if (count > previousCount) {
-                        sendNotification(
-                            count,
-                            "high_priority_channel_id",
-                            "Đơn hàng được phân công",
-                            "Bạn có $count đơn hàng được phân công."
-                        )
-                    }
+//                    if (count > previousCount) {
+//                        sendNotification(
+//                            count,
+//                            "high_priority_channel_id",
+//                            "Đơn hàng được phân công",
+//                            "Bạn có $count đơn hàng được phân công."
+//                        )
+//                    }
 
                     // Cập nhật giá trị previousCount
                     previousCount = count

@@ -129,28 +129,28 @@ class MainActivity : AppCompatActivity() {
                 if (snapshot != null) {
                     // Đếm số lượng đơn hàng theo trạng thái
                     var totalCount = 0
-                    var hasCompletedOrder = false
+//                    var hasCompletedOrder = false
 
                     for (doc in snapshot.documents) {
                         val status = doc.getString("status") ?: continue
                         if (statuses.contains(status)) {
                             totalCount++
                         }
-                        if (status == "completed") {
-                            hasCompletedOrder = true
-                        }
+//                        if (status == "completed") {
+//                            hasCompletedOrder = true
+//                        }
                     }
 
                     // Cập nhật badge và gửi thông báo nếu có đơn hàng hoàn tất
                     updateBadgeForBottomNav(totalCount)
 
-                    if (hasCompletedOrder) {
-                        sendNotification(
-                            "high_priority_channel_id",
-                            "Đơn hàng hoàn tất sửa chữa",
-                            "Bạn có đơn hàng đã sửa chữa xong. Vui lòng kiểm tra để thanh toán!"
-                        )
-                    }
+//                    if (hasCompletedOrder) {
+//                        sendNotification(
+//                            "high_priority_channel_id",
+//                            "Đơn hàng hoàn tất sửa chữa",
+//                            "Bạn có đơn hàng đã sửa chữa xong. Vui lòng kiểm tra để thanh toán!"
+//                        )
+//                    }
                 }
             }
     }
