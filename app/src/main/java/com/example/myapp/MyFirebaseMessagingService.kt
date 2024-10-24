@@ -6,19 +6,38 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.myapp.activity.MainActivity
 import com.example.myapp.activity.SplashActivity
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
 class MyFirebaseMessagingService: FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        // Xử lý thông báo nhận được ở đây
-        remoteMessage.notification?.let {
-            // Hiển thị thông báo
-            showNotification(it.title, it.body)
+        // Kiểm tra nếu có dữ liệu
+        if (remoteMessage.data.isNotEmpty()) {
+            val userId = remoteMessage.data["userId"]
+            Log.d("FCM", "Received userId: $userId")
+
+            // Kiểm tra xem userId có khớp với tài khoản đang đăng nhập không
+            if (userId == getCurrentUserId()) {
+                remoteMessage.notification?.let {
+                    // Hiển thị thông báo
+                    showNotification(it.title, it.body)
+                }
+            } else {
+                Log.d("FCM", "User ID does not match.")
+            }
+        } else {
+            Log.d("FCM", "No data in the message.")
         }
+    }
+
+    private fun getCurrentUserId(): String? {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        return currentUser?.uid // Hoặc cách nào đó để lấy ID người dùng
     }
 
     private fun showNotification(title: String?, body: String?) {
