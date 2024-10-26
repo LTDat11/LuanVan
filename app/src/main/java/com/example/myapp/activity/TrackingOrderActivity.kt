@@ -389,15 +389,27 @@ class TrackingOrderActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.Main) {
                 val db = FirebaseFirestore.getInstance()
-                val docRef = db.collection("paymentMethods")
-                docRef.get().addOnSuccessListener { documents ->
-                    val paymentMethods = documents.toObjects(PaymentMethod::class.java)
-                    val adapter = PaymentMethodAdapter(paymentMethods) { selectedPaymentMethod ->
-                        selectedPaymentMethodId = selectedPaymentMethod.id // Cập nhật id đã chọn
-                        Log.d("TrackingOrderActivity", "Selected payment method: ${selectedPaymentMethod.id}")
+                val paymentMethodsRef = db.collection("paymentMethods")
+                    .whereEqualTo("isAvailable", true) // Chỉ lấy những document có isAvailable = true
+
+                // Dùng snapshot listener để lắng nghe sự thay đổi
+                paymentMethodsRef.addSnapshotListener { snapshots, e ->
+                    if (e != null) {
+                        Log.w("TrackingOrderActivity", "Listen failed.", e)
+                        return@addSnapshotListener
                     }
-                    binding.rcvPaymentMethod.layoutManager = LinearLayoutManager(this@TrackingOrderActivity)
-                    binding.rcvPaymentMethod.adapter = adapter
+
+                    if (snapshots != null && !snapshots.isEmpty) {
+                        val paymentMethods = snapshots.toObjects(PaymentMethod::class.java)
+                        val adapter = PaymentMethodAdapter(paymentMethods) { selectedPaymentMethod ->
+                            selectedPaymentMethodId = selectedPaymentMethod.id // Cập nhật id đã chọn
+                            Log.d("TrackingOrderActivity", "Selected payment method: ${selectedPaymentMethod.id}")
+                        }
+                        binding.rcvPaymentMethod.layoutManager = LinearLayoutManager(this@TrackingOrderActivity)
+                        binding.rcvPaymentMethod.adapter = adapter
+                    } else {
+                        Log.d("TrackingOrderActivity", "No payment methods found or all are unavailable.")
+                    }
                 }
             }
         }

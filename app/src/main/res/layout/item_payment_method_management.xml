@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/white">
+
+    <!-- Dòng chứa icon và thông tin phương thức -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- Icon phương thức thanh toán -->
+        <ImageView
+            android:id="@+id/img_payment_method"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_gopay" />
+
+        <!-- Thông tin phương thức thanh toán -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textColor="@color/textColorHeading"
+                android:textStyle="bold"
+                android:text="@string/app_name"/>
+
+            <TextView
+                android:id="@+id/tv_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textSize="12sp"
+                android:textColor="@color/textColorSecondary"
+                android:text="@string/app_name"/>
+        </LinearLayout>
+
+        <!-- Icon trạng thái khóa/mở -->
+        <ImageView
+            android:id="@+id/img_status"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/baseline_lock_open_24" />
+    </LinearLayout>
+
+    <!-- Đường kẻ dưới item -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:background="@color/bgMainColor" />
+</LinearLayout>

@@ -39,6 +39,7 @@
     <string name="tech_management">Quản lý kỹ thuật viên</string>
     <string name="cust_management">Quản lý khách hàng</string>
     <string name="admin_management">Quản lý quản trị viên</string>
+    <string name="payment_management">Quản lý phương thức thanh toán</string>
     <string name="msg_old_password_require">Vui lòng nhập mật khẩu cũ</string>
     <string name="msg_new_password_require">Vui lòng nhập mật khẩu mới</string>
     <string name="msg_confirm_password_require">Vui lòng xác nhận mật khẩu mới</string>
@@ -156,6 +157,7 @@
     <string name="option_two">Quản lý khách hàng</string>
     <string name="option_three">Quản lý Banner</string>
     <string name="option_four">Quản lý quản trị viên</string>
+    <string name="option_five">Quản lý phương thức thanh toán</string>
 
 
     <!-- String array    -->

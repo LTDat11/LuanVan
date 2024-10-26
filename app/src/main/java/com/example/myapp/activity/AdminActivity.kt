@@ -224,6 +224,12 @@ class AdminActivity : AppCompatActivity() {
             bottomSheetDialog.dismiss()
         }
 
+        bottomSheetView.findViewById<TextView>(R.id.option_five).setOnClickListener {
+            val intent = Intent(this, PaymentMethodManagementActivity::class.java)
+            startActivity(intent)
+            bottomSheetDialog.dismiss()
+        }
+
         bottomSheetDialog.setOnDismissListener {
             // Chuyển menu về trang home
             mBottomNavigationView?.menu?.findItem(R.id.nav_home)?.isChecked = true
