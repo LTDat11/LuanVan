@@ -71,7 +71,7 @@ class MyFirebaseMessagingService: FirebaseMessagingService() {
             .setContentText(body)
             .setAutoCancel(true) // Tự động xóa thông báo khi nhấn
             .setContentIntent(pendingIntent)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT) // Đặt mức độ ưu tiên cho thông báo
+            .setPriority(NotificationCompat.PRIORITY_HIGH) // Đặt mức độ ưu tiên cho thông báo
 
         // Hiển thị thông báo
         notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())

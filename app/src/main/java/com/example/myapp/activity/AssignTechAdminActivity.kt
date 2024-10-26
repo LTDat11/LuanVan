@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.widget.SearchView
@@ -15,13 +16,18 @@ import com.bumptech.glide.Glide
 import com.example.myapp.R
 import com.example.myapp.adapter.TechnicainListAdapter
 import com.example.myapp.databinding.ActivityAssignTechAdminBinding
+import com.example.myapp.model.NotificationRequest
 import com.example.myapp.model.Order
+import com.example.myapp.model.RetrofitInstance
 import com.example.myapp.model.User
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class AssignTechAdminActivity : AppCompatActivity() {
     lateinit var binding: ActivityAssignTechAdminBinding
@@ -30,6 +36,7 @@ class AssignTechAdminActivity : AppCompatActivity() {
     private lateinit var TechnicainListAdapter: TechnicainListAdapter
     private val technicain = mutableListOf<User>()
     private var orderId = ""
+    private var techuid = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,8 +68,10 @@ class AssignTechAdminActivity : AppCompatActivity() {
                             val idTechnician = snapshot.getString("id_technician") // Truy cập trực tiếp field id_technician
                             if (idTechnician != null) {
                                 binding.layoutBottom.visibility = View.VISIBLE
+                                techuid = idTechnician
                             } else {
                                 binding.layoutBottom.visibility = View.GONE // Ẩn nếu không có kỹ thuật viên
+                                techuid = ""
                             }
                         }
                     }
@@ -119,6 +128,7 @@ class AssignTechAdminActivity : AppCompatActivity() {
                     db.collection("orders").document(orderId)
                         .update("status", "processing","updatedAt", currentTime)
                         .addOnSuccessListener {
+                            getTokenFCM(techuid)
                             finish()
                         }
                         .addOnFailureListener {
@@ -164,6 +174,46 @@ class AssignTechAdminActivity : AppCompatActivity() {
             })
 
         }
+    }
+
+    private fun getTokenFCM(userId: String){
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = FirebaseFirestore.getInstance()
+            db.collection("Technicians").document(userId)
+                .get()
+                .addOnSuccessListener { document ->
+                    if (document != null) {
+                        val token = document.getString("fcmToken")
+                        if (token != null) {
+                            sendNotification(token, "Thông báo", "Bạn có đơn hàng mới được phân công. Vui lòng kiểm tra!!", userId)
+                        }
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("AssignTechAdminActivity", "Error getting token: ", exception)
+                }
+        }
+    }
+
+    private fun sendNotification(token: String, title: String, body: String, userId: String) {
+        val notificationRequest = NotificationRequest(token, title, body, userId) // Thêm userId vào yêu cầu
+
+        RetrofitInstance.api.sendNotification(notificationRequest).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    // Thông báo đã được gửi thành công
+                    Log.d("Notification", "Notification sent successfully.")
+                } else {
+                    // Xử lý khi có lỗi xảy ra
+                    Log.e("Notification", "Failed to send notification: ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                // Xử lý khi xảy ra lỗi kết nối
+                Log.e("Notification", "Error: ${t.message}")
+            }
+        })
     }
 
     private fun intitUI() {

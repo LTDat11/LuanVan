@@ -16,10 +16,18 @@ import com.bumptech.glide.Glide
 import com.example.myapp.R
 import com.example.myapp.adapter.RepairTechAdapter
 import com.example.myapp.databinding.ActivityTrackingOrderTechBinding
+import com.example.myapp.model.NotificationRequest
 import com.example.myapp.model.Order
 import com.example.myapp.model.Repair
+import com.example.myapp.model.RetrofitInstance
 import com.example.myapp.model.User
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -203,12 +211,37 @@ class TrackingOrderTechActivity : AppCompatActivity() {
         // Cập nhật trạng thái đơn hàng
         orderRef.update("status", "cancel", "updatedAt", currentTime, "cancelReason", reason)
             .addOnSuccessListener {
+                sendNotificationsToAdmins()
+                getFCMTokenToCancel(idCustomer)
                 finish()
             }
             .addOnFailureListener { e ->
                 Log.e("TrackingOrderTech", "Lỗi khi cập nhật trạng thái đơn hàng", e)
             }
     }
+
+    private fun sendNotificationsToAdmins() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = FirebaseFirestore.getInstance()
+
+            // Lấy tất cả các document trong collection "Admins"
+            db.collection("Admins").get()
+                .addOnSuccessListener { documents ->
+                    for (document in documents) {
+                        val fcmToken = document.getString("fcmToken") // Lấy fcmToken từ từng document
+                        val uid = document.getString("userId") // Lấy userId từ từng document
+                        if (!fcmToken.isNullOrEmpty() && !uid.isNullOrEmpty()) {
+                            // Gọi hàm sendNotification với từng token
+                            sendNotification(fcmToken, "Thông báo thanh toán", "Bạn có đơn hàng vừa mới thanh toán. Vui lòng kiểm tra!!", uid)
+                        }
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.w("Firestore", "Error getting documents: ", exception)
+                }
+        }
+    }
+
 
     private fun openGoogleMap() {
         // Lấy địa chỉ từ TextView
@@ -241,12 +274,64 @@ class TrackingOrderTechActivity : AppCompatActivity() {
                 Toast.makeText(this@TrackingOrderTechActivity, "Đã hoàn thành đơn hàng", Toast.LENGTH_SHORT).show()
                 binding.layoutBottom.visibility = View.GONE
                 binding.fabAddDeviceRepairs.visibility = View.GONE
+                getFCMToken(idCustomer)
                 finish()
             }
             .addOnFailureListener { e ->
                 Log.e("TrackingOrderTech", "Lỗi khi cập nhật trạng thái đơn hàng", e)
                 Toast.makeText(this@TrackingOrderTechActivity, "Có lỗi xảy ra, vui lòng thử lại sau", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun getFCMToken(idCustomer: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = FirebaseFirestore.getInstance()
+            val userRef = db.collection("Customers").document(idCustomer)
+            userRef.get().addOnSuccessListener { document ->
+                if (document != null) {
+                    val token = document.getString("fcmToken")
+                    if (token != null) {
+                        sendNotification(token,"Thông báo đơn hàng đang giao", "Bạn có đơn hàng đang được giao. Vui lòng chờ nhận hàng và thanh toán!!", idCustomer)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun getFCMTokenToCancel(idCustomer: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = FirebaseFirestore.getInstance()
+            val userRef = db.collection("Customers").document(idCustomer)
+            userRef.get().addOnSuccessListener { document ->
+                if (document != null) {
+                    val token = document.getString("fcmToken")
+                    if (token != null) {
+                        sendNotification(token,"Thông báo đơn hàng bị hủy", "Bạn có đơn hàng bị hủy, có thể xem lý do hủy để biết thêm chi tiết.", idCustomer)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun sendNotification(token: String, title: String, body: String, userId: String) {
+        val notificationRequest = NotificationRequest(token, title, body, userId) // Thêm userId vào yêu cầu
+
+        RetrofitInstance.api.sendNotification(notificationRequest).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    // Thông báo đã được gửi thành công
+                    Log.d("Notification", "Notification sent successfully.")
+                } else {
+                    // Xử lý khi có lỗi xảy ra
+                    Log.e("Notification", "Failed to send notification: ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                // Xử lý khi xảy ra lỗi kết nối
+                Log.e("Notification", "Error: ${t.message}")
+            }
+        })
     }
 
     private fun showDialogAdd() {

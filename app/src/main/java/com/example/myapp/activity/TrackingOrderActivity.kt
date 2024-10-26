@@ -20,9 +20,11 @@ import com.example.myapp.adapter.PaymentMethodAdapter
 import com.example.myapp.adapter.RepairAdapter
 import com.example.myapp.databinding.ActivityTrackingOrderBinding
 import com.example.myapp.model.Bill
+import com.example.myapp.model.NotificationRequest
 import com.example.myapp.model.Order
 import com.example.myapp.model.PaymentMethod
 import com.example.myapp.model.Repair
+import com.example.myapp.model.RetrofitInstance
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
@@ -31,6 +33,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import vn.zalopay.sdk.Environment
 import vn.zalopay.sdk.ZaloPayError
 import vn.zalopay.sdk.ZaloPaySDK
@@ -75,6 +80,7 @@ class TrackingOrderActivity : AppCompatActivity() {
                 payWithZaloPay()
             } else {
                 createBillAndUpdateOrder()
+                sendNotificationsToAdmins()
             }
         }
 
@@ -140,6 +146,7 @@ class TrackingOrderActivity : AppCompatActivity() {
 //                                .show()
 //                        }
                         createBillAndUpdateOrder()
+                        sendNotificationsToAdmins()
                     }
 
                     override fun onPaymentCanceled(zpTransToken: String, appTransID: String) {
@@ -168,6 +175,49 @@ class TrackingOrderActivity : AppCompatActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    private fun sendNotificationsToAdmins() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = FirebaseFirestore.getInstance()
+
+            // Lấy tất cả các document trong collection "Admins"
+            db.collection("Admins").get()
+                .addOnSuccessListener { documents ->
+                    for (document in documents) {
+                        val fcmToken = document.getString("fcmToken") // Lấy fcmToken từ từng document
+                        val uid = document.getString("userId") // Lấy userId từ từng document
+                        if (!fcmToken.isNullOrEmpty() && !uid.isNullOrEmpty()) {
+                            // Gọi hàm sendNotification với từng token
+                            sendNotification(fcmToken, "Thông báo thanh toán", "Bạn có đơn hàng vừa mới thanh toán. Vui lòng kiểm tra!!", uid)
+                        }
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.w("Firestore", "Error getting documents: ", exception)
+                }
+        }
+    }
+
+    private fun sendNotification(token: String, title: String, body: String, userId: String) {
+        val notificationRequest = NotificationRequest(token, title, body, userId) // Thêm userId vào yêu cầu
+
+        RetrofitInstance.api.sendNotification(notificationRequest).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    // Thông báo đã được gửi thành công
+                    Log.d("Notification", "Notification sent successfully.")
+                } else {
+                    // Xử lý khi có lỗi xảy ra
+                    Log.e("Notification", "Failed to send notification: ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                // Xử lý khi xảy ra lỗi kết nối
+                Log.e("Notification", "Error: ${t.message}")
+            }
+        })
     }
 
     override fun onNewIntent(intent: Intent?) {

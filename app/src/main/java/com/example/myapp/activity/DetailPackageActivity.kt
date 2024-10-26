@@ -3,6 +3,7 @@ package com.example.myapp.activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
@@ -10,10 +11,18 @@ import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.example.myapp.R
 import com.example.myapp.databinding.ActivityDetailPackageBinding
+import com.example.myapp.model.NotificationRequest
 import com.example.myapp.model.Order
+import com.example.myapp.model.RetrofitInstance
 import com.example.myapp.model.ServicePackage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -111,12 +120,58 @@ class DetailPackageActivity : AppCompatActivity() {
         orderRef.set(orderWithId)
             .addOnSuccessListener {
                 Toast.makeText(this, "Đặt hàng thành công", Toast.LENGTH_SHORT).show()
+                sendNotificationsToAdmins()
                 resetinput()
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Lỗi khi đặt hàng: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
+
+    private fun sendNotificationsToAdmins() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = FirebaseFirestore.getInstance()
+
+            // Lấy tất cả các document trong collection "Admins"
+            db.collection("Admins").get()
+                .addOnSuccessListener { documents ->
+                    for (document in documents) {
+                        val fcmToken = document.getString("fcmToken") // Lấy fcmToken từ từng document
+                        val uid = document.getString("userId") // Lấy userId từ từng document
+                        if (!fcmToken.isNullOrEmpty() && !uid.isNullOrEmpty()) {
+                            // Gọi hàm sendNotification với từng token
+                            sendNotification(fcmToken, "Thông báo", "Bạn có đơn hàng mới được đặt. Vui lòng kiểm tra!!", uid)
+                        }
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Log.w("Firestore", "Error getting documents: ", exception)
+                }
+        }
+    }
+
+    private fun sendNotification(token: String, title: String, body: String, userId: String) {
+        val notificationRequest = NotificationRequest(token, title, body, userId) // Thêm userId vào yêu cầu
+
+        RetrofitInstance.api.sendNotification(notificationRequest).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    // Thông báo đã được gửi thành công
+                    Log.d("Notification", "Notification sent successfully.")
+                } else {
+                    // Xử lý khi có lỗi xảy ra
+                    Log.e("Notification", "Failed to send notification: ${response.errorBody()?.string()}")
+                }
+            }
+
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                // Xử lý khi xảy ra lỗi kết nối
+                Log.e("Notification", "Error: ${t.message}")
+            }
+        })
+    }
+
+
 
     private fun resetinput() {
         binding.apply {
