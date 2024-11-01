@@ -80,4 +80,7 @@ dependencies {
     //Retrofit
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    //Stripe
+    implementation ("com.stripe:stripe-android:20.4.0")
 }

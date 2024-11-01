@@ -23,12 +23,17 @@ import com.example.myapp.model.Bill
 import com.example.myapp.model.NotificationRequest
 import com.example.myapp.model.Order
 import com.example.myapp.model.PaymentMethod
+import com.example.myapp.model.PaymentStripeRequest
+import com.example.myapp.model.PaymentStripeResponse
 import com.example.myapp.model.Repair
 import com.example.myapp.model.RetrofitInstance
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.stripe.android.PaymentConfiguration
+import com.stripe.android.paymentsheet.PaymentSheet
+import com.stripe.android.paymentsheet.PaymentSheetResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -50,6 +55,7 @@ class TrackingOrderActivity : AppCompatActivity() {
     private var orderId :String = ""
     private var orderListener: ListenerRegistration? = null // Biến lưu trữ ListenerRegistration
     private var selectedPaymentMethodId: String? = null
+    private lateinit var paymentSheet: PaymentSheet
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +69,12 @@ class TrackingOrderActivity : AppCompatActivity() {
 
         // ZaloPay SDK Init
         ZaloPaySDK.init(553, Environment.SANDBOX)
+
+        // Khởi tạo cấu hình Stripe
+        PaymentConfiguration.init(applicationContext, "pk_test_51QGAuSQBeKgh7RtZCUar9ZUeFsc3j4hrzjLENyZehN3cd05LVzdxknXMKLDsLaeFWY4PsJExLBSyN4Cm8fBUcYmj00XCgl3s4m") // Thay "YOUR_PUBLISHABLE_KEY" bằng khóa công khai của bạn
+
+        // Khởi tạo PaymentSheet
+        paymentSheet = PaymentSheet(this, ::onPaymentSheetResult)
 
         getDataIntent()
         initToolbar()
@@ -78,7 +90,10 @@ class TrackingOrderActivity : AppCompatActivity() {
                 return@setOnClickListener
             } else if (selectedPaymentMethodId == "3") {
                 payWithZaloPay()
-            } else {
+            } else if (selectedPaymentMethodId == "2") {
+                createPaymentIntent()
+            }
+            else {
                 createBillAndUpdateOrder()
                 sendNotificationsToAdmins()
             }
@@ -86,6 +101,50 @@ class TrackingOrderActivity : AppCompatActivity() {
 
         binding.btnCancelOrder.setOnClickListener {
             showDialogCancelOrder()
+        }
+    }
+
+    private fun createPaymentIntent() {
+        val totalPriceText = binding.tvTotalPrice.text.toString().replace(",", "").replace("VND", "").trim()
+        val price = totalPriceText.toInt()
+        val paymentRequest = PaymentStripeRequest(price)
+        RetrofitInstance.api.createPaymentIntent(paymentRequest).enqueue(object :
+            Callback<PaymentStripeResponse> {
+            override fun onResponse(call: Call<PaymentStripeResponse>, response: Response<PaymentStripeResponse>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val clientSecret = response.body()!!.client_secret
+
+                    // Hiển thị PaymentSheet
+                    paymentSheet.presentWithPaymentIntent(clientSecret)
+                } else {
+                    // In ra thông báo lỗi
+                    Toast.makeText(this@TrackingOrderActivity, "Failed to create PaymentIntent: ${response.errorBody()?.string()}", Toast.LENGTH_LONG).show()
+                }
+            }
+
+            override fun onFailure(call: Call<PaymentStripeResponse>, t: Throwable) {
+                // Xử lý lỗi
+                Toast.makeText(this@TrackingOrderActivity, "Error: ${t.message}", Toast.LENGTH_LONG).show()
+            }
+        })
+    }
+
+    private fun onPaymentSheetResult(result: PaymentSheetResult) {
+        when (result) {
+            is PaymentSheetResult.Completed -> {
+                // Thanh toán thành công
+                createBillAndUpdateOrder()
+                sendNotificationsToAdmins()
+                Toast.makeText(this, "Thanh toán thành công", Toast.LENGTH_SHORT).show()
+            }
+            is PaymentSheetResult.Canceled -> {
+                // Thanh toán bị hủy
+                Toast.makeText(this, "Hủy thanh toán", Toast.LENGTH_SHORT).show()
+            }
+            is PaymentSheetResult.Failed -> {
+                // Thanh toán thất bại
+                Toast.makeText(this, "Thanh toán lỗi", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

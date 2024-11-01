@@ -28,4 +28,7 @@ interface UserApiService {
     @POST("/send-notification")
     fun sendNotification(@Body request: NotificationRequest): Call<Void>
 
+    @POST("/create-payment-intent")
+    fun createPaymentIntent(@Body request: PaymentStripeRequest): Call<PaymentStripeResponse>
+
 }
