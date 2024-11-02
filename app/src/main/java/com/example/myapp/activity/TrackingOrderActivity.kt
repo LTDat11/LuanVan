@@ -71,7 +71,7 @@ class TrackingOrderActivity : AppCompatActivity() {
         ZaloPaySDK.init(553, Environment.SANDBOX)
 
         // Khởi tạo cấu hình Stripe
-        PaymentConfiguration.init(applicationContext, "pk_test_51QGAuSQBeKgh7RtZCUar9ZUeFsc3j4hrzjLENyZehN3cd05LVzdxknXMKLDsLaeFWY4PsJExLBSyN4Cm8fBUcYmj00XCgl3s4m") // Thay "YOUR_PUBLISHABLE_KEY" bằng khóa công khai của bạn
+        PaymentConfiguration.init(applicationContext, "pk_test_51QGAuSQBeKgh7RtZCUar9ZUeFsc3j4hrzjLENyZehN3cd05LVzdxknXMKLDsLaeFWY4PsJExLBSyN4Cm8fBUcYmj00XCgl3s4m") 
 
         // Khởi tạo PaymentSheet
         paymentSheet = PaymentSheet(this, ::onPaymentSheetResult)
