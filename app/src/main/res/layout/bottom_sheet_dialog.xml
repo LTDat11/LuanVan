@@ -118,6 +118,11 @@
             android:textSize="16sp" />
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray" />
+
     <LinearLayout
         android:id="@+id/option_five_layout"
         android:layout_width="match_parent"
