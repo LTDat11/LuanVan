@@ -111,9 +111,9 @@ class AccountFragment : Fragment() {
         val layoutFeedback = mView?.findViewById<View>(R.id.layout_feedback)
         val tvFeedback = mView?.findViewById<TextView>(R.id.tv_feedback)
 
-        CoroutineScope(Dispatchers.Main).launch {
-            val userInfo = getUserInfo()
-            if (userInfo != null) {
+        // Sử dụng snapshot để lấy dữ liệu theo thời gian thực
+        getUserInfoRealtime { userInfo ->
+            if (userInfo != null && isAdded) {
                 tvName?.text = userInfo.name ?: getString(R.string.default_name)
                 tvEmail?.text = userInfo.email ?: firebaseAuth.currentUser?.email
 
@@ -148,24 +148,29 @@ class AccountFragment : Fragment() {
 
 
 
-    // Hàm lấy thông tin người dùng từ Firestore theo thời gian thực, bao gồm cả role
-    private suspend fun getUserInfo(): User? {
-        val currentUser = firebaseAuth.currentUser ?: return null
+
+    private fun getUserInfoRealtime(onUserInfoChanged: (User?) -> Unit) {
+        val currentUser = firebaseAuth.currentUser ?: return
         val uid = currentUser.uid
 
-        return try {
-            val documentSnapshot = firestore.collection("Users").document(uid).get().await()
-            if (documentSnapshot.exists()) {
-                documentSnapshot.toObject(User::class.java)?.apply {
-                    id = uid  // Đặt ID từ currentUser vào object
+        firestore.collection("Users").document(uid)
+            .addSnapshotListener { documentSnapshot, error ->
+                if (error != null) {
+                    onUserInfoChanged(null)
+                    return@addSnapshotListener
                 }
-            } else {
-                null
+
+                if (documentSnapshot != null && documentSnapshot.exists()) {
+                    val user = documentSnapshot.toObject(User::class.java)?.apply {
+                        id = uid
+                    }
+                    onUserInfoChanged(user)
+                } else {
+                    onUserInfoChanged(null)
+                }
             }
-        } catch (e: Exception) {
-            null
-        }
     }
+
 
 
 
